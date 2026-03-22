@@ -1,36 +1,107 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+﻿# Hệ Thống Bán Đồ Ăn - Frontend
 
-## Getting Started
+Dự án Frontend cho một Hệ thống bán đồ ăn (Food Ordering System), được xây dựng bằng Next.js và React, với giao diện hiện đại sử dụng Tailwind CSS.
 
-First, run the development server:
+---
+
+## Mô Tả Dự Án
+
+Đây là giao diện người dùng (frontend) cho hệ thống đặt và bán đồ ăn trực tuyến. Hệ thống gồm 2 trang chính:
+
+### Trang Người Dùng (User Page)
+Dành cho khách hàng với các chức năng:
+- Chọn món ăn: Duyệt và thêm món vào giỏ hàng
+- Xem hóa đơn: Xem chi tiết các món đã chọn và tổng tiền
+- Thanh toán: Thực hiện thanh toán đơn hàng
+- Đánh giá: Đánh giá chất lượng món ăn và dịch vụ
+
+### Trang Quản Lý (Manager Page)
+Dành cho chủ quán / nhân viên quản lý với các chức năng:
+- Quản lý thực đơn (thêm, sửa, xóa món ăn)
+- Theo dõi và xử lý đơn hàng
+- Quản lý thông tin quán
+
+---
+
+## Cách Chạy Dự Án
+
+### Yêu cầu hệ thống
+- Node.js >= 18
+- pnpm (khuyến nghị) hoặc npm / yarn / bun
+
+### Cài đặt dependencies
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
+# hoặc
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Chạy môi trường phát triển
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+pnpm dev
+# hoặc
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Mở trình duyệt tại http://localhost:3000 để xem kết quả.
 
-## Learn More
+### Build production
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+pnpm build
+pnpm start
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Cấu Trúc Thư Mục
 
-## Deploy on Vercel
+Dự án sử dụng cấu trúc mặc định của Next.js App Router:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+frondend/
+├── app/                        # App Router (Next.js)
+│   ├── layout.tsx              # Root layout (font, metadata, global styles)
+│   ├── page.tsx                # Trang chủ (User Page)
+│   ├── globals.css             # CSS toàn cục (Tailwind import)
+│   ├── favicon.ico             # Icon trang web
+│   └── components/             # Components dùng riêng trong app/
+├── components/                 # Shared components dùng chung toàn dự án
+│   └── CartProduct.tsx         # Component card sản phẩm trong giỏ hàng
+├── public/                     # Static assets (ảnh, svg, ...)
+├── next.config.ts              # Cấu hình Next.js
+├── tsconfig.json               # Cấu hình TypeScript
+├── postcss.config.mjs          # Cấu hình PostCSS (Tailwind)
+├── eslint.config.mjs           # Cấu hình ESLint
+├── package.json                # Dependencies và scripts
+└── pnpm-workspace.yaml         # Cấu hình pnpm workspace
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## Công Nghệ Sử Dụng
+
+| Công nghệ | Phiên bản | Mục đích |
+|-----------|-----------|----------|
+| Next.js | 16.1.7 | React Framework (App Router) |
+| React | 19.2.3 | Thư viện UI |
+| TypeScript | ^5 | Kiểu dữ liệu tĩnh |
+| Tailwind CSS | ^4 | Utility-first CSS framework |
+| SCSS | - | CSS preprocessor |
+| Geist Font | - | Font chữ mặc định (Google Fonts) |
+| pnpm | - | Package manager |
+| ESLint | ^9 | Linting code |
+
+
+---
+
+## Ghi Chú Phát Triển
+
+- Trang chủ () là điểm vào chính của **User Page**
+- Chỉnh sửa  để thay đổi giao diện trang chủ; trang tự động cập nhật khi lưu file
+- Styles toàn cục được định nghĩa trong 
+- Tailwind CSS v4 được import trực tiếp qua  trong CSS
+- Hỗ trợ **Dark Mode** tự động theo cài đặt hệ thống ()
+- Font chữ sử dụng **Geist Sans** và **Geist Mono** từ Google Fonts thông qua 
