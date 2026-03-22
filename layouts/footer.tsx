@@ -17,7 +17,7 @@ import { SHOP_INFO, SOCIAL_LINKS } from "@/lib/constants";
  */
 export default function Footer() {
   return (
-    <footer className="w-full bg-[var(--color-bg-footer)] text-[var(--color-text-on-dark)] overflow-x-hidden">
+    <footer className="w-full bg-(--color-bg-footer) text-(--color-text-on-dark) overflow-x-hidden">
       {/* ── Main grid ── */}
       <div className="max-w-screen-2xl mx-auto px-4 md:px-6 lg:px-8 py-10">
         <div className="grid grid-cols-12 gap-x-8 gap-y-8">
@@ -35,7 +35,7 @@ export default function Footer() {
                   sizes="40px"
                 />
               </div>
-              <span className="font-bold text-lg text-[var(--color-accent)]">
+              <span className="font-bold text-lg text-(--color-accent)">
                 {SHOP_INFO.name}
               </span>
             </div>
@@ -48,29 +48,29 @@ export default function Footer() {
             {/* Contact details */}
             <ul className="flex flex-col gap-2 text-sm opacity-80">
               <li className="flex items-start gap-2">
-                <i className="fa-solid fa-location-dot mt-0.5 w-4 text-center text-[var(--color-accent)] shrink-0"></i>
+                <i className="fa-solid fa-location-dot mt-0.5 w-4 text-center text-(--color-accent) shrink-0"></i>
                 <span>Địa chỉ: {SHOP_INFO.address}</span>
               </li>
               <li className="flex items-center gap-2">
-                <i className="fa-solid fa-phone w-4 text-center text-[var(--color-accent)] shrink-0"></i>
+                <i className="fa-solid fa-phone w-4 text-center text-(--color-accent) shrink-0"></i>
                 <a
                   href={`tel:${SHOP_INFO.phone}`}
-                  className="hover:text-[var(--color-accent)] transition-colors duration-150"
+                  className="hover:text-(--color-accent) transition-colors duration-150"
                 >
                   Số điện thoại: {SHOP_INFO.phone}
                 </a>
               </li>
               <li className="flex items-center gap-2">
-                <i className="fa-solid fa-envelope w-4 text-center text-[var(--color-accent)] shrink-0"></i>
+                <i className="fa-solid fa-envelope w-4 text-center text-(--color-accent) shrink-0"></i>
                 <a
                   href={`mailto:${SHOP_INFO.email}`}
-                  className="hover:text-[var(--color-accent)] transition-colors duration-150"
+                  className="hover:text-(--color-accent) transition-colors duration-150"
                 >
                   Email: {SHOP_INFO.email}
                 </a>
               </li>
               <li className="flex items-center gap-2">
-                <i className="fa-solid fa-clock w-4 text-center text-[var(--color-accent)] shrink-0"></i>
+                <i className="fa-solid fa-clock w-4 text-center text-(--color-accent) shrink-0"></i>
                 <span>Open: {SHOP_INFO.openHours}</span>
               </li>
             </ul>
@@ -84,7 +84,7 @@ export default function Footer() {
 
             {/* ── 2. Social links ── */}
             <div className="col-span-1">
-              <h3 className="font-bold text-sm uppercase tracking-wider mb-4 text-[var(--color-accent)]">
+              <h3 className="font-bold text-sm uppercase tracking-wider mb-4 text-(--color-accent)">
                 Kết nối
               </h3>
               <ul className="flex flex-col gap-3">
@@ -94,7 +94,7 @@ export default function Footer() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-3 text-sm opacity-75 hover:opacity-100
-                               hover:text-[var(--color-accent)] transition-all duration-150"
+                               hover:text-(--color-accent) transition-all duration-150"
                   >
                     <span
                       className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0
@@ -111,7 +111,7 @@ export default function Footer() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-3 text-sm opacity-75 hover:opacity-100
-                               hover:text-[var(--color-accent)] transition-all duration-150"
+                               hover:text-(--color-accent) transition-all duration-150"
                   >
                     <span
                       className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0
@@ -126,11 +126,11 @@ export default function Footer() {
                   <Link
                     href={SOCIAL_LINKS.website}
                     className="flex items-center gap-3 text-sm opacity-75 hover:opacity-100
-                               hover:text-[var(--color-accent)] transition-all duration-150"
+                               hover:text-(--color-accent) transition-all duration-150"
                   >
                     <span
                       className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0
-                                 bg-[var(--color-primary)] text-white text-base"
+                                 bg-(--color-primary) text-white text-base"
                     >
                       <i className="fa-solid fa-globe"></i>
                     </span>
@@ -142,15 +142,15 @@ export default function Footer() {
 
             {/* ── 3. WiFi card ── */}
             <div className="col-span-1">
-              <h3 className="font-bold text-sm uppercase tracking-wider mb-4 text-[var(--color-accent)]">
+              <h3 className="font-bold text-sm uppercase tracking-wider mb-4 text-(--color-accent)">
                 WiFi Miễn Phí
               </h3>
               <div
-                className="rounded-xl border border-[var(--color-primary-light)] border-opacity-50
-                           p-4 bg-[var(--color-primary-dark)] bg-opacity-30"
+                className="rounded-xl border border-(--color-primary-light) border-opacity-50
+                           p-4 bg-(--color-primary-dark) bg-opacity-30"
               >
                 <div className="flex items-center gap-2 mb-3">
-                  <i className="fa-solid fa-wifi text-[var(--color-accent)] text-lg shrink-0"></i>
+                  <i className="fa-solid fa-wifi text-(--color-accent) text-lg shrink-0"></i>
                   <span className="font-semibold text-sm">Kết nối miễn phí</span>
                 </div>
                 {/* Stacked label + value rows — no overflow risk */}
@@ -158,8 +158,8 @@ export default function Footer() {
                   <div className="flex flex-col gap-1">
                     <span className="opacity-60 text-xs uppercase tracking-wide">Tên mạng</span>
                     <span
-                      className="font-mono font-bold text-[var(--color-accent)]
-                                 px-2 py-1 rounded border border-[var(--color-accent)]
+                      className="font-mono font-bold text-(--color-accent)
+                                 px-2 py-1 rounded border border-(--color-accent)
                                  border-opacity-30 break-all"
                     >
                       {SHOP_INFO.wifi.name}
@@ -168,8 +168,8 @@ export default function Footer() {
                   <div className="flex flex-col gap-1">
                     <span className="opacity-60 text-xs uppercase tracking-wide">Mật khẩu</span>
                     <span
-                      className="font-mono font-bold text-[var(--color-accent)] tracking-wider
-                                 px-2 py-1 rounded border border-[var(--color-accent)]
+                      className="font-mono font-bold text-(--color-accent) tracking-wider
+                                 px-2 py-1 rounded border border-(--color-accent)
                                  border-opacity-30 break-all"
                     >
                       {SHOP_INFO.wifi.password}
@@ -196,7 +196,7 @@ export default function Footer() {
           </span>
           <span className="flex items-center gap-1">
             Made with{" "}
-            <i className="fa-solid fa-heart text-[var(--color-accent)] mx-1"></i>{" "}
+            <i className="fa-solid fa-heart text-(--color-accent) mx-1"></i>{" "}
             in Vietnam
           </span>
         </div>

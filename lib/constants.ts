@@ -1,4 +1,4 @@
-import type { MenuCategory, Product, ShopInfo, SocialLinks, NavLink, User } from "./types";
+import type { MenuCategory, Product, ShopInfo, SocialLinks, User } from "./types";
 
 // ===== SHOP INFORMATION =====
 export const SHOP_INFO: ShopInfo = {
@@ -22,14 +22,6 @@ export const SOCIAL_LINKS: SocialLinks = {
   tiktok: "https://tiktok.com/@coffeeshop",
   website: "/",
 };
-
-// ===== NAVIGATION LINKS =====
-export const NAV_LINKS: NavLink[] = [
-  { label: "Trang chủ", href: "/", icon: "fa-solid fa-house" },
-  { label: "Thực đơn", href: "/menu", icon: "fa-solid fa-book-open" },
-  { label: "Về chúng tôi", href: "/about", icon: "fa-solid fa-circle-info" },
-  { label: "Liên hệ", href: "/contact", icon: "fa-solid fa-envelope" },
-];
 
 // ===== MENU CATEGORIES =====
 // Each category has a unique FontAwesome icon representing the item type
@@ -198,6 +190,15 @@ export const MOCK_PRODUCTS: Product[] = [
     price: 10000,
     image: "/imgs/products/placeholder.jpg",
     description: "Thạch cà phê mát lạnh, thêm hương vị đặc biệt cho đồ uống của bạn.",
+    available: true,
+  },
+  {
+    id: 18,
+    name: "Trân Châu Trắng",
+    category: "topping",
+    price: 10000,
+    image: "/imgs/products/placeholder.jpg",
+    description: "Trân châu trắng dẻo dai, thêm vào bất kỳ đồ uống nào để tăng thêm hương vị.",
     available: true,
   },
 ];

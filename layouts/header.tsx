@@ -9,17 +9,16 @@ import type { User } from "@/lib/types";
 /**
  * Site Header — sticky top bar, always visible on all screen sizes.
  *
- * 3-column layout:
- *   [Brand: logo + name + tagline] | [Center: quick info] | [Auth button]
+ * 2-column layout:
+ *   [LEFT: Brand (logo + name + tagline)] | [RIGHT: Auth button]
  *
- * Login state cycles for UI demo (click the button to switch):
+ * Auth state cycles for UI demo (click the button to switch):
  *   Guest  →  Manager (Quản lý)  →  Staff  →  Guest
  *
  * Responsive:
  *   - Logo + shop name : always visible
- *   - Tagline          : hidden on mobile, shown on md+
- *   - Center info      : hidden on mobile, shown on lg+
- *   - Button label     : hidden on xs, shown on sm+
+ *   - Tagline          : hidden on mobile (< md), shown on md+
+ *   - Button label     : hidden on xs (< sm), shown on sm+
  */
 export default function Header() {
   const [user, setUser] = useState<User | null>(null);
@@ -33,9 +32,9 @@ export default function Header() {
   return (
     <header
       className="w-full sticky top-0 z-50
-                 bg-[var(--color-bg-header)] border-b border-[var(--color-border)]
-                 shadow-[0_1px_8px_var(--color-shadow-sm)]"
-      style={{ height: "var(--spacing-header-height)" }}
+                 bg-(--color-bg-header) border-b border-(--color-border)
+                 shadow-[0_1px_8px_var(--color-shadow-sm)]
+                 h-(--spacing-header-height)"
     >
       <div
         className="h-full px-6 md:px-8 lg:px-12
@@ -64,13 +63,13 @@ export default function Header() {
           <div className="flex flex-col leading-tight">
             <span
               className="font-bold text-base md:text-lg
-                         text-[var(--color-primary-dark)]
-                         group-hover:text-[var(--color-primary)]
+                         text-(--color-primary-dark)
+                         group-hover:text-(--color-primary)
                          transition-colors duration-150"
             >
               {SHOP_INFO.name}
             </span>
-            <span className="text-xs hidden md:block text-[var(--color-text-muted)]">
+            <span className="text-xs hidden md:block text-(--color-text-muted)">
               {SHOP_INFO.tagline}
             </span>
           </div>
@@ -86,8 +85,8 @@ export default function Header() {
               title="Đăng nhập"
               className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl
                          text-sm font-semibold border-none cursor-pointer
-                         bg-[var(--color-primary)] text-white
-                         hover:bg-[var(--color-primary-dark)]
+                         bg-(--color-primary) text-white
+                         hover:bg-(--color-primary-dark)
                          active:scale-95 transition-all duration-150"
             >
               <i className="fa-solid fa-right-to-bracket"></i>
@@ -101,9 +100,9 @@ export default function Header() {
               title="Nhấn để đổi tài khoản (demo)"
               className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl
                          text-sm font-semibold cursor-pointer
-                         bg-[var(--color-accent-light)] border border-[var(--color-accent)]
-                         text-[var(--color-primary-dark)]
-                         hover:bg-[var(--color-accent)] hover:text-white
+                         bg-(--color-accent-light) border border-(--color-accent)
+                         text-(--color-primary-dark)
+                         hover:bg-(--color-accent) hover:text-white
                          active:scale-95 transition-all duration-150"
             >
               <i className="fa-solid fa-user-tie text-base"></i>
@@ -117,16 +116,16 @@ export default function Header() {
               title="Nhấn để đổi tài khoản (demo)"
               className="flex items-center gap-2.5 px-4 py-2 rounded-xl
                          text-sm font-semibold cursor-pointer
-                         bg-[var(--color-bg-main)] border border-[var(--color-border)]
-                         text-[var(--color-text-secondary)]
-                         hover:border-[var(--color-primary-light)]
-                         hover:bg-[var(--color-border-light)]
+                         bg-background border border-(--color-border)
+                         text-(--color-text-secondary)
+                         hover:border-(--color-primary-light)
+                         hover:bg-(--color-border-light)
                          active:scale-95 transition-all duration-150"
             >
               {/* Avatar circle */}
               <div
                 className="w-7 h-7 rounded-full flex items-center justify-center shrink-0
-                           bg-[var(--color-primary-light)] text-white text-xs"
+                           bg-(--color-primary-light) text-white text-xs"
               >
                 <i className="fa-solid fa-user"></i>
               </div>

@@ -1,25 +1,24 @@
-﻿# Hệ Thống Bán Đồ Ăn - Frontend
+# Coffee Shop Frontend
 
-Dự án Frontend cho một Hệ thống bán đồ ăn (Food Ordering System), được xây dựng bằng Next.js và React, với giao diện hiện đại sử dụng Tailwind CSS.
+Dự án Frontend cho hệ thống đặt món cà phê, xây dựng bằng Next.js App Router, React 19, TypeScript và Tailwind CSS v4.
 
 ---
 
 ## Mô Tả Dự Án
 
-Đây là giao diện người dùng (frontend) cho hệ thống đặt và bán đồ ăn trực tuyến. Hệ thống gồm 2 trang chính:
+Giao diện người dùng (frontend) cho hệ thống đặt và bán đồ uống trực tuyến.
 
-### Trang Người Dùng (User Page)
-Dành cho khách hàng với các chức năng:
-- Chọn món ăn: Duyệt và thêm món vào giỏ hàng
-- Xem hóa đơn: Xem chi tiết các món đã chọn và tổng tiền
-- Thanh toán: Thực hiện thanh toán đơn hàng
-- Đánh giá: Đánh giá chất lượng món ăn và dịch vụ
+### Trang Người Dùng (User Page - /)
+Dành cho khách hàng:
+- Duyệt thực đơn theo danh mục (sidebar collapsible)
+- Tìm kiếm món theo tên / mô tả
+- Xem card sản phẩm với giá và nút Mua
+- Lọc tự động theo trạng thái available
 
-### Trang Quản Lý (Manager Page)
-Dành cho chủ quán / nhân viên quản lý với các chức năng:
-- Quản lý thực đơn (thêm, sửa, xóa món ăn)
+### Trang Quản Lý (Manager Page - chưa triển khai)
+Dành cho chủ quán / nhân viên:
+- Quản lý thực đơn (thêm, sửa, xóa món)
 - Theo dõi và xử lý đơn hàng
-- Quản lý thông tin quán
 
 ---
 
@@ -27,56 +26,59 @@ Dành cho chủ quán / nhân viên quản lý với các chức năng:
 
 ### Yêu cầu hệ thống
 - Node.js >= 18
-- pnpm (khuyến nghị) hoặc npm / yarn / bun
+- pnpm (khuyến nghị) hoặc npm
 
-### Cài đặt dependencies
-
+### Cài đặt
 ```bash
 pnpm install
-# hoặc
-npm install
 ```
 
-### Chạy môi trường phát triển
-
+### Dev
 ```bash
 pnpm dev
-# hoặc
-npm run dev
+```
+Mở trình duyệt tại http://localhost:3000
+
+### Build
+```bash
+pnpm build && pnpm start
 ```
 
-Mở trình duyệt tại http://localhost:3000 để xem kết quả.
-
-### Build production
-
+### Lint
 ```bash
-pnpm build
-pnpm start
+pnpm lint
 ```
 
 ---
 
 ## Cấu Trúc Thư Mục
 
-Dự án sử dụng cấu trúc mặc định của Next.js App Router:
-
 ```
 frondend/
-├── app/                        # App Router (Next.js)
-│   ├── layout.tsx              # Root layout (font, metadata, global styles)
-│   ├── page.tsx                # Trang chủ (User Page)
-│   ├── globals.css             # CSS toàn cục (Tailwind import)
-│   ├── favicon.ico             # Icon trang web
-│   └── components/             # Components dùng riêng trong app/
-├── components/                 # Shared components dùng chung toàn dự án
-│   └── CartProduct.tsx         # Component card sản phẩm trong giỏ hàng
-├── public/                     # Static assets (ảnh, svg, ...)
-├── next.config.ts              # Cấu hình Next.js
-├── tsconfig.json               # Cấu hình TypeScript
-├── postcss.config.mjs          # Cấu hình PostCSS (Tailwind)
-├── eslint.config.mjs           # Cấu hình ESLint
-├── package.json                # Dependencies và scripts
-└── pnpm-workspace.yaml         # Cấu hình pnpm workspace
++-- app/                   # Next.js App Router
+|   +-- layout.tsx         # Root layout
+|   +-- page.tsx           # Trang chủ - sidebar + product grid
+|   +-- globals.css        # CSS design tokens + Tailwind import
++-- components/            # Shared UI components
+|   +-- Navbar.tsx         # Sidebar danh mục (collapsible)
+|   +-- CartProduct.tsx    # Card sản phẩm
+|   +-- COMPONENTS.md      # Tài liệu component
++-- layouts/               # Layout-level components
+|   +-- header.tsx         # Sticky top header
+|   +-- footer.tsx         # Footer
++-- lib/                   # Shared logic & data
+|   +-- constants.ts       # Mock data
+|   +-- types.ts           # TypeScript interfaces
++-- types/                 # Global TypeScript declarations
+|   +-- css.d.ts           # CSS module type shim
++-- public/                # Static assets
++-- WORKFLOW.md            # Tài liệu kiến trúc & quy trình
++-- next.config.ts
++-- tsconfig.json
++-- postcss.config.mjs
++-- eslint.config.mjs
++-- package.json
++-- pnpm-workspace.yaml
 ```
 
 ---
@@ -89,19 +91,18 @@ frondend/
 | React | 19.2.3 | Thư viện UI |
 | TypeScript | ^5 | Kiểu dữ liệu tĩnh |
 | Tailwind CSS | ^4 | Utility-first CSS framework |
-| SCSS | - | CSS preprocessor |
-| Geist Font | - | Font chữ mặc định (Google Fonts) |
+| Geist Font | - | Font chữ (Google Fonts via next/font) |
+| FontAwesome | 6.7.2 | Icon library (CDN) |
 | pnpm | - | Package manager |
-| ESLint | ^9 | Linting code |
-
+| ESLint | ^9 | Linting |
 
 ---
 
 ## Ghi Chú Phát Triển
 
-- Trang chủ () là điểm vào chính của **User Page**
-- Chỉnh sửa  để thay đổi giao diện trang chủ; trang tự động cập nhật khi lưu file
-- Styles toàn cục được định nghĩa trong 
-- Tailwind CSS v4 được import trực tiếp qua  trong CSS
-- Hỗ trợ **Dark Mode** tự động theo cài đặt hệ thống ()
-- Font chữ sử dụng **Geist Sans** và **Geist Mono** từ Google Fonts thông qua 
+- Trang chủ (app/page.tsx) là điểm vào chính của User Page
+- Design tokens định nghĩa trong app/globals.css dưới dạng CSS custom properties
+- Mock data nằm trong lib/constants.ts - thay bằng API calls khi backend sẵn sàng
+- Dark mode: biến CSS đã chuẩn bị sẵn trong globals.css nhưng chưa kích hoạt
+- Ảnh sản phẩm: thêm ảnh thực vào public/imgs/products/
+- Xem WORKFLOW.md để hiểu kiến trúc tổng thể và quy trình mở rộng dự án

@@ -44,13 +44,7 @@ export interface ShopInfo {
   openHours: string;
 }
 
-// ===== NAVIGATION TYPES =====
-export interface NavLink {
-  label: string;
-  href: string;
-  icon?: string;
-}
-
+// ===== SOCIAL LINKS TYPES =====
 export interface SocialLinks {
   facebook: string;
   tiktok: string;

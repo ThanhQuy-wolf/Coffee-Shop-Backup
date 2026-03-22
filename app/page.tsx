@@ -20,27 +20,34 @@ import { MENU_CATEGORIES, MOCK_PRODUCTS } from "@/lib/constants";
  *   Expanded  sidebar:  1 → sm:2 → lg:2 → xl:3 → 2xl:4
  */
 export default function Home() {
+  /* Start collapsed (false) so SSR and client initial render match.
+   * useEffect sets the correct value after hydration completes. */
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  /* Default: expanded on desktop, collapsed on mobile */
+  /* After mount: sync sidebar with viewport width, then subscribe to changes.
+   * The initial setIsSidebarOpen call is intentional (post-hydration only)
+   * and does not cause cascading renders — suppress the lint rule here. */
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 1024px)");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsSidebarOpen(mq.matches);
     const handler = (e: MediaQueryListEvent) => setIsSidebarOpen(e.matches);
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
   }, []);
 
-  /* Filter products by active category + search query */
+  /* Filter products by availability, active category, and search query.
+   * p.available defaults to true when undefined (opt-in unavailability). */
   const filteredProducts = MOCK_PRODUCTS.filter((p) => {
+    const isAvailable = p.available !== false;
     const matchesCategory = activeCategory === "all" || p.category === activeCategory;
     const matchesSearch =
       searchQuery.trim() === "" ||
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+    return isAvailable && matchesCategory && matchesSearch;
   });
 
   /* Active category label */
@@ -59,8 +66,7 @@ export default function Home() {
   return (
     /* Outer wrapper: flex row, align-items: flex-start so sidebar sticks */
     <div
-      className="flex items-start bg-[var(--color-bg-main)]"
-      style={{ minHeight: "calc(100vh - var(--spacing-header-height))" }}
+      className="flex items-start bg-background min-h-[calc(100vh-var(--spacing-header-height))]"
     >
       {/* ── Sidebar ── */}
       <Navbar
@@ -80,10 +86,10 @@ export default function Home() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
           {/* Title + count */}
           <div className="shrink-0">
-            <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
+            <h2 className="text-xl font-bold text-foreground">
               {activeCategoryLabel}
             </h2>
-            <p className="text-sm text-[var(--color-text-muted)] mt-0.5">
+            <p className="text-sm text-muted-foreground mt-0.5">
               {filteredProducts.length} món
             </p>
           </div>
@@ -92,7 +98,7 @@ export default function Home() {
           <div className="relative w-full sm:max-w-xs">
             <i
               className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2
-                         text-sm text-[var(--color-text-muted)] pointer-events-none"
+                         text-sm text-(--color-text-muted) pointer-events-none"
             ></i>
             <input
               type="text"
@@ -100,10 +106,10 @@ export default function Home() {
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Tìm kiếm món..."
               className="w-full pl-9 pr-9 py-2 text-sm rounded-xl border outline-none
-                         bg-[var(--color-bg-card)] text-[var(--color-text-primary)]
-                         border-[var(--color-border)] placeholder:text-[var(--color-text-muted)]
-                         focus:border-[var(--color-primary)] focus:ring-2
-                         focus:ring-[var(--color-primary)] focus:ring-opacity-20
+                         bg-card text-foreground
+                         border-border placeholder:text-muted-foreground
+                         focus:border-primary focus:ring-2
+                         focus:ring-primary focus:ring-opacity-20
                          transition-all duration-150"
             />
             {/* Clear button */}
@@ -112,8 +118,8 @@ export default function Home() {
                 onClick={() => setSearchQuery("")}
                 title="Xóa tìm kiếm"
                 aria-label="Xóa tìm kiếm"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]
-                           hover:text-[var(--color-primary)] transition-colors duration-150
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-(--color-text-muted)
+                           hover:text-(--color-primary) transition-colors duration-150
                            cursor-pointer border-none bg-transparent p-0"
               >
                 <i className="fa-solid fa-xmark text-sm"></i>
@@ -142,7 +148,7 @@ export default function Home() {
           </div>
         ) : (
           /* Empty state */
-          <div className="flex flex-col items-center justify-center py-24 gap-4 text-[var(--color-text-muted)]">
+          <div className="flex flex-col items-center justify-center py-24 gap-4 text-(--color-text-muted)">
             <i className="fa-solid fa-mug-hot text-5xl opacity-30"></i>
             <p className="text-base font-medium">
               {searchQuery
@@ -152,7 +158,7 @@ export default function Home() {
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="text-sm text-[var(--color-primary)] hover:underline cursor-pointer
+                className="text-sm text-(--color-primary) hover:underline cursor-pointer
                            border-none bg-transparent"
               >
                 Xóa tìm kiếm

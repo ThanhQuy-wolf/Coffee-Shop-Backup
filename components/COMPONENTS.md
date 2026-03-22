@@ -1,60 +1,158 @@
-﻿# Components Documentation
+# Components Documentation
 
-> **BlackBox AI Rule:**
-> Whenever you create a new component in the components/ directory, or when the user asks to save a component to this file, **automatically append a new section** following the template below. Fill in all fields based on the component source code — props/interface, default values, types, usage example, and notes. Do not skip any field; if a value is unknown, write N/A.
-
----
-
-## Component Template (for BlackBox AI)
-
-Use this template when adding a new component entry:
-
-
+> Whenever you create a new component in the components/ directory, automatically append a new section following the template below.
 
 ---
 
 ## CartProduct
 
 **File:** components/CartProduct.tsx
-**Description:** A product card component that displays a product image, formatted price, a Mua (Buy) button, and a short description. Designed for use in shopping cart or product listing UIs.
+**Description:** Product card component. Displays product image, name, description, formatted price, and a Buy button. Width is controlled by the parent grid (w-full), not the card itself.
 
-### Props / Interface
+### Props
 
 | Prop | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
-| image | string | yes | — | URL or path to the product image (used with Next.js Image). |
-| imageAlt | string | no | Product image | Alt text for the product image (accessibility). |
-| price | number or string | yes | — | Product price. If number, auto-formatted to Vietnamese Dong (VND). If string, rendered as-is. |
-| description | string | yes | — | Short product description shown in the card footer. Clamped to 2 lines. |
-| onBuy | () => void | no | undefined | Callback fired when the Mua button is clicked. |
+| image | string | yes | - | URL/path to product image (Next.js Image) |
+| imageAlt | string | no | Anh san pham | Alt text for accessibility |
+| productName | string | yes | - | Product display name |
+| price | number or string | yes | - | If number: auto-formatted to VND. If string: rendered as-is |
+| description | string | yes | - | Short description, clamped to 2 lines |
+| onBuy | () => void | no | undefined | Callback when Buy button is clicked |
 
 ### Internal Logic
 
-- formattedPrice: If price is a number, it is formatted using toLocaleString(vi-VN, { style: currency, currency: VND }). If price is already a string, it is rendered directly.
+- formattedPrice: number -> toLocaleString(vi-VN, { style: currency, currency: VND })
+- Image fallback: fa-solid fa-mug-hot icon shown behind image; if image fails onError hides the img element
 
-### CSS / Styling Notes
+### Styling (CSS variables)
 
-| Element | Tailwind Classes | Purpose |
-|---------|-----------------|---------|
-| Card wrapper | flex flex-col w-64 rounded-2xl overflow-hidden shadow-md border border-gray-100 bg-white hover:shadow-lg transition-shadow duration-300 | Outer card with hover shadow |
-| Image container | relative w-full h-48 bg-gray-100 | Fixed-height image area |
-| Price text | text-lg font-bold text-red-500 | Highlighted price in red |
-| Buy button | bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors duration-200 cursor-pointer | Primary action button |
-| Description area | px-4 py-3 border-t border-gray-100 bg-gray-50 | Footer section with light background |
-| Description text | text-sm text-gray-600 leading-relaxed line-clamp-2 | Truncated 2-line description |
+| Element | Key classes |
+|---------|-------------|
+| Card wrapper | flex flex-col w-full rounded-2xl, shadow uses --color-shadow-sm/md |
+| Image area | relative w-full h-36, bg --color-border-light |
+| Product name | font-bold text-sm, color --color-text-primary, line-clamp-1 |
+| Description | text-xs, color --color-text-muted, line-clamp-2 |
+| Price | text-sm font-bold, color --color-primary |
+| Buy button | bg --color-primary, hover --color-primary-dark, active:scale-95 |
 
 ### Dependencies
 
-- next/image — Next.js optimized Image component
-- Tailwind CSS — utility-first CSS framework
-
-### Usage Example
-
-
+- next/image
+- Tailwind CSS + CSS custom properties from globals.css
+- FontAwesome (fa-solid fa-mug-hot fallback, fa-cart-plus button icon)
 
 ### Notes
 
-- Card width is fixed at w-64 (256px). Adjust if a responsive layout is needed.
-- The description is clamped to 2 lines via line-clamp-2; longer text will be truncated with ellipsis.
-- If onBuy is not provided, the button renders but does nothing on click.
-- Price formatting uses Vietnamese locale (vi-VN) and VND currency by default when price is a number.
+- Card width is w-full - controlled by parent grid in page.tsx
+- available field on Product is checked in page.tsx before rendering
+- onBuy currently logs to console - TODO: implement cart logic
+
+---
+
+## Navbar
+
+**File:** components/Navbar.tsx
+**Description:** Left sidebar with collapsible category filter. Sticky below header, full viewport height minus header.
+
+### Props
+
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| isOpen | boolean | yes | - | true = expanded (240px), false = collapsed (64px) |
+| onToggle | () => void | yes | - | Toggle expand/collapse |
+| activeCategory | string | no | all | Currently selected category id |
+| onCategoryChange | (id: string) => void | no | undefined | Fired when user clicks a category |
+
+### Behavior
+
+- Collapsed: 64px wide, icon only (w-16)
+- Expanded: 240px wide, icon + label (w-60)
+- Width transition: transition-all duration-250ms
+- Active category: highlighted with --color-primary background
+- Footer shows SHOP_INFO.openHours (icon only when collapsed)
+
+### Styling
+
+| Element | Key classes |
+|---------|-------------|
+| Aside | sticky, border-r --color-border, bg --color-bg-sidebar |
+| Toggle button | w-8 h-8 rounded-lg, hover bg --color-border-light |
+| Active item | bg --color-primary text-white shadow-sm |
+| Inactive item | hover bg --color-border-light, color --color-text-secondary |
+
+### Dependencies
+
+- next/link
+- lib/constants: MENU_CATEGORIES, SHOP_INFO
+- lib/types: MenuCategory
+- FontAwesome icons
+
+---
+
+## Header (layouts/header.tsx)
+
+**File:** layouts/header.tsx
+**Description:** Sticky top bar. 2-column layout: Brand (left) + Auth button (right). Auth cycles Guest -> Manager -> Staff -> Guest for UI demo.
+
+### Props
+
+None - reads SHOP_INFO and MOCK_USERS from lib/constants directly.
+
+### Internal State
+
+| State | Type | Description |
+|-------|------|-------------|
+| user | User or null | Current demo user. null = guest |
+
+### Auth States
+
+| State | Appearance |
+|-------|------------|
+| Guest (null) | Brown primary button, Dang nhap label |
+| Manager | Gold/caramel badge with user-tie icon |
+| Staff | Avatar circle + name, bordered button |
+
+### Responsive
+
+- Logo + shop name: always visible
+- Tagline: hidden < md, shown md+
+- Button label: hidden < sm, shown sm+
+
+### Dependencies
+
+- next/image, next/link
+- lib/constants: SHOP_INFO, MOCK_USERS
+- lib/types: User
+- FontAwesome icons
+
+---
+
+## Footer (layouts/footer.tsx)
+
+**File:** layouts/footer.tsx
+**Description:** Site footer with 12-column grid. 3 sections: Brand info, Social links, WiFi card.
+
+### Props
+
+None - reads SHOP_INFO and SOCIAL_LINKS from lib/constants directly.
+
+### Layout
+
+| Section | Mobile | md | lg/xl |
+|---------|--------|----|-------|
+| Brand info | col-span-12 | col-span-6 | col-span-8/6 |
+| Social + WiFi | col-span-12 | col-span-6 | col-span-4/6 |
+
+### Sections
+
+1. Brand: logo, name, tagline, address, phone, email, open hours
+2. Social: Facebook, TikTok, Website links
+3. WiFi: network name + password in monospace styled box
+4. Bottom bar: copyright + Made with heart in Vietnam
+
+### Dependencies
+
+- next/image, next/link
+- lib/constants: SHOP_INFO, SOCIAL_LINKS
+- FontAwesome icons
