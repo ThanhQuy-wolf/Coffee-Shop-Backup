@@ -32,11 +32,13 @@ export default function Navbar({
   return (
     <aside
       className={`
-        sticky shrink-0 flex flex-col z-20
+        sticky shrink-0 flex-col z-20
         border-r border-(--color-border)
         bg-(--color-bg-sidebar)
         overflow-y-auto overflow-x-hidden
         transition-all duration-250 ease-in-out
+        hidden md:flex
+        xl:w-60
         ${isOpen ? "w-60" : "w-16"}
       `}
       style={{
@@ -48,22 +50,31 @@ export default function Navbar({
       <div
         className={`
           flex items-center border-b border-(--color-border) shrink-0
+          xl:justify-between xl:px-4 xl:py-3
           ${isOpen ? "justify-between px-4 py-3" : "justify-center px-0 py-3"}
         `}
       >
-        {isOpen && (
-          <span className="text-xs font-bold uppercase tracking-widest text-(--color-text-muted) whitespace-nowrap">
-            <i className="fa-solid fa-utensils mr-2 text-(--color-primary)"></i>
-            Thực Đơn
-          </span>
-        )}
+        {/* Title — shown when expanded, always shown on xl+ */}
+        <span
+          className={`
+            text-xs font-bold uppercase tracking-widest
+            text-(--color-text-muted) whitespace-nowrap
+            ${isOpen ? "block" : "hidden"} xl:block
+          `}
+        >
+          <i className="fa-solid fa-utensils mr-2 text-(--color-primary)"></i>
+          Thực Đơn
+        </span>
+
+        {/* Toggle button — hidden on xl+ (sidebar is always expanded there) */}
         <button
           onClick={onToggle}
           title={isOpen ? "Thu gọn menu" : "Mở rộng menu"}
           className="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer border-none
                      text-(--color-text-muted) bg-transparent
                      hover:bg-(--color-border-light) hover:text-(--color-primary)
-                     transition-colors duration-150 shrink-0"
+                     transition-colors duration-150 shrink-0
+                     xl:hidden"
         >
           <i
             className={`fa-solid text-sm transition-transform duration-250 ${
@@ -86,6 +97,7 @@ export default function Navbar({
                   className={`
                     w-full flex items-center rounded-xl text-sm font-medium
                     cursor-pointer border-none transition-all duration-150
+                    xl:gap-3 xl:px-3 xl:py-2.5 xl:justify-start
                     ${isOpen ? "gap-3 px-3 py-2.5" : "justify-center px-0 py-2.5"}
                     ${
                       isActive
@@ -102,17 +114,16 @@ export default function Navbar({
                     `}
                   ></i>
 
-                  {/* Label — hidden when collapsed */}
-                  {isOpen && (
-                    <span className="whitespace-nowrap overflow-hidden text-ellipsis">
-                      {cat.name}
-                    </span>
-                  )}
+                  {/* Label — hidden when collapsed, always shown on xl+ */}
+                  <span
+                    className={`
+                      whitespace-nowrap overflow-hidden text-ellipsis
+                      ${isOpen ? "block" : "hidden"} xl:block
+                    `}
+                  >
+                    {cat.name}
+                  </span>
 
-                  {/* Active indicator arrow */}
-                  {isOpen && isActive && (
-                    <i className="fa-solid fa-chevron-right ml-auto text-xs opacity-70 shrink-0"></i>
-                  )}
                 </button>
               </li>
             );
@@ -124,20 +135,29 @@ export default function Navbar({
       <div
         className={`
           shrink-0 border-t border-(--color-border) py-3
+          xl:px-4
           ${isOpen ? "px-4" : "px-0 flex justify-center"}
         `}
       >
-        {isOpen ? (
-          <div className="flex items-center gap-2 text-xs text-(--color-text-muted)">
-            <i className="fa-solid fa-clock text-(--color-accent) shrink-0"></i>
-            <span>{SHOP_INFO.openHours}</span>
-          </div>
-        ) : (
-          <i
-            className="fa-solid fa-clock text-sm text-(--color-text-muted)"
-            title={SHOP_INFO.openHours}
-          ></i>
-        )}
+        {/* Text row — shown when expanded, always shown on xl+ */}
+        <div
+          className={`
+            items-center gap-2 text-xs text-(--color-text-muted)
+            ${isOpen ? "flex" : "hidden"} xl:flex
+          `}
+        >
+          <i className="fa-solid fa-clock text-(--color-accent) shrink-0"></i>
+          <span>{SHOP_INFO.openHours}</span>
+        </div>
+
+        {/* Icon-only — shown when collapsed, hidden on xl+ */}
+        <i
+          className={`
+            fa-solid fa-clock text-sm text-(--color-text-muted)
+            ${isOpen ? "hidden" : "block"} xl:hidden
+          `}
+          title={SHOP_INFO.openHours}
+        ></i>
       </div>
     </aside>
   );

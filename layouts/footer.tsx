@@ -195,9 +195,9 @@ export default function Footer() {
             © {new Date().getFullYear()} {SHOP_INFO.name}. All rights reserved.
           </span>
           <span className="flex items-center gap-1">
-            Made with{" "}
+            Được vận hành {" "}
             <i className="fa-solid fa-heart text-(--color-accent) mx-1"></i>{" "}
-            in Vietnam
+            bằng Drinkool
           </span>
         </div>
       </div>

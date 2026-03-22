@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/layouts/header";
 import Footer from "@/layouts/footer";
+import { Providers } from "./providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -43,16 +44,18 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
       >
-        {/* Sticky top header */}
-        <Header />
+        <Providers>
+          {/* Sticky top header */}
+          <Header />
 
-        {/* Page content (grows to fill remaining height) */}
-        <div className="flex-1">
-          {children}
-        </div>
+          {/* Page content (grows to fill remaining height) */}
+          <div className="flex-1">
+            {children}
+          </div>
 
-        {/* Footer always at bottom */}
-        <Footer />
+          {/* Footer always at bottom */}
+          <Footer />
+        </Providers>
       </body>
     </html>
   );

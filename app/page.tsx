@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import CartProduct from "@/components/CartProduct";
 import { MENU_CATEGORIES, MOCK_PRODUCTS } from "@/lib/constants";
+import { useMenu } from "@/lib/menu-context";
 
 /**
  * Main page — sidebar + product grid layout.
@@ -20,10 +21,13 @@ import { MENU_CATEGORIES, MOCK_PRODUCTS } from "@/lib/constants";
  *   Expanded  sidebar:  1 → sm:2 → lg:2 → xl:3 → 2xl:4
  */
 export default function Home() {
+  /* Shared category state comes from MenuContext so the header mobile menu
+   * and this sidebar always reflect the same selection. */
+  const { activeCategory, setActiveCategory } = useMenu();
+
   /* Start collapsed (false) so SSR and client initial render match.
    * useEffect sets the correct value after hydration completes. */
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
 
   /* After mount: sync sidebar with viewport width, then subscribe to changes.
@@ -37,6 +41,14 @@ export default function Home() {
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
   }, []);
+
+  /* Clear search whenever the active category changes (triggered from either
+   * the sidebar on md+ or the header scrollable menu on < md).
+   * setState-in-effect is intentional here — suppress the lint rule. */
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSearchQuery("");
+  }, [activeCategory]);
 
   /* Filter products by availability, active category, and search query.
    * p.available defaults to true when undefined (opt-in unavailability). */
@@ -73,10 +85,7 @@ export default function Home() {
         isOpen={isSidebarOpen}
         onToggle={() => setIsSidebarOpen((prev) => !prev)}
         activeCategory={activeCategory}
-        onCategoryChange={(id) => {
-          setActiveCategory(id);
-          setSearchQuery(""); // clear search when switching category
-        }}
+        onCategoryChange={setActiveCategory}
       />
 
       {/* ── Main content ── */}
@@ -125,6 +134,39 @@ export default function Home() {
                 <i className="fa-solid fa-xmark text-sm"></i>
               </button>
             )}
+          </div>
+        </div>
+
+        {/* ── Mobile category menu — visible only on < md, below search, above products ── */}
+        <div className="md:hidden -mx-4 px-4 overflow-x-auto mb-4">
+          <div className="flex items-center gap-1.5 pb-1">
+            {MENU_CATEGORIES.map((cat) => {
+              const isActive = activeCategory === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => setActiveCategory(cat.id)}
+                  className={`
+                    flex items-center gap-1.5 px-3 py-2 rounded-xl
+                    text-sm font-medium whitespace-nowrap shrink-0
+                    cursor-pointer border-none transition-all duration-150
+                    ${
+                      isActive
+                        ? "bg-(--color-primary) text-white shadow-sm"
+                        : "bg-transparent text-(--color-text-secondary) hover:bg-(--color-border-light) hover:text-(--color-primary-dark)"
+                    }
+                  `}
+                >
+                  <i
+                    className={`
+                      ${cat.icon} text-sm shrink-0
+                      ${isActive ? "text-white" : "text-(--color-primary)"}
+                    `}
+                  ></i>
+                  <span>{cat.name}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
