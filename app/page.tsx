@@ -138,7 +138,7 @@ export default function Home() {
         </div>
 
         {/* ── Mobile category menu — visible only on < md, below search, above products ── */}
-        <div className="md:hidden -mx-4 px-4 overflow-x-auto mb-4">
+        <div className="md:hidden sticky top-18 pt-2 bg-background z-50 -mx-4 px-4 overflow-x-auto mb-4">
           <div className="flex items-center gap-1.5 pb-1">
             {MENU_CATEGORIES.map((cat) => {
               const isActive = activeCategory === cat.id;

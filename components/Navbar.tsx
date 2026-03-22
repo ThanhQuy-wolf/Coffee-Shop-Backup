@@ -74,7 +74,7 @@ export default function Navbar({
                      text-(--color-text-muted) bg-transparent
                      hover:bg-(--color-border-light) hover:text-(--color-primary)
                      transition-colors duration-150 shrink-0
-                     xl:hidden"
+!xl:hidden"
         >
           <i
             className={`fa-solid text-sm transition-transform duration-250 ${
@@ -151,13 +151,14 @@ export default function Navbar({
         </div>
 
         {/* Icon-only — shown when collapsed, hidden on xl+ */}
-        <i
-          className={`
-            fa-solid fa-clock text-sm text-(--color-text-muted)
-            ${isOpen ? "hidden" : "block"} xl:hidden
-          `}
-          title={SHOP_INFO.openHours}
-        ></i>
+        <span className="xl:hidden">
+          <i
+            className={`
+              fa-solid fa-clock text-sm text-(--color-text-muted)
+              ${isOpen ? "hidden" : "block"}`}
+            title={SHOP_INFO.openHours}
+          ></i>
+        </span>
       </div>
     </aside>
   );
