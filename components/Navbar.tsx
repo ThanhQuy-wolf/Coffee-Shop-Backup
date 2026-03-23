@@ -73,8 +73,7 @@ export default function Navbar({
           className="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer border-none
                      text-(--color-text-muted) bg-transparent
                      hover:bg-(--color-border-light) hover:text-(--color-primary)
-                     transition-colors duration-150 shrink-0
-!xl:hidden"
+                     transition-colors duration-150 shrink-0 xl:hidden"
         >
           <i
             className={`fa-solid text-sm transition-transform duration-250 ${

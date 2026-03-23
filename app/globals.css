@@ -99,6 +99,7 @@ body {
   background-color: var(--color-bg-main);
   color: var(--color-text-primary);
   font-family: Arial, Helvetica, sans-serif;
+  scroll-behavior: smooth;
 }
 
 /* ============================================================
