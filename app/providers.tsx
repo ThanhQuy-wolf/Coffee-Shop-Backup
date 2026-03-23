@@ -1,6 +1,7 @@
 "use client";
 
 import { MenuProvider } from "@/lib/menu-context";
+import { CartProvider } from "@/lib/cart-context";
 
 /**
  * Client-side providers wrapper.
@@ -8,5 +9,9 @@ import { MenuProvider } from "@/lib/menu-context";
  * with client context providers without becoming a client component itself.
  */
 export function Providers({ children }: { children: React.ReactNode }) {
-  return <MenuProvider>{children}</MenuProvider>;
+  return (
+    <MenuProvider>
+      <CartProvider>{children}</CartProvider>
+    </MenuProvider>
+  );
 }
