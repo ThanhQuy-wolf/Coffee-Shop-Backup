@@ -1,26 +1,114 @@
 @import "tailwindcss";
 
+/* ============================================================
+   LIGHT THEME — Coffee Brown & Beige Palette
+   All color/spacing/radius tokens live here so switching to
+   dark theme later only requires overriding these variables
+   in the [data-theme="dark"] block below.
+   ============================================================ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* --- Brand Colors --- */
+  --color-primary:         #6F4E37; /* coffee brown */
+  --color-primary-light:   #A0785A; /* lighter brown */
+  --color-primary-dark:    #4A3728; /* dark espresso */
+  --color-accent:          #C8973A; /* golden caramel */
+  --color-accent-light:    #F0D9A8; /* pale caramel */
+
+  /* --- Background Colors --- */
+  --color-bg-main:         #FDF6EC; /* warm beige */
+  --color-bg-card:         #FFFFFF;
+  --color-bg-sidebar:      #FFFFFF;
+  --color-bg-header:       #FFFFFF;
+  --color-bg-footer:       #3D2B1F; /* dark espresso */
+
+  /* --- Text Colors --- */
+  --color-text-primary:    #2C1A0E; /* very dark brown */
+  --color-text-secondary:  #6F4E37; /* coffee brown */
+  --color-text-muted:      #A08060; /* warm grey-brown */
+  --color-text-on-dark:    #FDF6EC; /* beige on dark bg */
+  --color-text-on-primary: #FFFFFF; /* white on primary */
+
+  /* --- Border & Divider --- */
+  --color-border:          #E2C9A8; /* warm tan */
+  --color-border-light:    #F0E4D0; /* very light tan */
+
+  /* --- Shadow --- */
+  --color-shadow-sm:       rgba(111, 78, 55, 0.08);
+  --color-shadow-md:       rgba(111, 78, 55, 0.18);
+
+  /* --- Layout Dimensions --- */
+  --spacing-header-height: 72px;
+  --spacing-sidebar-width:     240px; /* expanded */
+  --spacing-sidebar-collapsed: 64px;  /* icon-only */
+  --spacing-content-max:       1536px;
+
+  /* --- Border Radius --- */
+  --radius-sm:   6px;
+  --radius-md:   12px;
+  --radius-lg:   20px;
+  --radius-full: 9999px;
+
+  /* --- Transitions --- */
+  --transition-fast:   150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow:   400ms ease;
 }
 
+/* ============================================================
+   DARK THEME PLACEHOLDER
+   Uncomment & fill values when dark mode is needed.
+   ============================================================ */
+/*
+[data-theme="dark"] {
+  --color-primary:         #A0785A;
+  --color-primary-light:   #C8956C;
+  --color-primary-dark:    #6F4E37;
+  --color-accent:          #D4A96A;
+  --color-accent-light:    #7A5C30;
+
+  --color-bg-main:         #1A0F08;
+  --color-bg-card:         #2D1B0E;
+  --color-bg-sidebar:      #231408;
+  --color-bg-header:       #1A0F08;
+  --color-bg-footer:       #0D0704;
+
+  --color-text-primary:    #FDF6EC;
+  --color-text-secondary:  #C8956C;
+  --color-text-muted:      #8B7060;
+  --color-text-on-dark:    #FDF6EC;
+
+  --color-border:          #4A2E1A;
+  --color-border-light:    #3D2314;
+}
+*/
+
+/* ============================================================
+   TAILWIND THEME BRIDGE
+   ============================================================ */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: var(--color-bg-main);
+  --color-foreground: var(--color-text-primary);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ============================================================
+   BASE STYLES
+   ============================================================ */
+body {
+  background-color: var(--color-bg-main);
+  color: var(--color-text-primary);
+  font-family: Arial, Helvetica, sans-serif;
+  scroll-behavior: smooth;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ============================================================
+   CUSTOM SCROLLBAR
+   ============================================================ */
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--color-bg-main); }
+::-webkit-scrollbar-thumb {
+  background: var(--color-primary-light);
+  border-radius: var(--radius-full);
 }
+::-webkit-scrollbar-thumb:hover { background: var(--color-primary); }
