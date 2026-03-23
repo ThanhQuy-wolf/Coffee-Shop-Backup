@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/layouts/header";
 import Footer from "@/layouts/footer";
+import CartFab from "@/components/CartFab";
 import { Providers } from "./providers";
 
 const geistSans = Geist({
@@ -55,6 +56,9 @@ export default function RootLayout({
 
           {/* Footer always at bottom */}
           <Footer />
+
+          {/* Global floating cart button */}
+          <CartFab />
         </Providers>
       </body>
     </html>

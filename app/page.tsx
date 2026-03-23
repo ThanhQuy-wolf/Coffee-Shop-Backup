@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import CartProduct from "@/components/CartProduct";
 import { MENU_CATEGORIES, MOCK_PRODUCTS } from "@/lib/constants";
 import { useMenu } from "@/lib/menu-context";
+import { useCart } from "@/lib/cart-context";
 
 /**
  * Main page — sidebar + product grid layout.
@@ -24,6 +25,7 @@ export default function Home() {
   /* Shared category state comes from MenuContext so the header mobile menu
    * and this sidebar always reflect the same selection. */
   const { activeCategory, setActiveCategory } = useMenu();
+  const { addToCart } = useCart();
 
   /* Start collapsed (false) so SSR and client initial render match.
    * useEffect sets the correct value after hydration completes. */
@@ -181,10 +183,7 @@ export default function Home() {
                 productName={product.name}
                 price={product.price}
                 description={product.description}
-                onBuy={() => {
-                  /* TODO: add to cart logic */
-                  console.log("Thêm vào giỏ:", product.name);
-                }}
+                onBuy={() => addToCart(product)}
               />
             ))}
           </div>
