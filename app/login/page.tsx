@@ -53,10 +53,7 @@ export default function LoginPage() {
 
   return (
     <div 
-      className="min-h-screen flex items-center justify-center px-4 py-8"
-      style={{
-        background: "var(--color-bg-main)",
-      }}
+      className="min-h-screen flex items-center justify-center px-4 py-8 bg-background"
     >
       {/* Login Form Card */}
       <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
@@ -109,8 +106,8 @@ export default function LoginPage() {
                 }}
                 placeholder="admin / số điện thoại / tên nhân viên"
                 className={`
-                  w-full px-4 lg:pl-11 py-3 rounded-xl border outline-none
-                  bg-white text-(--color-text-primary)
+                  w-full px-10 lg:pl-11 py-3 rounded-xl border outline-none
+                  bg-white text-foreground
                   placeholder:text-(--color-text-muted)
                   focus:border-(--color-primary) focus:ring-2
                   focus:ring-(--color-primary) focus:ring-opacity-20
@@ -144,8 +141,8 @@ export default function LoginPage() {
                 }}
                 placeholder="Nhập mật khẩu"
                 className={`
-                  w-full px-4 lg:pl-11 pr-11 py-3 rounded-xl border outline-none
-                  bg-white text-(--color-text-primary)
+                  w-full px-10 lg:pl-11 pr-11 py-3 rounded-xl border outline-none
+                  bg-white text-foreground
                   placeholder:text-(--color-text-muted)
                   focus:border-(--color-primary) focus:ring-2
                   focus:ring-(--color-primary) focus:ring-opacity-20
@@ -199,7 +196,7 @@ export default function LoginPage() {
         </form>
 
         {/* Demo Credentials Info */}
-        <div className="mt-6 p-4 bg-(--color-bg-main) rounded-lg">
+        <div className="mt-6 p-4 bg-background rounded-lg">
           <p className="text-xs text-(--color-text-muted) mb-2 font-semibold">Tài khoản demo:</p>
           <ul className="text-xs text-(--color-text-muted) space-y-1">
             <li>• Quản lý: <code className="bg-white px-1.5 py-0.5 rounded">admin / admin</code></li>

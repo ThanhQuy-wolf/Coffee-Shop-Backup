@@ -71,10 +71,7 @@ export default function RegisterPage() {
 
   return (
     <div 
-      className="min-h-screen flex items-center justify-center px-4 py-8"
-      style={{
-        background: "var(--color-bg-main)",
-      }}
+      className="min-h-screen flex items-center justify-center px-4 py-8 bg-background"
     >
       {/* Register Form Card */}
       <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
@@ -139,8 +136,8 @@ export default function RegisterPage() {
                   }}
                   placeholder="0987654321"
                   className={`
-                    w-full px-4 lg:pl-11 py-3 rounded-xl border outline-none
-                    bg-white text-(--color-text-primary)
+                    w-full px-10 lg:pl-11 py-3 rounded-xl border outline-none
+                    bg-white text-foreground
                     placeholder:text-(--color-text-muted)
                     focus:border-(--color-primary) focus:ring-2
                     focus:ring-(--color-primary) focus:ring-opacity-20
@@ -219,11 +216,11 @@ export default function RegisterPage() {
                     setOtp(e.target.value);
                     setErrors({ ...errors, otp: "" });
                   }}
-                  placeholder="Nhập mã OTP 6 số"
+                  placeholder="Nhập mã OTP"
                   maxLength={6}
                   className={`
                     w-full px-4 lg:pl-11 py-3 rounded-xl border outline-none
-                    bg-white text-(--color-text-primary) text-center font-mono text-lg tracking-widest
+                    bg-white text-foreground text-center text-lg tracking-widest
                     placeholder:text-(--color-text-muted) placeholder:text-sm placeholder:tracking-normal
                     focus:border-(--color-primary) focus:ring-2
                     focus:ring-(--color-primary) focus:ring-opacity-20
