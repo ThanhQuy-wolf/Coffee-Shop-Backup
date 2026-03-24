@@ -12,7 +12,7 @@ export default function CartFab() {
     <Link
       href="/payment"
       aria-label="Đi đến trang thanh toán"
-      className="fixed right-5 bottom-6 z-[70] w-14 h-14 rounded-full
+      className="fixed right-5 bottom-6 z-70 w-14 h-14 rounded-full
                  bg-(--color-primary) text-white shadow-xl
                  flex items-center justify-center
                  hover:bg-(--color-primary-dark)
