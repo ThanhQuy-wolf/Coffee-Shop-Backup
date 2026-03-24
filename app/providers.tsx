@@ -2,6 +2,7 @@
 
 import { MenuProvider } from "@/lib/menu-context";
 import { CartProvider } from "@/lib/cart-context";
+import { AuthProvider } from "@/lib/auth-context";
 
 /**
  * Client-side providers wrapper.
@@ -10,8 +11,10 @@ import { CartProvider } from "@/lib/cart-context";
  */
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <MenuProvider>
-      <CartProvider>{children}</CartProvider>
-    </MenuProvider>
+    <AuthProvider>
+      <MenuProvider>
+        <CartProvider>{children}</CartProvider>
+      </MenuProvider>
+    </AuthProvider>
   );
 }

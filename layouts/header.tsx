@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { SHOP_INFO, MOCK_USERS } from "@/lib/constants";
-import type { User } from "@/lib/types";
+import { useRouter } from "next/navigation";
+import { SHOP_INFO } from "@/lib/constants";
+import { useAuth } from "@/lib/auth-context";
 
 /**
  * Site Header — sticky top bar, always visible on all screen sizes.
@@ -12,8 +12,11 @@ import type { User } from "@/lib/types";
  * 2-column layout:
  *   [LEFT: Brand (logo + name + tagline)] | [RIGHT: Auth button]
  *
- * Auth state cycles for UI demo (click the button to switch):
- *   Guest  →  Manager (Quản lý)  →  Staff  →  Guest
+ * Auth states:
+ *   - Guest: Shows "Đăng nhập" button → navigates to /login
+ *   - Manager: Shows "Quản lý" badge with logout on click
+ *   - Staff: Shows staff name with logout on click
+ *   - Customer: Shows "Khách hàng" with phone and logout on click
  *
  * Responsive:
  *   - Logo + shop name : always visible
@@ -21,12 +24,15 @@ import type { User } from "@/lib/types";
  *   - Button label     : hidden on xs (< sm), shown on sm+
  */
 export default function Header() {
-  const [user, setUser] = useState<User | null>(null);
+  const router = useRouter();
+  const { user, logout } = useAuth();
 
-  const cycleUser = () => {
-    if (!user) setUser(MOCK_USERS.manager);
-    else if (user.role === "manager") setUser(MOCK_USERS.staff);
-    else setUser(null);
+  const handleAuthClick = () => {
+    if (!user) {
+      router.push("/login");
+    } else {
+      logout();
+    }
   };
 
   return (
@@ -81,7 +87,7 @@ export default function Header() {
           {!user ? (
             /* Guest: sign-in button */
             <button
-              onClick={cycleUser}
+              onClick={handleAuthClick}
               title="Đăng nhập"
               className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl
                          text-sm font-semibold border-none cursor-pointer
@@ -96,8 +102,8 @@ export default function Header() {
           ) : user.role === "manager" ? (
             /* Manager: gold badge */
             <button
-              onClick={cycleUser}
-              title="Nhấn để đổi tài khoản (demo)"
+              onClick={handleAuthClick}
+              title="Nhấn để đăng xuất"
               className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl
                          text-sm font-semibold cursor-pointer
                          bg-(--color-accent-light) border border-(--color-accent)
@@ -109,11 +115,11 @@ export default function Header() {
               <span className="hidden sm:inline">Quản lý</span>
             </button>
 
-          ) : (
-            /* Staff / regular user: avatar + name */
+          ) : user.role === "staff" ? (
+            /* Staff: avatar + name */
             <button
-              onClick={cycleUser}
-              title="Nhấn để đổi tài khoản (demo)"
+              onClick={handleAuthClick}
+              title="Nhấn để đăng xuất"
               className="flex items-center gap-2.5 px-4 py-2 rounded-xl
                          text-sm font-semibold cursor-pointer
                          bg-background border border-(--color-border)
@@ -130,6 +136,28 @@ export default function Header() {
                 <i className="fa-solid fa-user"></i>
               </div>
               <span className="hidden sm:inline">{user.name}</span>
+            </button>
+
+          ) : (
+            /* Customer: phone icon + label */
+            <button
+              onClick={handleAuthClick}
+              title={`Khách hàng - ${user.phone || ""} - Nhấn để đăng xuất`}
+              className="flex items-center gap-2.5 px-4 py-2 rounded-xl
+                         text-sm font-semibold cursor-pointer
+                         bg-(--color-primary-light) text-white
+                         hover:bg-(--color-primary)
+                         active:scale-95 transition-all duration-150
+                         border-none"
+            >
+              {/* Customer icon */}
+              <div
+                className="w-7 h-7 rounded-full flex items-center justify-center shrink-0
+                           bg-white text-(--color-primary-light) text-xs"
+              >
+                <i className="fa-solid fa-user"></i>
+              </div>
+              <span className="hidden sm:inline">Khách hàng</span>
             </button>
           )}
 
