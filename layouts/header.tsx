@@ -1,10 +1,10 @@
 "use client";
 
+import { useAuth } from "@/lib/auth-context";
+import { SHOP_INFO } from "@/lib/constants";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { SHOP_INFO } from "@/lib/constants";
-import { useAuth } from "@/lib/auth-context";
 
 /**
  * Site Header — sticky top bar, always visible on all screen sizes.
@@ -36,25 +36,15 @@ export default function Header() {
   };
 
   return (
-    <header
-      className="w-full sticky top-0 z-50
-                 bg-(--color-bg-header) border-b border-(--color-border)
-                 shadow-[0_1px_8px_var(--color-shadow-sm)]
-                 h-(--spacing-header-height)"
-    >
-      <div
-        className="h-full px-6 md:px-8 lg:px-12
-                   flex items-center justify-between gap-6
-                   max-w-screen-2xl mx-auto"
-      >
-
+    <header className="sticky top-0 z-50 h-(--spacing-header-height) w-full border-b border-(--color-border) bg-(--color-bg-header) shadow-[0_1px_8px_var(--color-shadow-sm)]">
+      <div className="mx-auto flex h-full max-w-screen-2xl items-center justify-between gap-6 px-6 md:px-8 lg:px-12">
         {/* ── LEFT: Brand ── */}
         <Link
           href="/"
-          className="flex items-center gap-4 shrink-0 no-underline group"
+          className="group flex shrink-0 items-center gap-4 no-underline"
         >
           {/* Logo */}
-          <div className="relative w-10 h-10 md:w-11 md:h-11 shrink-0">
+          <div className="relative h-10 w-10 shrink-0 md:h-11 md:w-11">
             <Image
               src={SHOP_INFO.logo}
               alt={`Logo ${SHOP_INFO.name}`}
@@ -67,100 +57,64 @@ export default function Header() {
 
           {/* Name + tagline */}
           <div className="flex flex-col leading-tight">
-            <span
-              className="font-bold text-base md:text-lg
-                         text-(--color-primary-dark)
-                         group-hover:text-(--color-primary)
-                         transition-colors duration-150"
-            >
+            <span className="text-base font-bold text-(--color-primary-dark) transition-colors duration-150 group-hover:text-(--color-primary) md:text-lg">
               {SHOP_INFO.name}
             </span>
-            <span className="text-xs hidden md:block text-(--color-text-muted)">
+            <span className="hidden text-xs text-(--color-text-muted) md:block">
               {SHOP_INFO.tagline}
             </span>
           </div>
         </Link>
 
         {/* ── RIGHT: Auth ── */}
-        <div className="flex items-center gap-3 shrink-0">
-
+        <div className="flex shrink-0 items-center gap-3">
           {!user ? (
             /* Guest: sign-in button */
             <button
               onClick={handleAuthClick}
               title="Đăng nhập"
-              className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl
-                         text-sm font-semibold border-none cursor-pointer
-                         bg-(--color-primary) text-white
-                         hover:bg-(--color-primary-dark)
-                         active:scale-95 transition-all duration-150"
+              className="flex cursor-pointer items-center gap-2.5 rounded-xl border-none bg-(--color-primary) px-5 py-2.5 text-sm font-semibold text-white transition-all duration-150 hover:bg-(--color-primary-dark) active:scale-95"
             >
               <i className="fa-solid fa-right-to-bracket"></i>
               <span className="hidden sm:inline">Đăng nhập</span>
             </button>
-
           ) : user.role === "manager" ? (
             /* Manager: gold badge */
             <button
               onClick={handleAuthClick}
               title="Nhấn để đăng xuất"
-              className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl
-                         text-sm font-semibold cursor-pointer
-                         bg-(--color-accent-light) border border-(--color-accent)
-                         text-(--color-primary-dark)
-                         hover:bg-(--color-accent) hover:text-white
-                         active:scale-95 transition-all duration-150"
+              className="flex cursor-pointer items-center gap-2.5 rounded-xl border border-(--color-accent) bg-(--color-accent-light) px-4 py-2.5 text-sm font-semibold text-(--color-primary-dark) transition-all duration-150 hover:bg-(--color-accent) hover:text-white active:scale-95"
             >
               <i className="fa-solid fa-user-tie text-base"></i>
               <span className="hidden sm:inline">Quản lý</span>
             </button>
-
           ) : user.role === "staff" ? (
             /* Staff: avatar + name */
             <button
               onClick={handleAuthClick}
               title="Nhấn để đăng xuất"
-              className="flex items-center gap-2.5 px-4 py-2 rounded-xl
-                         text-sm font-semibold cursor-pointer
-                         bg-background border border-(--color-border)
-                         text-(--color-text-secondary)
-                         hover:border-(--color-primary-light)
-                         hover:bg-(--color-border-light)
-                         active:scale-95 transition-all duration-150"
+              className="bg-background flex cursor-pointer items-center gap-2.5 rounded-xl border border-(--color-border) px-4 py-2 text-sm font-semibold text-(--color-text-secondary) transition-all duration-150 hover:border-(--color-primary-light) hover:bg-(--color-border-light) active:scale-95"
             >
               {/* Avatar circle */}
-              <div
-                className="w-7 h-7 rounded-full flex items-center justify-center shrink-0
-                           bg-(--color-primary-light) text-white text-xs"
-              >
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-(--color-primary-light) text-xs text-white">
                 <i className="fa-solid fa-user"></i>
               </div>
               <span className="hidden sm:inline">{user.name}</span>
             </button>
-
           ) : (
             /* Customer: phone icon + label */
             <button
               onClick={handleAuthClick}
               title={`Khách hàng - ${user.phone || ""} - Nhấn để đăng xuất`}
-              className="flex items-center gap-2.5 px-4 py-2 rounded-xl
-                         text-sm font-semibold cursor-pointer
-                         bg-(--color-primary-light) text-white
-                         hover:bg-(--color-primary)
-                         active:scale-95 transition-all duration-150
-                         border-none"
+              className="flex cursor-pointer items-center gap-2.5 rounded-xl border-none bg-(--color-primary-light) px-4 py-2 text-sm font-semibold text-white transition-all duration-150 hover:bg-(--color-primary) active:scale-95"
             >
               {/* Customer icon */}
-              <div
-                className="w-7 h-7 rounded-full flex items-center justify-center shrink-0
-                           bg-white text-(--color-primary-light) text-xs"
-              >
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-xs text-(--color-primary-light)">
                 <i className="fa-solid fa-user"></i>
               </div>
               <span className="hidden sm:inline">Khách hàng</span>
             </button>
           )}
-
         </div>
       </div>
     </header>
