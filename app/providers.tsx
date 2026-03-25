@@ -1,8 +1,8 @@
 "use client";
 
-import { MenuProvider } from "@/lib/menu-context";
-import { CartProvider } from "@/lib/cart-context";
 import { AuthProvider } from "@/lib/auth-context";
+import { CartProvider } from "@/lib/cart-context";
+import { MenuProvider } from "@/lib/menu-context";
 
 /**
  * Client-side providers wrapper.
