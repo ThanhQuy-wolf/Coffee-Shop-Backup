@@ -1,6 +1,6 @@
 {
   "name": "temp",
-  "version": "0.1.0",
+  "version": "1.0.0-created-login-and-register-page.1",
   "private": true,
   "scripts": {
     "dev": "next dev",
