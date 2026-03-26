@@ -1,5 +1,5 @@
 # --- Giai đoạn 1: Build ---
-FROM node:18-alpine AS builder
+FROM node:25-alpine AS builder
 
 # Cài đặt pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
@@ -10,7 +10,7 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 
 # Cài đặt dependencies (sử dụng --frozen-lockfile để đảm bảo đúng phiên bản)
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --prod --frozen-lockfile
 
 # Copy toàn bộ code
 COPY . .
