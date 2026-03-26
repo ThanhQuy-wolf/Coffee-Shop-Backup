@@ -16,12 +16,13 @@ const config: GlobalConfig = {
       },
     ],
     [
-      "@semantic-release/github",
+      "@saithodev/semantic-release-gitea",
       {
+        giteaUrl: "https://git.demonkernel.io.vn/",
         assets: [
           {
             path: "release.zip",
-            name: "TDTU Auto Login v${nextRelease.version}.zip",
+            name: "Drinkool v${nextRelease.version}.zip",
           },
         ],
       },

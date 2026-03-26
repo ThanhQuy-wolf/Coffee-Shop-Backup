@@ -10,6 +10,11 @@
       "packages": "pnpm",
       "upgradePackages": true
     }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["esbenp.prettier-vscode"]
+    }
   }
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
