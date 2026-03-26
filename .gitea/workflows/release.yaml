@@ -52,6 +52,13 @@ jobs:
           GITEA_USER: ${{ github.actor }}
           GITEA_TOKEN: ${{ secrets.ACCESS_TOKEN }}
         run: pnpm release
+      
+      - name: Set Version Output
+        id: set_output
+        run: |
+          # Đọc version hiện tại trong package.json sau khi release
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Commit & Push Changes
         if: always()
@@ -83,15 +90,24 @@ jobs:
       - name: Prepare Docker Metadata
         id: meta
         run: |
-          REPO_LOWER=$(echo "${{ gitea.repository }}" | tr '[:upper:]' '[:lower:]')
+          # Lowercase Repository
+          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          
+          # Lấy version từ job release và lowercase nó (cho các bản prerelease)
+          RAW_VERSION="${{ needs.release.outputs.new_version }}"
+          VERSION_LOWER=$(echo "$RAW_VERSION" | tr '[:upper:]' '[:lower:]')
+          
           echo "repo=$REPO_LOWER" >> $GITHUB_OUTPUT
+          echo "version=$VERSION_LOWER" >> $GITHUB_OUTPUT
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v4
         with:
           context: .
           push: true
-          tags: git.demonkernel.io.vn/${{ steps.meta.outputs.repo }}:latest
+          tags: |
+            git.demonkernel.io.vn/${{ steps.meta.outputs.repo }}:latest
+            git.demonkernel.io.vn/${{ steps.meta.outputs.repo }}:${{ steps.meta.outputs.version }}
 
   deploy-via-portainer:
     if: gitea.ref == 'refs/heads/main'
