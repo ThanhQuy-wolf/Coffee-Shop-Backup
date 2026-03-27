@@ -63,7 +63,7 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Commit & Push Changes
-        if: always()
+        if: gitea.ref == 'refs/heads/main'
         run: |
           if [ -n "$(git status --porcelain)" ]; then
             git config --global user.name "gitea-actions"
@@ -77,7 +77,7 @@ jobs:
 
   build-and-push:
     needs: release  
-    # if: gitea.ref == 'refs/heads/main'
+    if: gitea.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
