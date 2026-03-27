@@ -1,36 +1,120 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Coffee Shop Frontend
 
-## Getting Started
+Dự án Frontend cho hệ thống đặt món cà phê, xây dựng bằng Next.js App Router,
+React 19, TypeScript và Tailwind CSS v4.
 
-First, run the development server:
+---
+
+## Mô Tả Dự Án
+
+Giao diện người dùng (frontend) cho hệ thống đặt và bán đồ uống trực tuyến.
+
+### Trang Người Dùng (User Page - /)
+
+Dành cho khách hàng:
+
+- Duyệt thực đơn theo danh mục (sidebar collapsible)
+- Tìm kiếm món theo tên / mô tả
+- Xem card sản phẩm với giá và nút Mua
+- Lọc tự động theo trạng thái available
+
+### Trang Quản Lý (Manager Page - chưa triển khai)
+
+Dành cho chủ quán / nhân viên:
+
+- Quản lý thực đơn (thêm, sửa, xóa món)
+- Theo dõi và xử lý đơn hàng
+
+---
+
+## Cách Chạy Dự Án
+
+### Yêu cầu hệ thống
+
+- Node.js >= 18
+- pnpm (khuyến nghị) hoặc npm
+
+### Cài đặt
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Dev
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+pnpm dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Mở trình duyệt tại http://localhost:3000
 
-## Learn More
+### Build
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+pnpm build && pnpm start
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Lint
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+pnpm lint
+```
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Cấu Trúc Thư Mục
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+frondend/
++-- app/                   # Next.js App Router
+|   +-- layout.tsx         # Root layout
+|   +-- page.tsx           # Trang chủ - sidebar + product grid
+|   +-- globals.css        # CSS design tokens + Tailwind import
++-- components/            # Shared UI components
+|   +-- Navbar.tsx         # Sidebar danh mục (collapsible)
+|   +-- CartProduct.tsx    # Card sản phẩm
+|   +-- COMPONENTS.md      # Tài liệu component
++-- layouts/               # Layout-level components
+|   +-- header.tsx         # Sticky top header
+|   +-- footer.tsx         # Footer
++-- lib/                   # Shared logic & data
+|   +-- constants.ts       # Mock data
+|   +-- types.ts           # TypeScript interfaces
++-- types/                 # Global TypeScript declarations
+|   +-- css.d.ts           # CSS module type shim
++-- public/                # Static assets
++-- WORKFLOW.md            # Tài liệu kiến trúc & quy trình
++-- next.config.ts
++-- tsconfig.json
++-- postcss.config.mjs
++-- eslint.config.mjs
++-- package.json
++-- pnpm-workspace.yaml
+```
+
+---
+
+## Công Nghệ Sử Dụng
+
+| Công nghệ    | Phiên bản | Mục đích                              |
+| ------------ | --------- | ------------------------------------- |
+| Next.js      | 16.1.7    | React Framework (App Router)          |
+| React        | 19.2.3    | Thư viện UI                           |
+| TypeScript   | ^5        | Kiểu dữ liệu tĩnh                     |
+| Tailwind CSS | ^4        | Utility-first CSS framework           |
+| Geist Font   | -         | Font chữ (Google Fonts via next/font) |
+| FontAwesome  | 6.7.2     | Icon library (CDN)                    |
+| pnpm         | -         | Package manager                       |
+| ESLint       | ^9        | Linting                               |
+
+---
+
+## Ghi Chú Phát Triển
+
+- Trang chủ (app/page.tsx) là điểm vào chính của User Page
+- Design tokens định nghĩa trong app/globals.css dưới dạng CSS custom properties
+- Mock data nằm trong lib/constants.ts - thay bằng API calls khi backend sẵn
+  sàng
+- Dark mode: biến CSS đã chuẩn bị sẵn trong globals.css nhưng chưa kích hoạt
+- Ảnh sản phẩm: thêm ảnh thực vào public/imgs/products/
+- Xem WORKFLOW.md để hiểu kiến trúc tổng thể và quy trình mở rộng dự án
