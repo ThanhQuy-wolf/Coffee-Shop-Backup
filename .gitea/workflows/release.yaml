@@ -17,6 +17,15 @@ jobs:
     outputs:
       new_version: ${{ steps.set_output.outputs.version }}
     steps:
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+
+          ssh-keyscan -p 222 -t ed25519 172.22.0.1 >> ~/.ssh/known_hosts
+
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
@@ -69,9 +78,12 @@ jobs:
             git config --global user.name "gitea-actions"
             git config --global user.email "actions-user@noreply.git.demonkernel.io.vn"
 
+            git remote set-url origin ssh://git@172.22.0.1:222/FoodSurf/backend.git
+
             git rm -r --cached .
             git add .
             git commit -m "chore: release [ci skip]"
+            
             git push
           fi
 
