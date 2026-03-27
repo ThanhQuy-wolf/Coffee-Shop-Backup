@@ -14,11 +14,11 @@ spec:
       labels:
         app: web
     spec:
+      imagePullSecrets:
+        - name: gitea-registry-secret 
       containers:
-      - name: nginx-container
-        image: nginx:latest  
-        ports:
-        - containerPort: 80  
+      - name: frontend-container
+        image: git.demonkernel.io.vn/foodsurf/frontend:latest
         resources:
           limits:
             cpu: "50m"  

@@ -112,11 +112,3 @@ jobs:
             git.demonkernel.io.vn/${{ steps.meta.outputs.repo }}:latest
             git.demonkernel.io.vn/${{ steps.meta.outputs.repo }}:${{ steps.meta.outputs.version }}
 
-  deploy-via-portainer:
-    if: gitea.ref == 'refs/heads/main'
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    steps:
-      - name: Trigger Portainer Webhook
-        run: |
-          curl -X POST "${{ secrets.PORTAINER_WEBHOOK_URL }}"
