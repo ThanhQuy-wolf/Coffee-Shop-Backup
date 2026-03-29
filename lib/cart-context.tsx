@@ -1,7 +1,7 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { Product } from "@/lib/types";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 export interface CartItem {
   id: number;
@@ -70,8 +70,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const increaseQty = (id: number) => {
     setItems((prev) =>
       prev.map((item) =>
-        item.id === id ? { ...item, quantity: item.quantity + 1 } : item
-      )
+        item.id === id ? { ...item, quantity: item.quantity + 1 } : item,
+      ),
     );
   };
 
@@ -81,9 +81,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         .map((item) =>
           item.id === id
             ? { ...item, quantity: Math.max(0, item.quantity - 1) }
-            : item
+            : item,
         )
-        .filter((item) => item.quantity > 0)
+        .filter((item) => item.quantity > 0),
     );
   };
 
@@ -92,25 +92,29 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const setQuantity = (id: number, quantity: number) => {
-    const safeQty = Number.isFinite(quantity) ? Math.max(0, Math.floor(quantity)) : 0;
+    const safeQty = Number.isFinite(quantity)
+      ? Math.max(0, Math.floor(quantity))
+      : 0;
     if (safeQty === 0) {
       removeFromCart(id);
       return;
     }
 
     setItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, quantity: safeQty } : item))
+      prev.map((item) =>
+        item.id === id ? { ...item, quantity: safeQty } : item,
+      ),
     );
   };
 
   const totalItems = useMemo(
     () => items.reduce((sum, item) => sum + item.quantity, 0),
-    [items]
+    [items],
   );
 
   const totalPrice = useMemo(
     () => items.reduce((sum, item) => sum + item.price * item.quantity, 0),
-    [items]
+    [items],
   );
 
   const value = useMemo(
@@ -124,7 +128,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       removeFromCart,
       setQuantity,
     }),
-    [items, totalItems, totalPrice]
+    [items, totalItems, totalPrice],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

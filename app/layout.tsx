@@ -1,5 +1,9 @@
+import CartFab from "@/components/CartFab";
+import Footer from "@/layouts/footer";
+import Header from "@/layouts/header";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+
 import "./globals.css";
 import { Providers } from "./providers";
 
@@ -40,7 +44,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
+        className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col antialiased`}
       >
         <Providers>
           {children}

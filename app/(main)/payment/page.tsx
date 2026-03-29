@@ -1,7 +1,7 @@
 "use client";
 
-import Link from 'next/link';
 import { useCart } from "@/lib/cart-context";
+import Link from "next/link";
 
 const formatPrice = (value: number) =>
   value.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
@@ -17,12 +17,14 @@ export default function PaymentPage() {
   } = useCart();
 
   return (
-    <div className="max-w-screen-2xl mx-auto w-full px-4 md:px-6 lg:px-8 py-6 md:py-8">
-      <div className="flex flex-col xl:flex-row gap-6">
-        <section className="flex-1 min-w-0">
-          <div className="rounded-2xl border border-(--color-border-light) bg-card overflow-hidden">
-            <div className="px-4 py-3 border-b border-(--color-border-light)">
-              <h1 className="text-lg md:text-xl font-bold text-foreground">Trang thanh toán</h1>
+    <div className="mx-auto w-full max-w-screen-2xl px-4 py-6 md:px-6 md:py-8 lg:px-8">
+      <div className="flex flex-col gap-6 xl:flex-row">
+        <section className="min-w-0 flex-1">
+          <div className="bg-card overflow-hidden rounded-2xl border border-(--color-border-light)">
+            <div className="border-b border-(--color-border-light) px-4 py-3">
+              <h1 className="text-foreground text-lg font-bold md:text-xl">
+                Trang thanh toán
+              </h1>
             </div>
 
             {items.length === 0 ? (
@@ -38,24 +40,31 @@ export default function PaymentPage() {
                       <th className="px-4 py-3 font-semibold">Giá tiền</th>
                       <th className="px-4 py-3 font-semibold">Mô tả</th>
                       <th className="px-4 py-3 font-semibold">Số lượng</th>
-                      <th className="px-4 py-3 font-semibold text-right">Xóa</th>
+                      <th className="px-4 py-3 text-right font-semibold">
+                        Xóa
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {items.map((item) => (
-                      <tr key={item.id} className="border-t border-(--color-border-light)">
-                        <td className="px-4 py-3 font-medium text-foreground">{item.name}</td>
-                        <td className="px-4 py-3 text-(--color-primary) font-semibold">
+                      <tr
+                        key={item.id}
+                        className="border-t border-(--color-border-light)"
+                      >
+                        <td className="text-foreground px-4 py-3 font-medium">
+                          {item.name}
+                        </td>
+                        <td className="px-4 py-3 font-semibold text-(--color-primary)">
                           {formatPrice(item.price)}
                         </td>
-                        <td className="px-4 py-3 text-(--color-text-muted) max-w-70">
+                        <td className="max-w-70 px-4 py-3 text-(--color-text-muted)">
                           <p className="line-clamp-2">{item.description}</p>
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => decreaseQty(item.id)}
-                              className="w-8 h-8 rounded-lg border border-(--color-border) hover:bg-(--color-border-light)"
+                              className="h-8 w-8 rounded-lg border border-(--color-border) hover:bg-(--color-border-light)"
                               aria-label={`Giảm số lượng ${item.name}`}
                             >
                               -
@@ -64,13 +73,15 @@ export default function PaymentPage() {
                               type="number"
                               min={1}
                               value={item.quantity}
-                              onChange={(e) => setQuantity(item.id, Number(e.target.value))}
-                              className="w-16 h-8 text-center rounded-lg border border-(--color-border) bg-transparent"
-                              title='Nhập số lượng'
+                              onChange={(e) =>
+                                setQuantity(item.id, Number(e.target.value))
+                              }
+                              className="h-8 w-16 rounded-lg border border-(--color-border) bg-transparent text-center"
+                              title="Nhập số lượng"
                             />
                             <button
                               onClick={() => increaseQty(item.id)}
-                              className="w-8 h-8 rounded-lg border border-(--color-border) hover:bg-(--color-border-light)"
+                              className="h-8 w-8 rounded-lg border border-(--color-border) hover:bg-(--color-border-light)"
                               aria-label={`Tăng số lượng ${item.name}`}
                             >
                               +
@@ -80,10 +91,12 @@ export default function PaymentPage() {
                         <td className="px-4 py-3 text-right">
                           <button
                             onClick={() => removeFromCart(item.id)}
-                            className="inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
+                            className="inline-flex items-center justify-center gap-2 rounded-lg bg-red-500 px-3 py-2 text-white transition-colors hover:bg-red-600"
                           >
                             <i className="fa-solid fa-trash"></i>
-                            <span className="hidden lg:inline">Xóa sản phẩm</span>
+                            <span className="hidden lg:inline">
+                              Xóa sản phẩm
+                            </span>
                           </button>
                         </td>
                       </tr>
@@ -95,18 +108,20 @@ export default function PaymentPage() {
           </div>
         </section>
 
-        <aside className="xl:w-85 shrink-0">
-          <div className="sticky top-[calc(var(--spacing-header-height)+1rem)] rounded-2xl border border-(--color-border-light) bg-card p-4 md:p-5">
-            <h2 className="text-lg font-bold mb-4">Hóa đơn</h2>
+        <aside className="shrink-0 xl:w-85">
+          <div className="bg-card sticky top-[calc(var(--spacing-header-height)+1rem)] rounded-2xl border border-(--color-border-light) p-4 md:p-5">
+            <h2 className="mb-4 text-lg font-bold">Hóa đơn</h2>
 
-            <div className="flex items-center justify-between pb-4 border-b border-(--color-border-light)">
+            <div className="flex items-center justify-between border-b border-(--color-border-light) pb-4">
               <span className="text-(--color-text-muted)">Tổng cộng</span>
-              <span className="text-xl font-bold text-(--color-primary)">{formatPrice(totalPrice)}</span>
+              <span className="text-xl font-bold text-(--color-primary)">
+                {formatPrice(totalPrice)}
+              </span>
             </div>
 
             <div className="mt-4 grid grid-cols-2 gap-3">
               <button
-                className="inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 bg-(--color-primary) text-white hover:bg-(--color-primary-dark) transition-colors cursor-pointer"
+                className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-(--color-primary) px-3 py-2.5 text-white transition-colors hover:bg-(--color-primary-dark)"
                 type="button"
               >
                 <i className="fa-solid fa-money-bill-wave"></i>
@@ -114,7 +129,7 @@ export default function PaymentPage() {
               </button>
 
               <button
-                className="inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 border border-(--color-border) text-foreground hover:bg-(--color-border-light) transition-colors cursor-pointer"
+                className="text-foreground inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-(--color-border) px-3 py-2.5 transition-colors hover:bg-(--color-border-light)"
                 type="button"
               >
                 <i className="fa-solid fa-qrcode"></i>
@@ -123,7 +138,7 @@ export default function PaymentPage() {
 
               <Link href="/">
                 <button
-                  className="inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 border border-(--color-border) text-foreground hover:bg-(--color-border-light) transition-colors cursor-pointer"
+                  className="text-foreground inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-(--color-border) px-3 py-2.5 transition-colors hover:bg-(--color-border-light)"
                   type="button"
                 >
                   <i className="fa-solid fa-arrow-rotate-left"></i>

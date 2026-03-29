@@ -2,63 +2,40 @@
 
 ## Completed Features & Implementations
 
-### A. Documentation
-- [x] README.md - Updated with current features (Auth, Cart, Feed, etc.)
-- [x] COMPONENTS.md - Added CartFab, AuthContext, CartContext, MenuContext sections
-- [x] APP.md - New file: Detailed app routes, pages, layouts
-- [x] LIB.md - New file: Types, Constants, Contexts documentation
-- [x] LAYOUTS.md - New file: Header & Footer detailed documentation
-- [x] WORKFLOW.md - Architecture and workflow documentation
+### A. Dead Code Removed
 
-### B. Authentication System
-- [x] lib/auth-context.tsx - Created Auth context with login/logout/register
-- [x] lib/types.ts - User type with roles (manager, staff, customer)
-- [x] app/(main)/login/page.tsx - Login page with form validation
-- [x] app/(main)/register/page.tsx - Register page with OTP verification
-- [x] localStorage integration - Persist user across sessions
-- [x] Mock auth database - Pre-configured accounts for testing
+- [x] lib/constants.ts - Removed unused NAV_LINKS export
+- [x] lib/types.ts - Removed unused NavLink interface
+- [x] components/Navbar.tsx - Removed trivial handleClick wrapper; inlined
+      onCategoryChange call
+- [x] components/Navbar.tsx - Removed unused Link import
 
-### C. Shopping Cart System
-- [x] lib/cart-context.tsx - Cart context with add/remove/update operations
-- [x] Cart persistence - localStorage integration
-- [x] CartItem interface - With id, name, description, price, quantity
-- [x] Cart operations - addToCart, increaseQty, decreaseQty, removeFromCart, setQuantity
-- [x] Computed totals - totalItems and totalPrice memoized
+### B. Bugs / Inaccuracies Fixed
 
-### D. Menu/Category System
-- [x] lib/menu-context.tsx - MenuContext for shared category state
-- [x] Shared state across components - Header mobile menu + Navbar sidebar sync
-- [x] Category filtering - Products filtered by active category
+- [x] layouts/header.tsx - Fixed JSDoc: 3-column -> 2-column layout (no center
+      section exists)
+- [x] app/page.tsx - Added available !== false filter to product list
+- [x] app/page.tsx - Fixed setState-in-effect lint error: moved initial sidebar
+      state to lazy useState initializer
+- [x] next.config.ts - Added explanatory JSDoc comment
 
-### E. Product Pages
-- [x] app/(main)/page.tsx - Main page with sidebar + product grid
-- [x] Responsive product grid - 1-5 columns depending on sidebar & screen size
-- [x] Product search - Search by name and description
-- [x] Category filter - Sidebar collapsible navigation
-- [x] Mobile category menu - Scrollable tabs on < md breakpoint
-- [x] Empty states - Messaging when no products match filters
-- [x] CartProduct component - Product card with image, price, buy button
+### C. Documentation Updated
 
-### F. Feed/Discovery Page
-- [x] app/(feed)/feed/page.tsx - Shop discovery page
-- [x] Shop grid - Responsive 1/2/3 column layout
-- [x] Search by name and address - Sticky bottom filter bar
-- [x] Shop cards - Image, name, address, view menu button
-- [x] Empty state - Message when no shops match filters
-- [x] MOCK_SHOPS constant - 5 sample coffee shops
+- [x] README.md - Fixed file structure tree, removed SCSS, fixed dark mode note,
+      updated tech table
+- [x] components/COMPONENTS.md - Fixed CartProduct styling (was outdated
+      w-64/text-red-500/bg-blue-600); added Navbar, Header, Footer sections
 
-### G. Header & Footer
-- [x] layouts/header.tsx - Sticky header with brand and auth demo
-- [x] layouts/footer.tsx - Footer with shop info, social links, WiFi
-- [x] Responsive layouts - Mobile/tablet/desktop optimized
-- [x] Auth state display - Guest/Manager/Staff cycling demo
+### D. New Documentation Created
 
-### H. Code Quality & Optimization
-- [x] Dead code removed - Unused imports and exports cleaned
-- [x] Lint passed - 0 errors, 0 warnings
-- [x] Build passed - TypeScript clean, all pages compile
-- [x] Type safety - Full TypeScript coverage
-- [x] React best practices - Hooks, memoization, context patterns
+- [x] WORKFLOW.md - Architecture, data flow, design token system, how-to guides,
+      dev workflow
+
+### E. Mini-test Results
+
+- [x] npm run lint - PASSED (0 errors, 0 warnings)
+- [x] npm run build - PASSED (Compiled successfully, TypeScript clean, static
+      pages generated)
 
 ---
 

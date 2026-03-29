@@ -1,6 +1,7 @@
 # Coffee Shop Frontend
 
-Dự án Frontend cho hệ thống đặt món cà phê, xây dựng bằng Next.js App Router, React 19, TypeScript và Tailwind CSS v4.
+Dự án Frontend cho hệ thống đặt món cà phê, xây dựng bằng Next.js App Router,
+React 19, TypeScript và Tailwind CSS v4.
 
 ---
 
@@ -54,26 +55,32 @@ Dành cho khách hàng:
 ## Cách Chạy Dự Án
 
 ### Yêu cầu hệ thống
+
 - Node.js >= 18
 - pnpm (khuyến nghị) hoặc npm
 
 ### Cài đặt
+
 ```bash
 pnpm install
 ```
 
 ### Dev
+
 ```bash
 pnpm dev
 ```
+
 Mở trình duyệt tại http://localhost:3000
 
 ### Build
+
 ```bash
 pnpm build && pnpm start
 ```
 
 ### Lint
+
 ```bash
 pnpm lint
 ```
@@ -136,16 +143,16 @@ frondend/
 
 ## Công Nghệ Sử Dụng
 
-| Công nghệ | Phiên bản | Mục đích |
-|-----------|-----------|----------|
-| Next.js | 16.1.7 | React Framework (App Router) |
-| React | 19.2.3 | Thư viện UI |
-| TypeScript | ^5 | Kiểu dữ liệu tĩnh |
-| Tailwind CSS | ^4 | Utility-first CSS framework |
-| Geist Font | - | Font chữ (Google Fonts via next/font) |
-| FontAwesome | 6.7.2 | Icon library (CDN) |
-| pnpm | - | Package manager |
-| ESLint | ^9 | Linting |
+| Công nghệ    | Phiên bản | Mục đích                              |
+| ------------ | --------- | ------------------------------------- |
+| Next.js      | 16.1.7    | React Framework (App Router)          |
+| React        | 19.2.3    | Thư viện UI                           |
+| TypeScript   | ^5        | Kiểu dữ liệu tĩnh                     |
+| Tailwind CSS | ^4        | Utility-first CSS framework           |
+| Geist Font   | -         | Font chữ (Google Fonts via next/font) |
+| FontAwesome  | 6.7.2     | Icon library (CDN)                    |
+| pnpm         | -         | Package manager                       |
+| ESLint       | ^9        | Linting                               |
 
 ---
 

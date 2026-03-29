@@ -1,0 +1,137 @@
+name: Release package
+
+on:
+  push:
+    branches:
+      - main
+      - dev-*
+
+jobs:
+  release:
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      id-token: write
+    runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.set_output.outputs.version }}
+    steps:
+      - name: Calculate and Export Target IP
+        run: |
+          # 1. Lấy IP hiện tại và tính toán IP đích (đổi octet cuối thành .1)
+          RUNNER_IP=$(hostname -I | awk '{print $1}')
+          CALCULATED_IP=$(echo $RUNNER_IP | cut -d'.' -f1-3).1
+          
+          # 2. Đưa vào biến môi trường toàn cục của Job
+          echo "TARGET_IP=${CALCULATED_IP}" >> $GITHUB_ENV
+          
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+
+          ssh-keyscan -p 222 -t ed25519 $TARGET_IP >> ~/.ssh/known_hosts
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: latest
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: latest
+          run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - uses: actions/cache@v3
+        name: Setup pnpm cache
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Update dependencies
+        run: pnpm update
+
+      - name: Format code
+        run: pnpm format
+
+      - name: Release
+        env:
+          GITEA_USER: ${{ github.actor }}
+          GITEA_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+        run: pnpm release
+      
+      - name: Set Version Output
+        id: set_output
+        run: |
+          # Đọc version hiện tại trong package.json sau khi release
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Commit & Push Changes
+        if: gitea.ref == 'refs/heads/main'
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git config --global user.name "gitea-actions"
+            git config --global user.email "actions-user@noreply.git.demonkernel.io.vn"
+
+            REPO_NAME="${{ gitea.repository }}"
+
+            git remote set-url origin ssh://git@$TARGET_IP:222/${REPO_NAME}.git
+
+            git rm -r --cached .
+            git add .
+            git commit -m "chore: release [ci skip]"
+            
+            git push
+          fi
+
+  build-and-push:
+    needs: release  
+    if: gitea.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Log in to Gitea Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: git.demonkernel.io.vn
+          username: ${{ github.actor }}
+          password: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Prepare Docker Metadata
+        id: meta
+        run: |
+          # Lowercase Repository
+          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          
+          # Lấy version từ job release và lowercase nó (cho các bản prerelease)
+          RAW_VERSION="${{ needs.release.outputs.new_version }}"
+          VERSION_LOWER=$(echo "$RAW_VERSION" | tr '[:upper:]' '[:lower:]')
+          
+          echo "repo=$REPO_LOWER" >> $GITHUB_OUTPUT
+          echo "version=$VERSION_LOWER" >> $GITHUB_OUTPUT
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: |
+            git.demonkernel.io.vn/${{ steps.meta.outputs.repo }}:latest
+            git.demonkernel.io.vn/${{ steps.meta.outputs.repo }}:${{ steps.meta.outputs.version }}
+

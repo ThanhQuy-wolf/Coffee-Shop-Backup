@@ -32,7 +32,11 @@ export const MENU_CATEGORIES: MenuCategory[] = [
   { id: "sua-chua", name: "Sữa Chua", icon: "fa-solid fa-jar" },
   { id: "nuoc-ep", name: "Nước Ép", icon: "fa-solid fa-blender" },
   { id: "latte", name: "Latte", icon: "fa-solid fa-mug-saucer" },
-  { id: "giai-khat", name: "Giải Khát / Ăn Vặt", icon: "fa-solid fa-ice-cream" },
+  {
+    id: "giai-khat",
+    name: "Giải Khát / Ăn Vặt",
+    icon: "fa-solid fa-ice-cream",
+  },
   { id: "topping", name: "Topping", icon: "fa-solid fa-layer-group" },
 ];
 
@@ -45,7 +49,8 @@ export const MOCK_PRODUCTS: Product[] = [
     category: "cafe",
     price: 25000,
     image: "/imgs/products/placeholder.jpg",
-    description: "Cà phê đen truyền thống, đậm đà hương vị Việt Nam, pha phin thủ công.",
+    description:
+      "Cà phê đen truyền thống, đậm đà hương vị Việt Nam, pha phin thủ công.",
     available: true,
   },
   {
@@ -54,7 +59,8 @@ export const MOCK_PRODUCTS: Product[] = [
     category: "cafe",
     price: 30000,
     image: "/imgs/products/placeholder.jpg",
-    description: "Cà phê sữa đặc thơm ngon, béo ngậy, kết hợp hoàn hảo giữa cà phê và sữa đặc.",
+    description:
+      "Cà phê sữa đặc thơm ngon, béo ngậy, kết hợp hoàn hảo giữa cà phê và sữa đặc.",
     available: true,
   },
   {
@@ -63,7 +69,8 @@ export const MOCK_PRODUCTS: Product[] = [
     category: "cafe",
     price: 32000,
     image: "/imgs/products/placeholder.jpg",
-    description: "Bạc xỉu nhẹ nhàng, ít cà phê nhiều sữa, thích hợp cho người mới uống cà phê.",
+    description:
+      "Bạc xỉu nhẹ nhàng, ít cà phê nhiều sữa, thích hợp cho người mới uống cà phê.",
     available: true,
   },
   {
@@ -72,7 +79,8 @@ export const MOCK_PRODUCTS: Product[] = [
     category: "cafe",
     price: 45000,
     image: "/imgs/products/placeholder.jpg",
-    description: "Cà phê trứng đặc sản Hà Nội, lớp kem trứng mịn màng phủ trên nền cà phê đậm đà.",
+    description:
+      "Cà phê trứng đặc sản Hà Nội, lớp kem trứng mịn màng phủ trên nền cà phê đậm đà.",
     available: true,
   },
   {
@@ -81,7 +89,8 @@ export const MOCK_PRODUCTS: Product[] = [
     category: "tra",
     price: 35000,
     image: "/imgs/products/placeholder.jpg",
-    description: "Trà đào thơm mát kết hợp cam tươi và sả, thanh mát và giải nhiệt tuyệt vời.",
+    description:
+      "Trà đào thơm mát kết hợp cam tươi và sả, thanh mát và giải nhiệt tuyệt vời.",
     available: true,
   },
   {
@@ -90,7 +99,8 @@ export const MOCK_PRODUCTS: Product[] = [
     category: "tra",
     price: 40000,
     image: "/imgs/products/placeholder.jpg",
-    description: "Matcha Nhật Bản nguyên chất, vị đắng nhẹ đặc trưng, thơm mát và bổ dưỡng.",
+    description:
+      "Matcha Nhật Bản nguyên chất, vị đắng nhẹ đặc trưng, thơm mát và bổ dưỡng.",
     available: true,
   },
   {
@@ -99,7 +109,8 @@ export const MOCK_PRODUCTS: Product[] = [
     category: "tra",
     price: 38000,
     image: "/imgs/products/placeholder.jpg",
-    description: "Trà vải thanh ngọt kết hợp hương hoa nhài dịu dàng, thư giãn tâm hồn.",
+    description:
+      "Trà vải thanh ngọt kết hợp hương hoa nhài dịu dàng, thư giãn tâm hồn.",
     available: true,
   },
   {
@@ -108,7 +119,8 @@ export const MOCK_PRODUCTS: Product[] = [
     category: "sua-chua",
     price: 38000,
     image: "/imgs/products/placeholder.jpg",
-    description: "Sữa chua mịn màng kết hợp trân châu đen dẻo dai, chua ngọt hài hòa.",
+    description:
+      "Sữa chua mịn màng kết hợp trân châu đen dẻo dai, chua ngọt hài hòa.",
     available: true,
   },
   {
@@ -117,7 +129,8 @@ export const MOCK_PRODUCTS: Product[] = [
     category: "sua-chua",
     price: 40000,
     image: "/imgs/products/placeholder.jpg",
-    description: "Sữa chua mát lạnh với dâu tươi ngọt chua, giàu vitamin và khoáng chất.",
+    description:
+      "Sữa chua mát lạnh với dâu tươi ngọt chua, giàu vitamin và khoáng chất.",
     available: true,
   },
   {
@@ -126,7 +139,8 @@ export const MOCK_PRODUCTS: Product[] = [
     category: "nuoc-ep",
     price: 35000,
     image: "/imgs/products/placeholder.jpg",
-    description: "Nước ép cam tươi nguyên chất, giàu vitamin C, tốt cho sức khỏe.",
+    description:
+      "Nước ép cam tươi nguyên chất, giàu vitamin C, tốt cho sức khỏe.",
     available: true,
   },
   {
@@ -135,7 +149,8 @@ export const MOCK_PRODUCTS: Product[] = [
     category: "nuoc-ep",
     price: 30000,
     image: "/imgs/products/placeholder.jpg",
-    description: "Nước ép dưa hấu mát lạnh, giải nhiệt tức thì trong những ngày hè oi bức.",
+    description:
+      "Nước ép dưa hấu mát lạnh, giải nhiệt tức thì trong những ngày hè oi bức.",
     available: true,
   },
   {
@@ -144,7 +159,8 @@ export const MOCK_PRODUCTS: Product[] = [
     category: "latte",
     price: 45000,
     image: "/imgs/products/placeholder.jpg",
-    description: "Latte caramel ngọt ngào, thơm béo với lớp foam sữa mịn và sốt caramel.",
+    description:
+      "Latte caramel ngọt ngào, thơm béo với lớp foam sữa mịn và sốt caramel.",
     available: true,
   },
   {
@@ -153,7 +169,8 @@ export const MOCK_PRODUCTS: Product[] = [
     category: "latte",
     price: 45000,
     image: "/imgs/products/placeholder.jpg",
-    description: "Latte vanilla nhẹ nhàng, hương thơm dịu dàng từ vanilla tự nhiên.",
+    description:
+      "Latte vanilla nhẹ nhàng, hương thơm dịu dàng từ vanilla tự nhiên.",
     available: true,
   },
   {
@@ -162,7 +179,8 @@ export const MOCK_PRODUCTS: Product[] = [
     category: "giai-khat",
     price: 20000,
     image: "/imgs/products/placeholder.jpg",
-    description: "Bánh mì nướng giòn rụm, phết bơ thơm và mứt dâu, ăn kèm cà phê tuyệt vời.",
+    description:
+      "Bánh mì nướng giòn rụm, phết bơ thơm và mứt dâu, ăn kèm cà phê tuyệt vời.",
     available: true,
   },
   {
@@ -171,7 +189,8 @@ export const MOCK_PRODUCTS: Product[] = [
     category: "giai-khat",
     price: 25000,
     image: "/imgs/products/placeholder.jpg",
-    description: "Bánh flan mềm mịn, ngọt ngào với lớp caramel vàng óng, tan chảy trong miệng.",
+    description:
+      "Bánh flan mềm mịn, ngọt ngào với lớp caramel vàng óng, tan chảy trong miệng.",
     available: true,
   },
   {
@@ -180,7 +199,8 @@ export const MOCK_PRODUCTS: Product[] = [
     category: "topping",
     price: 10000,
     image: "/imgs/products/placeholder.jpg",
-    description: "Trân châu đen dẻo dai, thêm vào bất kỳ đồ uống nào để tăng thêm hương vị.",
+    description:
+      "Trân châu đen dẻo dai, thêm vào bất kỳ đồ uống nào để tăng thêm hương vị.",
     available: true,
   },
   {
@@ -189,7 +209,8 @@ export const MOCK_PRODUCTS: Product[] = [
     category: "topping",
     price: 10000,
     image: "/imgs/products/placeholder.jpg",
-    description: "Thạch cà phê mát lạnh, thêm hương vị đặc biệt cho đồ uống của bạn.",
+    description:
+      "Thạch cà phê mát lạnh, thêm hương vị đặc biệt cho đồ uống của bạn.",
     available: true,
   },
   {
@@ -198,7 +219,8 @@ export const MOCK_PRODUCTS: Product[] = [
     category: "topping",
     price: 10000,
     image: "/imgs/products/placeholder.jpg",
-    description: "Trân châu trắng dẻo dai, thêm vào bất kỳ đồ uống nào để tăng thêm hương vị.",
+    description:
+      "Trân châu trắng dẻo dai, thêm vào bất kỳ đồ uống nào để tăng thêm hương vị.",
     available: true,
   },
 ];
