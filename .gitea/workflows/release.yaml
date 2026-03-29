@@ -20,6 +20,7 @@ jobs:
       - name: Setup SSH Key
         run: |
           set -x
+          ip add
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
           echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_ed25519
