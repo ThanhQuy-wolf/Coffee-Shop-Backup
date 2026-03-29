@@ -10,7 +10,7 @@ const zipPath = "release.zip";
 
 console.log(`📦 Đang nén file cho version: ${version}...`);
 
-execSync(`zip -r ${zipPath} out`, {
+execSync(`cd out && zip -r ../${zipPath} .`, {
   stdio: "inherit",
 });
 
