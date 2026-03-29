@@ -87,7 +87,9 @@ jobs:
             git config --global user.name "gitea-actions"
             git config --global user.email "actions-user@noreply.git.demonkernel.io.vn"
 
-            git remote set-url origin ssh://git@$TARGET_IP:222/FoodSurf/backend.git
+            REPO_NAME="${{ gitea.repository }}"
+
+            git remote set-url origin ssh://git@$TARGET_IP:222/${REPO_NAME}.git
 
             git rm -r --cached .
             git add .
