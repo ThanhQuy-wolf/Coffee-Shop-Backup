@@ -17,22 +17,23 @@ jobs:
     outputs:
       new_version: ${{ steps.set_output.outputs.version }}
     steps:
+      - name: Calculate and Export Target IP
+        run: |
+          # 1. Lấy IP hiện tại và tính toán IP đích (đổi octet cuối thành .1)
+          RUNNER_IP=$(hostname -I | awk '{print $1}')
+          CALCULATED_IP=$(echo $RUNNER_IP | cut -d'.' -f1-3).1
+          
+          # 2. Đưa vào biến môi trường toàn cục của Job
+          echo "TARGET_IP=${CALCULATED_IP}" >> $GITHUB_ENV
+          
       - name: Setup SSH Key
         run: |
-          set -x
-          
-          if command -v apk >/dev/null; then apk add --no-network iproute2 netcat-openbsd || apk add iproute2 netcat-openbsd; 
-          elif command -v apt-get >/dev/null; then apt-get update && apt-get install -y iproute2 netcat-openbsd; fi
-
-          # Kiểm tra IP của Runner
-          ip addr show || ifconfig
-
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
           echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
 
-          ssh-keyscan -p 222 -t ed25519 172.22.0.1 >> ~/.ssh/known_hosts
+          ssh-keyscan -p 222 -t ed25519 $TARGET_IP >> ~/.ssh/known_hosts
 
       - uses: actions/checkout@v6
         with:
@@ -86,7 +87,7 @@ jobs:
             git config --global user.name "gitea-actions"
             git config --global user.email "actions-user@noreply.git.demonkernel.io.vn"
 
-            git remote set-url origin ssh://git@172.22.0.1:222/FoodSurf/backend.git
+            git remote set-url origin ssh://git@$TARGET_IP:222/FoodSurf/backend.git
 
             git rm -r --cached .
             git add .
