@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Header from "@/layouts/header";
-import Footer from "@/layouts/footer";
-import CartFab from "@/components/CartFab";
 import { Providers } from "./providers";
 
 const geistSans = Geist({
@@ -46,19 +43,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
       >
         <Providers>
-          {/* Sticky top header */}
-          <Header />
-
-          {/* Page content (grows to fill remaining height) */}
-          <div className="flex-1">
-            {children}
-          </div>
-
-          {/* Footer always at bottom */}
-          <Footer />
-
-          {/* Global floating cart button */}
-          <CartFab />
+          {children}
         </Providers>
       </body>
     </html>

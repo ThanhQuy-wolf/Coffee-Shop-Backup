@@ -51,3 +51,11 @@ export interface SocialLinks {
   tiktok: string;
   website: string;
 }
+
+// ===== SHOP (QUÁN NƯỚC) TYPES =====
+export interface Shop {
+  id: number;
+  name: string;
+  address: string;
+  image: string;
+}
