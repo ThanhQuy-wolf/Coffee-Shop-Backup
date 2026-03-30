@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "next": "16.1.7",
+    "php": "^1.1.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "tailwind": "^4.0.0",

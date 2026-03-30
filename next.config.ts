@@ -10,9 +10,13 @@ import type { NextConfig } from "next";
  * Docs: https://nextjs.org/docs/app/api-reference/next-config-js
  */
 const nextConfig: NextConfig = {
-  output: "export", // Bắt buộc để tạo ra thư mục /out
   images: {
-    unoptimized: true, // Thường cần thiết cho static export
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+    ],
   },
 };
 

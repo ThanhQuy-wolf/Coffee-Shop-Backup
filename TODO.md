@@ -1,6 +1,6 @@
 # Coffee Shop Frontend - TODO
 
-## Completed Optimizations
+## Completed Features & Implementations
 
 ### A. Dead Code Removed
 
@@ -42,28 +42,55 @@
 ## Pending Features (Future Work)
 
 ### Cart & Ordering
+- [ ] Implement cart checkout flow (app/(main)/cart or modal)
+- [ ] Cart sidebar/modal with item list and total
+- [ ] Order submission API integration
+- [ ] Payment page implementation (app/(main)/payment)
+- [ ] Order history/tracking page
+- [ ] Toast notifications for cart actions
 
-- [ ] Implement add-to-cart logic (onBuy callback in CartProduct)
-- [ ] Cart sidebar or modal with item list and total
-- [ ] Order submission flow
-- [ ] Payment page
+### Authentication & User Management
+- [ ] Real backend authentication (replace MOCK_AUTH_DB)
+- [ ] Real OTP delivery service (SMS integration)
+- [ ] User profile page with edit capability
+- [ ] Password reset/recovery flow
+- [ ] Session management and token refresh
+
+### Manager Features
+- [ ] Manager dashboard page (app/(manager)/page.tsx)
+- [ ] Product management (add/edit/delete)
+- [ ] Category management
+- [ ] Order management & tracking
+- [ ] Sales analytics/dashboard
+- [ ] Inventory management
 
 ### Backend Integration
-
-- [ ] Replace MOCK_PRODUCTS with real API calls (lib/api.ts)
-- [ ] Replace MOCK_USERS with real authentication
-- [ ] Product images: replace placeholder with real images in
-      public/imgs/products/
-
-### Manager Page
-
-- [ ] Create app/manager/page.tsx
-- [ ] Menu management (add/edit/delete products)
-- [ ] Order tracking dashboard
+- [ ] Replace MOCK_PRODUCTS with API calls (GET /api/products)
+- [ ] Replace MOCK_SHOPS with API calls (GET /api/shops)
+- [ ] Replace MOCK_USERS with real authentication (POST /api/auth/login)
+- [ ] Real product images (replace placeholder.jpg)
+- [ ] Image upload for products
 
 ### UX Improvements
+- [ ] Dark mode toggle (CSS variables prepared, toggle UI needed)
+- [ ] Loading skeletons for product grid
+- [ ] Product detail modal/page with full description
+- [ ] Wishlist/favorites feature
+- [ ] Sort products (price, rating, etc.)
+- [ ] Filter by price range
+- [ ] Quantity selector in product card
+- [ ] Related products suggestions
 
-- [ ] Dark mode toggle (CSS variables already prepared in globals.css)
-- [ ] Loading skeleton for product grid
-- [ ] Toast notifications for cart actions
-- [ ] Product detail modal/page
+### Performance & SEO
+- [ ] Dynamic route generation for products (app/(main)/product/[id]/page.tsx)
+- [ ] Dynamic route generation for shops (app/(feed)/shop/[id]/page.tsx)
+- [ ] Meta tags and Open Graph for SEO
+- [ ] Image optimization and lazy loading
+- [ ] Code splitting and dynamic imports
+
+### Accessibility & Testing
+- [ ] Keyboard navigation testing
+- [ ] ARIA labels audit
+- [ ] Unit tests for contexts
+- [ ] E2E tests for user flows
+- [ ] Accessibility audit (WCAG 2.1 AA)

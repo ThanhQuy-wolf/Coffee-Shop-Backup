@@ -47,17 +47,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col antialiased`}
       >
         <Providers>
-          {/* Sticky top header */}
-          <Header />
-
-          {/* Page content (grows to fill remaining height) */}
-          <div className="flex-1">{children}</div>
-
-          {/* Footer always at bottom */}
-          <Footer />
-
-          {/* Global floating cart button */}
-          <CartFab />
+          {children}
         </Providers>
       </body>
     </html>
