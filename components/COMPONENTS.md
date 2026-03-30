@@ -197,6 +197,75 @@ None - reads SHOP_INFO and SOCIAL_LINKS from lib/constants directly.
 
 ---
 
+## ReviewModal
+
+**File:** components/ReviewModal.tsx
+**Description:** Modal for customer reviews. Shows a 5-star rating selector and a textarea for written feedback. After submission, displays a thank-you message. Appears on the payment page for customers (via a dedicated "Đánh giá" button) and also opens automatically after a successful payment action.
+
+### Props
+
+| Prop    | Type       | Required | Default | Description                                |
+| ------- | ---------- | -------- | ------- | ------------------------------------------ |
+| isOpen  | boolean    | yes      | -       | Controls modal visibility                  |
+| onClose | () => void | yes      | -       | Callback to close the modal & reset state  |
+
+### Behavior
+
+- **Star rating:** 5 interactive stars; hover highlights up to hovered star, click locks selection. Disabled submit button until at least 1 star selected.
+- **Star labels:** 1 = Rất tệ, 2 = Tệ, 3 = Bình thường, 4 = Tốt, 5 = Xuất sắc
+- **Textarea:** Optional free-text review (placeholder in Vietnamese).
+- **Footer buttons:**
+  - "Quay lại" — closes modal without submitting; resets all state.
+  - "Xác nhận" — submits (UI-only); transitions to thank-you state.
+- **Thank-you state:** Replaces form with "Cảm ơn quý khách" message + close button.
+- **Backdrop click:** Also closes the modal (same as "Quay lại").
+- **State reset:** All state (rating, hover, review text, submitted) resets on close.
+
+### Styling
+
+| Element         | Key classes                                                             |
+| --------------- | ----------------------------------------------------------------------- |
+| Backdrop        | fixed inset-0, bg-black/50 backdrop-blur-sm, z-50                      |
+| Modal panel     | max-w-md, rounded-2xl, border --color-border-light, white bg, shadow-xl |
+| Stars           | text-3xl sm:text-4xl, hover:scale-110, active:scale-95                 |
+| Active star     | fa-solid fa-star text-yellow-400                                        |
+| Inactive star   | fa-regular fa-star text-(--color-border)                               |
+| Textarea        | rounded-xl, focus:ring with --color-primary/20                         |
+| Quay lại button | border --color-border, hover --color-border-light                      |
+| Xác nhận button | bg --color-primary, disabled:opacity-50                                |
+| Thank-you icon  | fa-solid fa-heart text-(--color-accent), --color-accent-light bg       |
+
+### Responsive
+
+- Padding: `p-6 sm:p-8` — larger on sm+ screens
+- Stars: `text-3xl sm:text-4xl`
+- Modal width: `w-full max-w-md` with `p-4` page padding — works on all screen sizes
+
+### Dependencies
+
+- React useState
+- FontAwesome icons (fa-star, fa-regular fa-star, fa-heart, fa-arrow-left, fa-check)
+- Tailwind CSS + CSS custom properties from globals.css
+
+### Usage in Payment Page
+
+```tsx
+// Only shown for customers (user.role === "customer")
+const [isReviewOpen, setIsReviewOpen] = useState(false);
+
+// Button in payment aside (only visible to customers)
+<button onClick={() => setIsReviewOpen(true)}>Đánh giá</button>
+
+// Payment buttons (Tiền mặt / QR Code) also open the modal for customers
+const handlePayment = () => {
+  if (isCustomer) setIsReviewOpen(true);
+};
+
+<ReviewModal isOpen={isReviewOpen} onClose={() => setIsReviewOpen(false)} />
+```
+
+---
+
 # Contexts Documentation
 
 ## AuthContext (lib/auth-context.tsx)

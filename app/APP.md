@@ -217,8 +217,46 @@ activeCategory: string      // From MenuContext
 ### 4. Payment Page (app/(main)/payment/page.tsx)
 
 **Route:** `/payment`
-**Type:** Client component (TBD)
-**Description:** Payment/checkout page. Currently a placeholder; implement when cart and order system are ready.
+**Type:** Client component
+**Description:** Payment/checkout page. Shows cart items in a table with quantity controls and a summary aside with payment actions.
+
+#### Key Features
+
+- **Cart Table:**
+  - Lists all cart items (name, price, description, quantity controls, delete)
+  - Quantity input with +/- buttons and direct number input
+  - Empty state message when cart is empty
+  - Horizontal scroll on small screens (min-w-190)
+
+- **Invoice Aside:**
+  - Sticky on desktop (top offset = header height + 1rem)
+  - Shows total price
+  - Payment buttons: Tiền mặt, QR Code (UI-only; trigger review modal for customers)
+  - **"Đánh giá" button** — only visible when `user.role === "customer"`; opens ReviewModal
+  - **"Quay về" button** — links back to `/`; spans full width when review button is absent
+
+- **Review Modal (ReviewModal):**
+  - Opened when a customer clicks "Đánh giá" OR clicks a payment button (Tiền mặt/QR)
+  - Closed via "Quay lại" button, backdrop click, or after submitting and closing
+  - See `components/ReviewModal.tsx` for full documentation
+
+#### Context Usage
+
+- **useCart()** — items, totalPrice, increaseQty, decreaseQty, removeFromCart, setQuantity
+- **useAuth()** — user (to check `user.role === "customer"` for review button visibility)
+
+#### State Management
+
+```tsx
+isReviewOpen: boolean   // Controls ReviewModal visibility
+isCustomer: boolean     // Derived from user.role === "customer"
+```
+
+#### Responsive Behavior
+
+- **Mobile:** Single column layout, table scrolls horizontally, button labels hidden (icon only)
+- **Desktop (lg+):** Button labels visible, aside becomes sticky sidebar (xl: w-85)
+- **Review button grid:** When customer is logged in, 3 buttons in 2-column grid; "Quay về" occupies remaining space. Otherwise 2-column grid with "Quay về" spanning full width.
 
 ---
 
@@ -353,7 +391,8 @@ Defined at `:root` for light mode, with dark mode variants:
 
 ## Future Enhancements
 
-- [ ] Payment page implementation
+- [x] Payment page implementation
+- [x] Customer review modal (ReviewModal) with 5-star rating + textarea
 - [ ] Order history/tracking page
 - [ ] Manager dashboard (menu management, order tracking)
 - [ ] User profile page
