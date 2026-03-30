@@ -14,8 +14,6 @@ spec:
       labels:
         app: web
     spec:
-      imagePullSecrets:
-        - name: gitea-registry-secret 
       containers:
       - name: frontend-container
         image: git.demonkernel.io.vn/foodsurf/frontend:latest
