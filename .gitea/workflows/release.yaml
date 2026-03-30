@@ -14,8 +14,6 @@ jobs:
       pull-requests: write
       id-token: write
     runs-on: ubuntu-latest
-    outputs:
-      new_version: ${{ steps.set_output.outputs.version }}
     steps:
       - name: Calculate and Export Target IP
         run: |
@@ -116,8 +114,7 @@ jobs:
           # Lowercase Repository
           REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           
-          # Lấy version từ job release và lowercase nó (cho các bản prerelease)
-          RAW_VERSION="${{ needs.release.outputs.new_version }}"
+          RAW_VERSION="${{ steps.set_output.outputs.version }}"
           VERSION_LOWER=$(echo "$RAW_VERSION" | tr '[:upper:]' '[:lower:]')
           
           echo "repo=$REPO_LOWER" >> $GITHUB_OUTPUT
