@@ -23,6 +23,26 @@ const config: GlobalConfig = {
       },
     ],
     [
+      "@google/semantic-release-replace-plugin",
+      {
+        replacements: [
+          {
+            files: ["k8s/k8s.yaml"],
+            from: "image: git.demonkernel.io.vn/foodsurf/frontend:.*",
+            to: "image: git.demonkernel.io.vn/foodsurf/frontend:${nextRelease.version}",
+            results: [
+              {
+                file: "k8s/k8s.yaml",
+                hasChanged: true,
+                numMatches: 1,
+                numReplacements: 1,
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    [
       "@saithodev/semantic-release-gitea",
       {
         giteaUrl: "https://git.demonkernel.io.vn/",
