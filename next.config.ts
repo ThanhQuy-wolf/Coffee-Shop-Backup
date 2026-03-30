@@ -10,6 +10,7 @@ import type { NextConfig } from "next";
  * Docs: https://nextjs.org/docs/app/api-reference/next-config-js
  */
 const nextConfig: NextConfig = {
+  output: "export",
   images: {
     remotePatterns: [
       {

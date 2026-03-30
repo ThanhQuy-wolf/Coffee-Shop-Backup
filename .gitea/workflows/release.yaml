@@ -67,6 +67,9 @@ jobs:
       - name: Format code
         run: pnpm format
 
+      - name: Build application
+        run: pnpm build
+
       - name: Release
         env:
           GITEA_USER: ${{ github.actor }}
@@ -98,15 +101,8 @@ jobs:
             git push
           fi
 
-  build-and-push:
-    needs: release  
-    if: gitea.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
       - name: Log in to Gitea Container Registry
+        if: gitea.ref == 'refs/heads/main'
         uses: docker/login-action@v3
         with:
           registry: git.demonkernel.io.vn
@@ -114,6 +110,7 @@ jobs:
           password: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Prepare Docker Metadata
+        if: gitea.ref == 'refs/heads/main'
         id: meta
         run: |
           # Lowercase Repository
@@ -127,6 +124,7 @@ jobs:
           echo "version=$VERSION_LOWER" >> $GITHUB_OUTPUT
 
       - name: Build and Push Docker Image
+        if: gitea.ref == 'refs/heads/main'
         uses: docker/build-push-action@v4
         with:
           context: .

@@ -23,10 +23,8 @@
     "typescript": "^5.9.3"
   },
   "devDependencies": {
-    "@google/semantic-release-replace-plugin": "^1.2.7",
     "@saithodev/semantic-release-gitea": "^2.1.0",
     "@semantic-release/exec": "^7.1.0",
-    "@semantic-release/github": "^12.0.6",
     "@semantic-release/npm": "^13.1.5",
     "@trivago/prettier-plugin-sort-imports": "^6.0.2",
     "@types/react-dom": "^19.2.3",

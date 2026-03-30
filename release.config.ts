@@ -18,28 +18,9 @@ const config: GlobalConfig = {
     [
       "@semantic-release/exec",
       {
-        prepareCmd:
-          "pnpm build && node scripts/release.ts ${nextRelease.version}",
-      },
-    ],
-    [
-      "@google/semantic-release-replace-plugin",
-      {
-        replacements: [
-          {
-            files: ["k8s/k8s.yaml"],
-            from: "image: git.demonkernel.io.vn/foodsurf/frontend:.*",
-            to: "image: git.demonkernel.io.vn/foodsurf/frontend:${nextRelease.version}",
-            results: [
-              {
-                file: "k8s/k8s.yaml",
-                hasChanged: true,
-                numMatches: 1,
-                numReplacements: 1,
-              },
-            ],
-          },
-        ],
+        prepareCmd: "node scripts/release.ts ${nextRelease.version}",
+        updateFrontend:
+          "sed -i 's|image: git.demonkernel.io.vn/foodsurf/frontend:.*|image: git.demonkernel.io.vn/foodsurf/frontend:${nextRelease.version}|g' k8s/k8s.yaml",
       },
     ],
     [
