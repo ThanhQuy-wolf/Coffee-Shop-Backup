@@ -30,20 +30,24 @@ app/
 
 ## Root Layout (app/layout.tsx)
 
-**Description:** Root layout wrapping entire application. Loads providers, fonts, and common layouts (header/footer).
+**Description:** Root layout wrapping entire application. Loads providers,
+fonts, and common layouts (header/footer).
 
 ### Structure
+
 - Imports providers (AuthProvider, MenuProvider, CartProvider)
 - Renders Header component (sticky top)
 - Renders page content via {children}
 - Renders Footer component
 
 ### Metadata
+
 - Title: "Coffee Shop"
 - Charset: UTF-8
 - Viewport: responsive
 
 ### Key Features
+
 - Global CSS variables loaded here
 - Header remains sticky across all pages
 - Footer always present
@@ -52,9 +56,11 @@ app/
 
 ## Providers (app/providers.tsx)
 
-**Description:** Client component that wraps all context providers for the application.
+**Description:** Client component that wraps all context providers for the
+application.
 
 ### Providers Included
+
 1. **AuthProvider** (lib/auth-context.tsx)
    - Manages user authentication state
    - Persists user in localStorage
@@ -70,6 +76,7 @@ app/
    - Provides add/remove/update operations
 
 ### Usage in Root Layout
+
 ```tsx
 <Providers>
   <Header />
@@ -84,9 +91,11 @@ app/
 
 ### Layout (app/(main)/layout.tsx)
 
-**Description:** Layout for authenticated/main routes. Can include route-specific UI (e.g., sidebar navigation).
+**Description:** Layout for authenticated/main routes. Can include
+route-specific UI (e.g., sidebar navigation).
 
 ### Usage
+
 - Wraps all pages under `(main)/` route group
 - Inherits root layout above it
 - Can add additional styling or structure specific to main pages
@@ -97,11 +106,12 @@ app/
 
 ### 1. Main Page - Duyệt Thực Đơn (app/(main)/page.tsx)
 
-**Route:** `/` (default) or `/(main)`
-**Type:** Client component
-**Description:** Main shopping interface. Shows product grid with sidebar category filter.
+**Route:** `/` (default) or `/(main)` **Type:** Client component
+**Description:** Main shopping interface. Shows product grid with sidebar
+category filter.
 
 #### Key Features
+
 - **Sidebar (Navbar):**
   - Collapsible (64px collapsed / 240px expanded)
   - Category list with icons
@@ -120,18 +130,21 @@ app/
   - Allows category selection on mobile
 
 #### Context Usage
+
 - **useMenu()** - Get/set active category
 - **useCart()** - Add products to cart
 - **MenuContext** - Shares category state with Header
 
 #### State Management
+
 ```tsx
-isSidebarOpen: boolean      // Sidebar expanded/collapsed
-searchQuery: string         // Search input value
-activeCategory: string      // From MenuContext
+isSidebarOpen: boolean; // Sidebar expanded/collapsed
+searchQuery: string; // Search input value
+activeCategory: string; // From MenuContext
 ```
 
 #### Responsive Behavior
+
 - **Mobile (<480px):** 1 col, sidebar collapsed
 - **Small phone (480px):** 2 cols, sidebar collapsed
 - **Tablet (768px):** Mobile menu tabs appear
@@ -142,11 +155,11 @@ activeCategory: string      // From MenuContext
 
 ### 2. Login Page (app/(main)/login/page.tsx)
 
-**Route:** `/login`
-**Type:** Client component
-**Description:** User authentication form. Supports login for Manager, Staff, and Customer roles.
+**Route:** `/login` **Type:** Client component **Description:** User
+authentication form. Supports login for Manager, Staff, and Customer roles.
 
 #### Key Features
+
 - **Form Fields:**
   - Username input (with icon)
   - Password input (with show/hide toggle)
@@ -171,9 +184,11 @@ activeCategory: string      // From MenuContext
   - Responsive design
 
 #### Context Usage
+
 - **useAuth()** - Login function
 
 #### Navigation
+
 - Success: redirect to `/` (main page)
 - Register link: go to `/register`
 
@@ -181,11 +196,11 @@ activeCategory: string      // From MenuContext
 
 ### 3. Register Page (app/(main)/register/page.tsx)
 
-**Route:** `/register`
-**Type:** Client component
-**Description:** User registration flow. Two-step process: phone verification → account creation.
+**Route:** `/register` **Type:** Client component **Description:** User
+registration flow. Two-step process: phone verification → account creation.
 
 #### Key Features
+
 - **Step 1: Phone Verification**
   - Input phone number
   - "Request OTP" button
@@ -206,9 +221,11 @@ activeCategory: string      // From MenuContext
   - Progress feedback
 
 #### Context Usage
+
 - **useAuth()** - completeRegistration()
 
 #### Navigation
+
 - Success: redirect to `/` (main page)
 - Login link: go to `/login`
 
@@ -216,9 +233,9 @@ activeCategory: string      // From MenuContext
 
 ### 4. Payment Page (app/(main)/payment/page.tsx)
 
-**Route:** `/payment`
-**Type:** Client component (TBD)
-**Description:** Payment/checkout page. Currently a placeholder; implement when cart and order system are ready.
+**Route:** `/payment` **Type:** Client component (TBD) **Description:**
+Payment/checkout page. Currently a placeholder; implement when cart and order
+system are ready.
 
 ---
 
@@ -226,17 +243,18 @@ activeCategory: string      // From MenuContext
 
 ### Layout (app/(feed)/layout.tsx)
 
-**Description:** Layout for feed routes. Can have specific styling for discovery/exploration pages.
+**Description:** Layout for feed routes. Can have specific styling for
+discovery/exploration pages.
 
 ---
 
 ### Feed Page - Khám Phá Quán (app/(feed)/feed/page.tsx)
 
-**Route:** `/feed`
-**Type:** Client component
-**Description:** Discover coffee shops. Browse and search available shops with their location and details.
+**Route:** `/feed` **Type:** Client component **Description:** Discover coffee
+shops. Browse and search available shops with their location and details.
 
 #### Key Features
+
 - **Shop Cards:**
   - Shop image (responsive height)
   - Name and location
@@ -258,9 +276,11 @@ activeCategory: string      // From MenuContext
   - Clear filter button
 
 #### Context Usage
+
 - **useAuth()** - Optional: check user role
 
 #### State Management
+
 ```tsx
 searchName: string      // Shop name search
 searchAddress: string   // Shop address search
@@ -268,6 +288,7 @@ filteredShops: Shop[]   // Filtered results
 ```
 
 #### Data Source
+
 - MOCK_SHOPS from lib/constants.ts
 
 ---
@@ -276,12 +297,15 @@ filteredShops: Shop[]   // Filtered results
 
 ### Global Styles (app/globals.css)
 
-**Description:** Root CSS file. Imports Tailwind CSS, defines design tokens (CSS variables), and global styles.
+**Description:** Root CSS file. Imports Tailwind CSS, defines design tokens (CSS
+variables), and global styles.
 
 ### Design Tokens (CSS Variables)
+
 Defined at `:root` for light mode, with dark mode variants:
 
 #### Colors
+
 - `--color-primary` - Main brand color (brown)
 - `--color-primary-dark` - Darker shade for hover
 - `--color-accent` - Secondary accent color
@@ -291,13 +315,16 @@ Defined at `:root` for light mode, with dark mode variants:
 - `--color-shadow-*` - Shadow colors (sm, md)
 
 #### Spacing
+
 - `--spacing-header-height` - Header component height
 - Standard Tailwind spacing (via Tailwind)
 
 #### Typography
+
 - Font stack defined via Google Fonts (Geist)
 
 ### Tailwind Config Integration
+
 - v4 with custom properties support
 - Extends with CSS variables
 - Dark mode: CSS variable override
@@ -307,22 +334,26 @@ Defined at `:root` for light mode, with dark mode variants:
 ## Key Concepts
 
 ### Route Groups
+
 - `(main)` and `(feed)` are route groups (don't appear in URL)
 - Allow different layouts/providers per route group
 - Used for organization and flexibility
 
 ### SSR vs Client Components
+
 - Most pages are "use client" (need interactivity)
 - Context providers must be client components
 - Layout.tsx can be server component
 
 ### Responsive Design
+
 - Breakpoints: sm (640px), md (768px), lg (1024px), xl (1280px), 2xl (1536px)
 - Sidebar width affects grid columns
 - Mobile: vertical layout, collapsed sidebar
 - Desktop: horizontal layout, expanded sidebar
 
 ### Navigation
+
 - Internal links use `next/link`
 - useRouter() for programmatic navigation
 - Auth redirects after login/register
@@ -332,6 +363,7 @@ Defined at `:root` for light mode, with dark mode variants:
 ## Development Workflow
 
 ### Adding a New Page
+
 1. Create file under appropriate route group: `app/(main)/new-feature/page.tsx`
 2. Make it a client component if it needs interactivity: `"use client"`
 3. Use context hooks as needed (useAuth, useCart, useMenu)
@@ -339,12 +371,14 @@ Defined at `:root` for light mode, with dark mode variants:
 5. Add to documentation
 
 ### Adding a New Route Group
+
 1. Create directory: `app/(group-name)/`
 2. Create `layout.tsx` if custom layout needed
 3. Add pages under this group
 4. Update codebase understanding
 
 ### Styling Pages
+
 - Use Tailwind classes + CSS variables
 - Reference design tokens for consistency
 - Follow responsive patterns from existing pages

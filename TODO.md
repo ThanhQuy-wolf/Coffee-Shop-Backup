@@ -42,6 +42,7 @@
 ## Pending Features (Future Work)
 
 ### Cart & Ordering
+
 - [ ] Implement cart checkout flow (app/(main)/cart or modal)
 - [ ] Cart sidebar/modal with item list and total
 - [ ] Order submission API integration
@@ -50,6 +51,7 @@
 - [ ] Toast notifications for cart actions
 
 ### Authentication & User Management
+
 - [ ] Real backend authentication (replace MOCK_AUTH_DB)
 - [ ] Real OTP delivery service (SMS integration)
 - [ ] User profile page with edit capability
@@ -57,6 +59,7 @@
 - [ ] Session management and token refresh
 
 ### Manager Features
+
 - [ ] Manager dashboard page (app/(manager)/page.tsx)
 - [ ] Product management (add/edit/delete)
 - [ ] Category management
@@ -65,6 +68,7 @@
 - [ ] Inventory management
 
 ### Backend Integration
+
 - [ ] Replace MOCK_PRODUCTS with API calls (GET /api/products)
 - [ ] Replace MOCK_SHOPS with API calls (GET /api/shops)
 - [ ] Replace MOCK_USERS with real authentication (POST /api/auth/login)
@@ -72,6 +76,7 @@
 - [ ] Image upload for products
 
 ### UX Improvements
+
 - [ ] Dark mode toggle (CSS variables prepared, toggle UI needed)
 - [ ] Loading skeletons for product grid
 - [ ] Product detail modal/page with full description
@@ -82,6 +87,7 @@
 - [ ] Related products suggestions
 
 ### Performance & SEO
+
 - [ ] Dynamic route generation for products (app/(main)/product/[id]/page.tsx)
 - [ ] Dynamic route generation for shops (app/(feed)/shop/[id]/page.tsx)
 - [ ] Meta tags and Open Graph for SEO
@@ -89,6 +95,7 @@
 - [ ] Code splitting and dynamic imports
 
 ### Accessibility & Testing
+
 - [ ] Keyboard navigation testing
 - [ ] ARIA labels audit
 - [ ] Unit tests for contexts

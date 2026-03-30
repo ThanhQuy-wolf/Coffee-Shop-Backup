@@ -6,7 +6,8 @@
 
 ## Overview
 
-The `lib/` directory contains shared logic, data models, and context providers used throughout the application.
+The `lib/` directory contains shared logic, data models, and context providers
+used throughout the application.
 
 ```
 lib/
@@ -41,6 +42,7 @@ interface User {
 **Usage:** Authentication context, header component, role-based UI
 
 **Roles:**
+
 - **manager** - Shop owner, full access to menu management and orders
 - **staff** - Staff member, can view/process orders
 - **customer** - Regular customer, can browse and order
@@ -60,6 +62,7 @@ interface MenuCategory {
 **Usage:** Sidebar navigation, category filter, product display
 
 **Example Categories:**
+
 - `all` - All products
 - `cafe` - Coffee
 - `tra` - Tea
@@ -88,6 +91,7 @@ interface Product {
 **Usage:** Product grid display, cart items, filtering
 
 **Key Fields:**
+
 - `id` - Unique product identifier
 - `name` - Display name in Vietnamese
 - `category` - Category ID for filtering
@@ -122,6 +126,7 @@ interface ShopInfo {
 **Usage:** Header, footer, login page display
 
 **Example:**
+
 ```typescript
 const SHOP_INFO: ShopInfo = {
   name: "Coffee Shop",
@@ -169,13 +174,15 @@ interface Shop {
 
 ## Constants (lib/constants.ts)
 
-**Description:** Mock data used throughout the application. Replace with API calls when backend is ready.
+**Description:** Mock data used throughout the application. Replace with API
+calls when backend is ready.
 
 ### SHOP_INFO
 
 Single instance of shop information displayed in header, footer, and login page.
 
 **Key Info Used:**
+
 - Header: name, logo, phone
 - Footer: all fields
 - Login: logo, name, email
@@ -198,7 +205,8 @@ export const SOCIAL_LINKS: SocialLinks = {
 
 ### MENU_CATEGORIES
 
-Array of 8 product categories. Used in sidebar, mobile menu, and product filtering.
+Array of 8 product categories. Used in sidebar, mobile menu, and product
+filtering.
 
 ```typescript
 export const MENU_CATEGORIES: MenuCategory[] = [
@@ -208,12 +216,17 @@ export const MENU_CATEGORIES: MenuCategory[] = [
   { id: "sua-chua", name: "Sữa Chua", icon: "fa-solid fa-jar" },
   { id: "nuoc-ep", name: "Nước Ép", icon: "fa-solid fa-blender" },
   { id: "latte", name: "Latte", icon: "fa-solid fa-mug-saucer" },
-  { id: "giai-khat", name: "Giải Khát / Ăn Vặt", icon: "fa-solid fa-ice-cream" },
+  {
+    id: "giai-khat",
+    name: "Giải Khát / Ăn Vặt",
+    icon: "fa-solid fa-ice-cream",
+  },
   { id: "topping", name: "Topping", icon: "fa-solid fa-layer-group" },
 ];
 ```
 
 **Usage:**
+
 - Navbar sidebar category buttons
 - Header mobile scrollable menu
 - Product grid category filter
@@ -225,6 +238,7 @@ export const MENU_CATEGORIES: MenuCategory[] = [
 Array of 18 mock product items across all categories.
 
 **Example Product:**
+
 ```typescript
 {
   id: 1,
@@ -238,6 +252,7 @@ Array of 18 mock product items across all categories.
 ```
 
 **Product Distribution:**
+
 - Café: 4 items (Đen, Sữa, Bạc Xỉu, Trứng)
 - Tea: 3 items (Đào Cam Sả, Matcha, Vải Hoa Nhài)
 - Yogurt: 2 items (Trân Châu, Dâu)
@@ -264,6 +279,7 @@ Array of 5 coffee shops for the feed/discovery page.
 ```
 
 **Shops:**
+
 1. The Coffee House - Quận 3
 2. Highlands Coffee - Quận 1
 3. Phúc Long Heritage - Quận 1
@@ -303,9 +319,11 @@ export const MOCK_USERS: Record<string, User> = {
 
 ## Auth Context (lib/auth-context.tsx)
 
-See [COMPONENTS.md - AuthContext](../components/COMPONENTS.md#authcontext) for detailed documentation.
+See [COMPONENTS.md - AuthContext](../components/COMPONENTS.md#authcontext) for
+detailed documentation.
 
 **Quick Summary:**
+
 - Manages user login/logout/register
 - Persists user in localStorage
 - Provides user info to components via useAuth() hook
@@ -314,9 +332,11 @@ See [COMPONENTS.md - AuthContext](../components/COMPONENTS.md#authcontext) for d
 
 ## Cart Context (lib/cart-context.tsx)
 
-See [COMPONENTS.md - CartContext](../components/COMPONENTS.md#cartcontext) for detailed documentation.
+See [COMPONENTS.md - CartContext](../components/COMPONENTS.md#cartcontext) for
+detailed documentation.
 
 **Quick Summary:**
+
 - Manages shopping cart items and quantities
 - Persists cart in localStorage
 - Provides cart operations via useCart() hook
@@ -325,9 +345,11 @@ See [COMPONENTS.md - CartContext](../components/COMPONENTS.md#cartcontext) for d
 
 ## Menu Context (lib/menu-context.tsx)
 
-See [COMPONENTS.md - MenuContext](../components/COMPONENTS.md#menucontext) for detailed documentation.
+See [COMPONENTS.md - MenuContext](../components/COMPONENTS.md#menucontext) for
+detailed documentation.
 
 **Quick Summary:**
+
 - Shares active category state
 - Syncs sidebar and mobile menu selection
 - Provides activeCategory and setActiveCategory via useMenu() hook
@@ -339,7 +361,7 @@ See [COMPONENTS.md - MenuContext](../components/COMPONENTS.md#menucontext) for d
 ### Using Types
 
 ```typescript
-import type { User, Product, MenuCategory } from "@/lib/types";
+import type { MenuCategory, Product, User } from "@/lib/types";
 ```
 
 ### Using Constants
@@ -348,7 +370,7 @@ import type { User, Product, MenuCategory } from "@/lib/types";
 import { MENU_CATEGORIES, MOCK_PRODUCTS, SHOP_INFO } from "@/lib/constants";
 
 // In a component:
-const products = MOCK_PRODUCTS.filter(p => p.category === "cafe");
+const products = MOCK_PRODUCTS.filter((p) => p.category === "cafe");
 const shopName = SHOP_INFO.name;
 ```
 
@@ -412,6 +434,7 @@ export default function CategoryFilter() {
 ## Data Flow & Updates
 
 ### When to Update Constants
+
 1. **Product List:** When adding/removing products
    - Update MOCK_PRODUCTS array
    - Or replace with API call in the future
@@ -436,7 +459,7 @@ When backend is ready:
 const [products, setProducts] = useState<Product[]>([]);
 useEffect(() => {
   fetch("/api/products")
-    .then(r => r.json())
+    .then((r) => r.json())
     .then(setProducts);
 }, []);
 
@@ -444,7 +467,7 @@ useEffect(() => {
 const login = async (username: string, password: string) => {
   const res = await fetch("/api/auth/login", {
     method: "POST",
-    body: JSON.stringify({ username, password })
+    body: JSON.stringify({ username, password }),
   });
   return res.ok;
 };
@@ -455,7 +478,10 @@ const login = async (username: string, password: string) => {
 ## Best Practices
 
 1. **Import Types:** Always use `import type` for types to avoid runtime bloat
-2. **Immutability:** Contexts return functions to update state, not direct mutations
-3. **localStorage:** Keys are centralized (`coffee-shop-user`, `coffee-shop-cart`)
-4. **Validation:** Contexts validate/sanitize data (e.g., filter invalid cart items)
+2. **Immutability:** Contexts return functions to update state, not direct
+   mutations
+3. **localStorage:** Keys are centralized (`coffee-shop-user`,
+   `coffee-shop-cart`)
+4. **Validation:** Contexts validate/sanitize data (e.g., filter invalid cart
+   items)
 5. **Default Values:** Contexts have sensible defaults (activeCategory: "all")

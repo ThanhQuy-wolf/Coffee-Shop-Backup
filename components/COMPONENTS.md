@@ -166,14 +166,15 @@ None - reads SHOP_INFO and SOCIAL_LINKS from lib/constants directly.
 
 ## CartFab
 
-**File:** components/CartFab.tsx
-**Description:** Floating Action Button displaying cart item count. Shows badge with number of items and total price on hover.
+**File:** components/CartFab.tsx **Description:** Floating Action Button
+displaying cart item count. Shows badge with number of items and total price on
+hover.
 
 ### Props
 
-| Prop | Type | Required | Default | Description |
-|------|------|----------|---------|-------------|
-| onClick | () => void | no | undefined | Callback when FAB is clicked |
+| Prop    | Type       | Required | Default   | Description                  |
+| ------- | ---------- | -------- | --------- | ---------------------------- |
+| onClick | () => void | no       | undefined | Callback when FAB is clicked |
 
 ### Features
 
@@ -184,11 +185,11 @@ None - reads SHOP_INFO and SOCIAL_LINKS from lib/constants directly.
 
 ### Styling
 
-| Element | Key classes |
-|---------|-------------|
+| Element    | Key classes                                     |
+| ---------- | ----------------------------------------------- |
 | FAB button | fixed bottom-6 right-6, rounded-full, shadow-lg |
-| Badge | absolute top-0 right-0, red bg, small font |
-| Tooltip | appears on hover, shows total price |
+| Badge      | absolute top-0 right-0, red bg, small font      |
+| Tooltip    | appears on hover, shows total price             |
 
 ### Dependencies
 
@@ -201,31 +202,33 @@ None - reads SHOP_INFO and SOCIAL_LINKS from lib/constants directly.
 
 ## AuthContext (lib/auth-context.tsx)
 
-**File:** lib/auth-context.tsx
-**Description:** Manages user authentication state including login, logout, and registration. Uses localStorage for persistence.
+**File:** lib/auth-context.tsx **Description:** Manages user authentication
+state including login, logout, and registration. Uses localStorage for
+persistence.
 
 ### Provider Props
 
-| Prop | Type | Required | Description |
-|------|------|----------|-------------|
-| children | React.ReactNode | yes | Child components |
+| Prop     | Type            | Required | Description      |
+| -------- | --------------- | -------- | ---------------- |
+| children | React.ReactNode | yes      | Child components |
 
 ### Hook: useAuth()
 
 Returns `AuthContextType` with:
 
-| Property | Type | Description |
-|----------|------|-------------|
-| user | User \| null | Current logged-in user or null |
-| login | (username: string, password: string) => boolean | Login function; returns success status |
-| logout | () => void | Logout function; clears user and localStorage |
-| registerPhone | string \| null | Phone number during registration flow |
-| setRegisterPhone | (phone: string \| null) => void | Update registerPhone state |
-| completeRegistration | (phone: string) => void | Complete registration and create customer account |
+| Property             | Type                                            | Description                                       |
+| -------------------- | ----------------------------------------------- | ------------------------------------------------- |
+| user                 | User \| null                                    | Current logged-in user or null                    |
+| login                | (username: string, password: string) => boolean | Login function; returns success status            |
+| logout               | () => void                                      | Logout function; clears user and localStorage     |
+| registerPhone        | string \| null                                  | Phone number during registration flow             |
+| setRegisterPhone     | (phone: string \| null) => void                 | Update registerPhone state                        |
+| completeRegistration | (phone: string) => void                         | Complete registration and create customer account |
 
 ### Mock Database
 
 Pre-configured accounts:
+
 - Manager: `admin / admin`
 - Staff: `Nguyễn Văn An / Nguyễn Văn An`, `Trần Thị Bình / Trần Thị Bình`, etc.
 - Customer: Phone number as username, `user1` as password
@@ -239,29 +242,29 @@ Pre-configured accounts:
 
 ## CartContext (lib/cart-context.tsx)
 
-**File:** lib/cart-context.tsx
-**Description:** Manages shopping cart state with localStorage persistence. Tracks items, quantities, and totals.
+**File:** lib/cart-context.tsx **Description:** Manages shopping cart state with
+localStorage persistence. Tracks items, quantities, and totals.
 
 ### Provider Props
 
-| Prop | Type | Required | Description |
-|------|------|----------|-------------|
-| children | React.ReactNode | yes | Child components |
+| Prop     | Type            | Required | Description      |
+| -------- | --------------- | -------- | ---------------- |
+| children | React.ReactNode | yes      | Child components |
 
 ### Hook: useCart()
 
 Returns `CartContextValue` with:
 
-| Property | Type | Description |
-|----------|------|-------------|
-| items | CartItem[] | Array of items in cart |
-| totalItems | number | Total quantity of items |
-| totalPrice | number | Total price in VND |
-| addToCart | (product: Product) => void | Add or increase product quantity |
-| increaseQty | (id: number) => void | Increase product quantity by 1 |
-| decreaseQty | (id: number) => void | Decrease product quantity by 1 (removes if qty reaches 0) |
-| removeFromCart | (id: number) => void | Remove product from cart |
-| setQuantity | (id: number, quantity: number) => void | Set exact quantity (removes if 0) |
+| Property       | Type                                   | Description                                               |
+| -------------- | -------------------------------------- | --------------------------------------------------------- |
+| items          | CartItem[]                             | Array of items in cart                                    |
+| totalItems     | number                                 | Total quantity of items                                   |
+| totalPrice     | number                                 | Total price in VND                                        |
+| addToCart      | (product: Product) => void             | Add or increase product quantity                          |
+| increaseQty    | (id: number) => void                   | Increase product quantity by 1                            |
+| decreaseQty    | (id: number) => void                   | Decrease product quantity by 1 (removes if qty reaches 0) |
+| removeFromCart | (id: number) => void                   | Remove product from cart                                  |
+| setQuantity    | (id: number, quantity: number) => void | Set exact quantity (removes if 0)                         |
 
 ### CartItem Interface
 
@@ -285,23 +288,24 @@ interface CartItem {
 
 ## MenuContext (lib/menu-context.tsx)
 
-**File:** lib/menu-context.tsx
-**Description:** Provides shared category/menu state across components. Synchronizes Header mobile menu and Navbar sidebar selection.
+**File:** lib/menu-context.tsx **Description:** Provides shared category/menu
+state across components. Synchronizes Header mobile menu and Navbar sidebar
+selection.
 
 ### Provider Props
 
-| Prop | Type | Required | Description |
-|------|------|----------|-------------|
-| children | React.ReactNode | yes | Child components |
+| Prop     | Type            | Required | Description      |
+| -------- | --------------- | -------- | ---------------- |
+| children | React.ReactNode | yes      | Child components |
 
 ### Hook: useMenu()
 
 Returns `MenuContextType` with:
 
-| Property | Type | Description |
-|----------|------|-------------|
-| activeCategory | string | Currently selected category id (default: "all") |
-| setActiveCategory | (id: string) => void | Update active category |
+| Property          | Type                 | Description                                     |
+| ----------------- | -------------------- | ----------------------------------------------- |
+| activeCategory    | string               | Currently selected category id (default: "all") |
+| setActiveCategory | (id: string) => void | Update active category                          |
 
 ### Use Cases
 

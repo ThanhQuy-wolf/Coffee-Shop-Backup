@@ -9,23 +9,14 @@ export default function FeedLayout({
   return (
     <>
       {/* Custom Drinkool header — no login button */}
-      <header
-        className="w-full sticky top-0 z-50
-                   bg-(--color-bg-header) border-b border-(--color-border)
-                   shadow-[0_1px_8px_var(--color-shadow-sm)]
-                   h-(--spacing-header-height)"
-      >
-        <div
-          className="h-full px-6 md:px-8 lg:px-12
-                     flex items-center gap-4
-                     max-w-screen-2xl mx-auto"
-        >
+      <header className="sticky top-0 z-50 h-(--spacing-header-height) w-full border-b border-(--color-border) bg-(--color-bg-header) shadow-[0_1px_8px_var(--color-shadow-sm)]">
+        <div className="mx-auto flex h-full max-w-screen-2xl items-center gap-4 px-6 md:px-8 lg:px-12">
           <Link
             href="/feed"
-            className="flex items-center gap-3 shrink-0 no-underline group"
+            className="group flex shrink-0 items-center gap-3 no-underline"
           >
             {/* Logo */}
-            <div className="relative w-10 h-10 md:w-11 md:h-11 shrink-0">
+            <div className="relative h-10 w-10 shrink-0 md:h-11 md:w-11">
               <Image
                 src="/imgs/logo.png"
                 alt="Logo Drinkool"
@@ -37,12 +28,7 @@ export default function FeedLayout({
             </div>
 
             {/* Brand name */}
-            <span
-              className="font-bold text-lg md:text-xl
-                         text-(--color-primary-dark)
-                         group-hover:text-(--color-primary)
-                         transition-colors duration-150"
-            >
+            <span className="text-lg font-bold text-(--color-primary-dark) transition-colors duration-150 group-hover:text-(--color-primary) md:text-xl">
               Drinkool
             </span>
           </Link>
