@@ -7,7 +7,7 @@ if (!version) {
   process.exit(1);
 }
 
-const zipPath = `release-v${version}.zip`; // Thêm version vào tên file cho dễ quản lý
+const zipPath = `release.zip`;
 
 console.log(
   `📦 Đang chuẩn bị đóng gói App Router Standalone cho version: ${version}...`,

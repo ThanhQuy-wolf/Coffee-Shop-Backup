@@ -20,7 +20,7 @@
 
 # production
 /build
-/release.zip
+/release*.zip
 
 # misc
 .DS_Store
