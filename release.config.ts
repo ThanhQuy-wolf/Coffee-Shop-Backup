@@ -18,8 +18,7 @@ const config: GlobalConfig = {
     [
       "@semantic-release/exec",
       {
-        prepareCmd:
-          "node scripts/release.ts ${nextRelease.version}",
+        prepareCmd: "node scripts/release.ts ${nextRelease.version}",
       },
     ],
     [
