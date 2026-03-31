@@ -9,11 +9,15 @@ if (!version) {
 
 const zipPath = `release-v${version}.zip`; // Thêm version vào tên file cho dễ quản lý
 
-console.log(`📦 Đang chuẩn bị đóng gói App Router Standalone cho version: ${version}...`);
+console.log(
+  `📦 Đang chuẩn bị đóng gói App Router Standalone cho version: ${version}...`,
+);
 
 // Kiểm tra xem đã build chưa
 if (!fs.existsSync(".next/standalone")) {
-  console.error("❌ Thư mục .next/standalone không tồn tại. Hãy chạy 'pnpm build' trước!");
+  console.error(
+    "❌ Thư mục .next/standalone không tồn tại. Hãy chạy 'pnpm build' trước!",
+  );
   process.exit(1);
 }
 
@@ -27,10 +31,10 @@ if (!fs.existsSync(".next/standalone")) {
 try {
   // Tạo thư mục tạm để cấu trúc lại file trước khi nén
   execSync("rm -rf temp_release && mkdir -p temp_release");
-  
+
   console.log("🚚 Đang sao chép các file standalone...");
   execSync("cp -r .next/standalone/. temp_release/");
-  
+
   console.log("🚚 Đang sao chép static và public...");
   execSync("mkdir -p temp_release/.next/static");
   execSync("cp -r .next/static/. temp_release/.next/static/");
@@ -44,7 +48,7 @@ try {
   execSync("rm -rf temp_release");
 
   console.log(`✅ Đã tạo file thành công: ${zipPath}`);
-  
+
   execSync("pnpm format");
 } catch (error) {
   console.error("❌ Có lỗi xảy ra trong quá trình nén:", error.message);
