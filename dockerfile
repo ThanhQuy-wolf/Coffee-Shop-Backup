@@ -1,32 +1,48 @@
-# --- Giai đoạn 1: Build ---
-FROM node:25-alpine AS builder
+# --- Giai đoạn 1: Dependencies ---
+FROM node:25-alpine AS deps
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
 
 # Cài đặt pnpm
 RUN npm install -g pnpm
 
-WORKDIR /app
-
-# Copy file định nghĩa package
+# Copy file định nghĩa package để tận dụng cache của Docker
 COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 
-# Cài đặt dependencies (sử dụng --frozen-lockfile để đảm bảo đúng phiên bản)
-RUN pnpm install --prod --frozen-lockfile
-
-# Copy toàn bộ code
+# --- Giai đoạn 2: Builder ---
+FROM node:25-alpine AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Build Next.js (Yêu cầu next.config.js có output: 'export')
+# Tắt dữ liệu thu thập của Next.js trong quá trình build
+ENV NEXT_TELEMETRY_DISABLED 1
+
+RUN npm install -g pnpm
 RUN pnpm run build
 
-# --- Giai đoạn 2: Run (Sản phẩm cuối) ---
-FROM nginx:alpine
+# --- Giai đoạn 3: Runner (Sản phẩm cuối) ---
+FROM node:25-alpine AS runner
+WORKDIR /app
 
-# Xóa file mặc định của nginx (tùy chọn nhưng nên làm)
-RUN rm -rf /usr/share/nginx/html/*
+ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
 
-# Copy folder out từ giai đoạn builder
-COPY --from=builder /app/out /usr/share/nginx/html
+# Tạo user để chạy app (bảo mật hơn chạy root)
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
 
-EXPOSE 80
+# Copy các file cần thiết từ builder
+# Standalone chỉ copy code cần chạy, bỏ qua devDependencies và file thừa
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-CMD ["nginx", "-g", "daemon off;"]
+USER nextjs
+
+EXPOSE 3000
+ENV PORT 3000
+
+# Chạy bằng server.js được sinh ra bởi output: 'standalone'
+CMD ["node", "server.js"]

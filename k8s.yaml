@@ -17,13 +17,18 @@ spec:
       containers:
       - name: frontend-container
         image: git.demonkernel.io.vn/foodsurf/frontend:latest
+        ports:
+          - containerPort: 3000
         resources:
           limits:
-            cpu: "50m"  
-            memory: "32Mi" 
+            cpu: "200m"
+            memory: "256Mi"
           requests:
-            cpu: "10m" 
-            memory: "16Mi"
+            cpu: "50m" 
+            memory: "128Mi"
+        env:
+          - name: NODE_ENV
+            value: "production"
 ---
 apiVersion: v1
 kind: Service
@@ -35,6 +40,6 @@ spec:
     app: web 
   ports:
     - protocol: TCP
-      port: 80
-      targetPort: 80
-      nodePort: 30080
+      port: 80      
+      targetPort: 3000 
+      nodePort: 30080 
