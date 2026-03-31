@@ -19,8 +19,7 @@ COPY . .
 # Tắt dữ liệu thu thập của Next.js trong quá trình build
 ENV NEXT_TELEMETRY_DISABLED 1
 
-RUN npm install -g pnpm
-RUN pnpm run build
+RUN npm run build
 
 # --- Giai đoạn 3: Runner (Sản phẩm cuối) ---
 FROM node:25-alpine AS runner
