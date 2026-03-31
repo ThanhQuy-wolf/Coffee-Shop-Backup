@@ -19,7 +19,7 @@ const config: GlobalConfig = {
       "@semantic-release/exec",
       {
         prepareCmd:
-          "node scripts/release.ts ${nextRelease.version} && sed -i 's|image: git.demonkernel.io.vn/foodsurf/frontend:.*|image: git.demonkernel.io.vn/foodsurf/frontend:${nextRelease.version}|g' k8s/k8s.yaml",
+          "node scripts/release.ts ${nextRelease.version} && sed -i 's|image: git.demonkernel.io.vn/foodsurf/frontend:.*|image: git.demonkernel.io.vn/foodsurf/frontend:${nextRelease.version}|g' k8s.yaml",
       },
     ],
     [
