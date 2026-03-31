@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: frontend-container
-        image: git.demonkernel.io.vn/foodsurf/frontend:1.0.6
+        image: git.demonkernel.io.vn/foodsurf/frontend:latest
         resources:
           limits:
             cpu: "50m"  
