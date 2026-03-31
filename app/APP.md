@@ -233,9 +233,9 @@ registration flow. Two-step process: phone verification → account creation.
 
 ### 4. Payment Page (app/(main)/payment/page.tsx)
 
-**Route:** `/payment`
-**Type:** Client component
-**Description:** Payment/checkout page. Shows cart items in a table with quantity controls and a summary aside with payment actions.
+**Route:** `/payment` **Type:** Client component **Description:**
+Payment/checkout page. Shows cart items in a table with quantity controls and a
+summary aside with payment actions.
 
 #### Key Features
 
@@ -248,32 +248,43 @@ registration flow. Two-step process: phone verification → account creation.
 - **Invoice Aside:**
   - Sticky on desktop (top offset = header height + 1rem)
   - Shows total price
-  - Payment buttons: Tiền mặt, QR Code (UI-only; trigger review modal for customers)
-  - **"Đánh giá" button** — only visible when `user.role === "customer"`; opens ReviewModal
-  - **"Quay về" button** — links back to `/`; spans full width when review button is absent
+  - Payment buttons: Tiền mặt, QR Code (UI-only; trigger review modal for
+    customers)
+  - **"Đánh giá" button** — only visible when `user.role === "customer"`; opens
+    ReviewModal
+  - **"Quay về" button** — links back to `/`; spans full width when review
+    button is absent
 
 - **Review Modal (ReviewModal):**
-  - Opened when a customer clicks "Đánh giá" OR clicks a payment button (Tiền mặt/QR)
-  - Closed via "Quay lại" button, backdrop click, or after submitting and closing
+  - Opened when a customer clicks "Đánh giá" OR clicks a payment button (Tiền
+    mặt/QR)
+  - Closed via "Quay lại" button, backdrop click, or after submitting and
+    closing
   - See `components/ReviewModal.tsx` for full documentation
 
 #### Context Usage
 
-- **useCart()** — items, totalPrice, increaseQty, decreaseQty, removeFromCart, setQuantity
-- **useAuth()** — user (to check `user.role === "customer"` for review button visibility)
+- **useCart()** — items, totalPrice, increaseQty, decreaseQty, removeFromCart,
+  setQuantity
+- **useAuth()** — user (to check `user.role === "customer"` for review button
+  visibility)
 
 #### State Management
 
 ```tsx
-isReviewOpen: boolean   // Controls ReviewModal visibility
-isCustomer: boolean     // Derived from user.role === "customer"
+isReviewOpen: boolean; // Controls ReviewModal visibility
+isCustomer: boolean; // Derived from user.role === "customer"
 ```
 
 #### Responsive Behavior
 
-- **Mobile:** Single column layout, table scrolls horizontally, button labels hidden (icon only)
-- **Desktop (lg+):** Button labels visible, aside becomes sticky sidebar (xl: w-85)
-- **Review button grid:** When customer is logged in, 3 buttons in 2-column grid; "Quay về" occupies remaining space. Otherwise 2-column grid with "Quay về" spanning full width.
+- **Mobile:** Single column layout, table scrolls horizontally, button labels
+  hidden (icon only)
+- **Desktop (lg+):** Button labels visible, aside becomes sticky sidebar (xl:
+  w-85)
+- **Review button grid:** When customer is logged in, 3 buttons in 2-column
+  grid; "Quay về" occupies remaining space. Otherwise 2-column grid with "Quay
+  về" spanning full width.
 
 ---
 

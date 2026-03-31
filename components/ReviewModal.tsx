@@ -52,7 +52,7 @@ export default function ReviewModal({ isOpen, onClose }: ReviewModalProps) {
             </div>
             <h2
               id="review-modal-title"
-              className="text-xl font-bold text-foreground"
+              className="text-foreground text-xl font-bold"
             >
               Cảm ơn quý khách
             </h2>
@@ -71,7 +71,7 @@ export default function ReviewModal({ isOpen, onClose }: ReviewModalProps) {
           <>
             <h2
               id="review-modal-title"
-              className="mb-1 text-xl font-bold text-foreground"
+              className="text-foreground mb-1 text-xl font-bold"
             >
               Đánh giá của bạn
             </h2>
@@ -138,7 +138,7 @@ export default function ReviewModal({ isOpen, onClose }: ReviewModalProps) {
                 onChange={(e) => setReview(e.target.value)}
                 placeholder="Chia sẻ cảm nhận của bạn về đồ uống, dịch vụ..."
                 rows={4}
-                className="w-full resize-none rounded-xl border border-(--color-border) bg-transparent px-3 py-2.5 text-sm text-foreground placeholder:text-(--color-text-muted) focus:border-(--color-primary) focus:outline-none focus:ring-2 focus:ring-(--color-primary)/20 transition-colors"
+                className="text-foreground w-full resize-none rounded-xl border border-(--color-border) bg-transparent px-3 py-2.5 text-sm transition-colors placeholder:text-(--color-text-muted) focus:border-(--color-primary) focus:ring-2 focus:ring-(--color-primary)/20 focus:outline-none"
               />
             </div>
 
@@ -147,7 +147,7 @@ export default function ReviewModal({ isOpen, onClose }: ReviewModalProps) {
               <button
                 type="button"
                 onClick={handleClose}
-                className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-(--color-border) px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-(--color-border-light)"
+                className="text-foreground inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-(--color-border) px-4 py-2.5 text-sm font-medium transition-colors hover:bg-(--color-border-light)"
               >
                 <i className="fa-solid fa-arrow-left"></i>
                 Quay lại
@@ -156,7 +156,7 @@ export default function ReviewModal({ isOpen, onClose }: ReviewModalProps) {
                 type="button"
                 onClick={handleSubmit}
                 disabled={rating === 0}
-                className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-(--color-primary) px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-(--color-primary-dark) disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-(--color-primary) px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-(--color-primary-dark) disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <i className="fa-solid fa-check"></i>
                 Xác nhận
