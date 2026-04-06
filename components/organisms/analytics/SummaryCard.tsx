@@ -29,7 +29,9 @@ export function SummaryCard({
         <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-(--color-accent-light) text-lg text-(--color-primary)">
           <i className={icon}></i>
         </span>
-        <span className="text-sm font-medium text-(--color-text-muted)">{title}</span>
+        <span className="text-sm font-medium text-(--color-text-muted)">
+          {title}
+        </span>
       </div>
       <p className="text-foreground text-2xl font-bold tabular-nums">{value}</p>
       {subtitle && (

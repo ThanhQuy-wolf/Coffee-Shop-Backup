@@ -14,10 +14,12 @@ export default function Button({
 }: ButtonProps) {
   const styles = {
     base: "font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-1.5",
-    payment: "inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl transition-colors",
-    login: "w-full cursor-pointer rounded-xl py-3 font-semibold transition-all duration-150",
-  }
-  
+    payment:
+      "inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl transition-colors",
+    login:
+      "w-full cursor-pointer rounded-xl py-3 font-semibold transition-all duration-150",
+  };
+
   const variants = {
     primary:
       "bg-(--color-primary) text-white hover:bg-(--color-primary-dark) active:scale-95",
@@ -25,8 +27,10 @@ export default function Button({
       "border border-(--color-border) hover:bg-(--color-border-light) active:scale-95",
     danger: "bg-red-500 text-white hover:bg-red-600 active:scale-95",
     ghost: "bg-transparent hover:bg-(--color-border-light) active:scale-95",
-    primaryNoBorder: "border-none bg-(--color-primary) text-white hover:bg-(--color-primary-dark) active:scale-98",
-    bgWhite: "border-2 border-(--color-primary) bg-white text-(--color-primary) hover:bg-(--color-primary) hover:text-white active:scale-98",
+    primaryNoBorder:
+      "border-none bg-(--color-primary) text-white hover:bg-(--color-primary-dark) active:scale-98",
+    bgWhite:
+      "border-2 border-(--color-primary) bg-white text-(--color-primary) hover:bg-(--color-primary) hover:text-white active:scale-98",
   };
 
   const sizes = {

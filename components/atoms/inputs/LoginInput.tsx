@@ -46,7 +46,11 @@ export default function LoginInput({
           type={showPassword ? "text" : type}
           value={value}
           onChange={onChange}
-          placeholder= {type === "password" ? "Mật khẩu" : "admin / số điện thoại / tên nhân viên"}
+          placeholder={
+            type === "password"
+              ? "Mật khẩu"
+              : "admin / số điện thoại / tên nhân viên"
+          }
           className={`text-foreground focus:ring-opacity-20 w-full rounded-xl border bg-white px-10 py-3 transition-all duration-150 outline-none placeholder:text-(--color-text-muted) focus:border-(--color-primary) focus:ring-2 focus:ring-(--color-primary) lg:pl-11 ${errors ? "border-red-400" : "border-(--color-border)"} `}
         />
         {isPassword()}

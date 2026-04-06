@@ -1,12 +1,12 @@
 "use client";
 
+import Button from "@/components/atoms/buttons/Button";
 import { useAuth } from "@/lib/auth-context";
 import { SHOP_INFO } from "@/lib/constants";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
-import Button from "@/components/atoms/buttons/Button";
 
 // Static OTP for demo (in production, this would be sent via SMS)
 const DEMO_OTP = "123456";
@@ -161,7 +161,12 @@ export default function RegisterPage() {
             {/* Buttons */}
             <div className="space-y-3 pt-2">
               {/* Submit Button */}
-              <Button variant="primaryNoBorder" type="submit" style="login" size="lg">
+              <Button
+                variant="primaryNoBorder"
+                type="submit"
+                style="login"
+                size="lg"
+              >
                 Tiếp tục
               </Button>
 
@@ -227,12 +232,22 @@ export default function RegisterPage() {
             {/* Buttons */}
             <div className="space-y-3 pt-2">
               {/* Submit Button */}
-              <Button variant="primaryNoBorder" type="submit" style="login" size="lg">
+              <Button
+                variant="primaryNoBorder"
+                type="submit"
+                style="login"
+                size="lg"
+              >
                 Hoàn tất đăng ký
               </Button>
 
               {/* Back Button */}
-              <Button variant="bgWhite" onClick={handleBackToPhone} size="lg" style="login">
+              <Button
+                variant="bgWhite"
+                onClick={handleBackToPhone}
+                size="lg"
+                style="login"
+              >
                 Thay đổi số điện thoại
               </Button>
             </div>

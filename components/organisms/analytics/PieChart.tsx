@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 
 export interface PieSlice {
   label: string;
@@ -78,7 +78,14 @@ export function PieChart({ data }: PieChartProps) {
           />
         ))}
         {hovered !== null && (
-          <text x={CX} y={CY + 5} textAnchor="middle" fontSize="12" fontWeight="bold" fill="#3D2B1F">
+          <text
+            x={CX}
+            y={CY + 5}
+            textAnchor="middle"
+            fontSize="12"
+            fontWeight="bold"
+            fill="#3D2B1F"
+          >
             {slices[hovered].percent.toFixed(1)}%
           </text>
         )}
@@ -93,14 +100,22 @@ export function PieChart({ data }: PieChartProps) {
             onMouseEnter={() => setHovered(s.index)}
             onMouseLeave={() => setHovered(null)}
           >
-            <span className="inline-block h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: s.color }} />
+            <span
+              className="inline-block h-3 w-3 shrink-0 rounded-full"
+              style={{ backgroundColor: s.color }}
+            />
             <span
               className="max-w-35 truncate"
-              style={{ color: hovered === s.index ? "#3D2B1F" : "#6F4E37", fontWeight: hovered === s.index ? 600 : 400 }}
+              style={{
+                color: hovered === s.index ? "#3D2B1F" : "#6F4E37",
+                fontWeight: hovered === s.index ? 600 : 400,
+              }}
             >
               {s.label}
             </span>
-            <span className="text-xs text-(--color-text-muted)">{s.percent.toFixed(1)}%</span>
+            <span className="text-xs text-(--color-text-muted)">
+              {s.percent.toFixed(1)}%
+            </span>
           </div>
         ))}
       </div>

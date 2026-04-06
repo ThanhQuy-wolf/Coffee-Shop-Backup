@@ -1,10 +1,10 @@
+import Button from "@/components/atoms/buttons/Button";
 import ErrorMessageLogin from "@/components/atoms/errors/ErrorMessageLogin";
 import LoginInput from "@/components/atoms/inputs/LoginInput";
 import { useAuth } from "@/lib/auth-context";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
-import Button from "@/components/atoms/buttons/Button";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -102,7 +102,12 @@ export default function LoginForm() {
         {/* Buttons */}
         <div className="space-y-3 pt-2">
           {/* Login Button */}
-          <Button variant="primaryNoBorder" type="submit" style="login" size="lg">
+          <Button
+            variant="primaryNoBorder"
+            type="submit"
+            style="login"
+            size="lg"
+          >
             Đăng nhập
           </Button>
 

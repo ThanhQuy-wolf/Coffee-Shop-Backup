@@ -26,7 +26,5 @@ export default function ErrorMessageLogin({
     );
   }
 
-  return (
-    type === "primary" ? primaryType() : secondaryType()
-  );
+  return type === "primary" ? primaryType() : secondaryType();
 }

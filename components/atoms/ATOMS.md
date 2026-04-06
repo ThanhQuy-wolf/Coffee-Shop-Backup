@@ -1,16 +1,18 @@
 # Atoms Components Library
 
-**Status:** ✅ Phase 1 Implementation Complete
-**Created:** 2026-04-03
+**Status:** ✅ Phase 1 Implementation Complete **Created:** 2026-04-03
 **Foundation:** Atomic Design Pattern
 
 ---
 
 ## 📚 Overview
 
-Atoms are the basic building blocks of your UI. They are small, focused, reusable components that have no dependencies on other components (except potentially other atoms).
+Atoms are the basic building blocks of your UI. They are small, focused,
+reusable components that have no dependencies on other components (except
+potentially other atoms).
 
 **Key Principles:**
+
 - ✅ No business logic
 - ✅ No context/hooks (useAuth, useCart, etc.)
 - ✅ Pure props-based
@@ -25,9 +27,11 @@ Atoms are the basic building blocks of your UI. They are small, focused, reusabl
 ### Buttons (`buttons/`)
 
 #### **Button.tsx**
+
 Main interactive button component with multiple variants and sizes.
 
 **Props:**
+
 - `variant` - "primary" | "secondary" | "danger" | "ghost" (default: "primary")
 - `size` - "sm" | "md" | "lg" (default: "md")
 - `icon` - FontAwesome icon class (optional)
@@ -38,6 +42,7 @@ Main interactive button component with multiple variants and sizes.
 - All standard HTML button attributes
 
 **Usage:**
+
 ```tsx
 import { Button } from "@/components/atoms";
 
@@ -55,6 +60,7 @@ import { Button } from "@/components/atoms";
 ```
 
 **Styling:**
+
 - Primary: Branded color with dark hover
 - Secondary: Border style with light background on hover
 - Danger: Red for destructive actions
@@ -63,15 +69,18 @@ import { Button } from "@/components/atoms";
 ---
 
 #### **IconButton.tsx**
+
 Button designed specifically for icon-only interactions.
 
 **Props:**
+
 - `variant` - "primary" | "secondary" | "danger" | "ghost"
 - `size` - "sm" (8x8) | "md" (10x10) | "lg" (12x12)
 - `icon` - FontAwesome icon class (required)
 - All standard HTML button attributes
 
 **Usage:**
+
 ```tsx
 import { IconButton } from "@/components/atoms";
 
@@ -84,9 +93,11 @@ import { IconButton } from "@/components/atoms";
 ### Inputs (`inputs/`)
 
 #### **TextInput.tsx**
+
 General text input field with optional label, error, and icon.
 
 **Props:**
+
 - `label` - string (optional)
 - `error` - string (optional, shows red border and error text)
 - `icon` - FontAwesome icon class (optional)
@@ -94,6 +105,7 @@ General text input field with optional label, error, and icon.
 - All standard HTML input attributes
 
 **Usage:**
+
 ```tsx
 import { TextInput } from "@/components/atoms";
 
@@ -115,9 +127,11 @@ import { TextInput } from "@/components/atoms";
 ---
 
 #### **SearchInput.tsx**
+
 Search input with built-in search icon and clear button.
 
 **Props:**
+
 - `value` - string (controlled input)
 - `onChange` - callback when text changes
 - `onClear` - callback for clear button (required for button to show)
@@ -125,6 +139,7 @@ Search input with built-in search icon and clear button.
 - All standard HTML input attributes
 
 **Usage:**
+
 ```tsx
 import { SearchInput } from "@/components/atoms";
 
@@ -135,20 +150,23 @@ const [query, setQuery] = useState("");
   onChange={(e) => setQuery(e.target.value)}
   onClear={() => setQuery("")}
   placeholder="Search products..."
-/>
+/>;
 ```
 
 ---
 
 #### **Textarea.tsx**
+
 Multi-line text input with optional label and error.
 
 **Props:**
+
 - `label` - string (optional)
 - `error` - string (optional)
 - All standard HTML textarea attributes
 
 **Usage:**
+
 ```tsx
 import { Textarea } from "@/components/atoms";
 
@@ -158,7 +176,7 @@ import { Textarea } from "@/components/atoms";
   rows={4}
   value={review}
   onChange={(e) => setReview(e.target.value)}
-/>
+/>;
 ```
 
 ---
@@ -166,14 +184,17 @@ import { Textarea } from "@/components/atoms";
 ### Typography (`typography/`)
 
 #### **Heading.tsx**
+
 Semantic heading component with level-based sizing.
 
 **Props:**
+
 - `level` - 1 | 2 | 3 | 4 | 5 | 6 (default: 2)
 - `children` - ReactNode
 - All standard HTML heading attributes
 
 **Sizing:**
+
 - Level 1: text-3xl font-bold
 - Level 2: text-2xl font-bold
 - Level 3: text-xl font-bold
@@ -182,6 +203,7 @@ Semantic heading component with level-based sizing.
 - Level 6: text-sm font-semibold
 
 **Usage:**
+
 ```tsx
 import { Heading } from "@/components/atoms";
 
@@ -193,20 +215,24 @@ import { Heading } from "@/components/atoms";
 ---
 
 #### **Text.tsx**
+
 Paragraph text with semantic variants.
 
 **Props:**
+
 - `variant` - "body1" | "body2" | "caption" | "label" (default: "body1")
 - `children` - ReactNode
 - All standard HTML paragraph attributes
 
 **Variants:**
+
 - body1: text-base (main content)
 - body2: text-sm (secondary content)
 - caption: text-xs (smallest text)
 - label: text-sm font-medium (form labels)
 
 **Usage:**
+
 ```tsx
 import { Text } from "@/components/atoms";
 
@@ -219,13 +245,16 @@ import { Text } from "@/components/atoms";
 ---
 
 #### **Caption.tsx**
+
 Small caption/note text component.
 
 **Props:**
+
 - `children` - ReactNode
 - All standard HTML span attributes
 
 **Usage:**
+
 ```tsx
 import { Caption } from "@/components/atoms";
 
@@ -238,15 +267,19 @@ import { Caption } from "@/components/atoms";
 ### Badges (`badges/`)
 
 #### **Badge.tsx**
+
 Labeled badge component for highlighting information.
 
 **Props:**
-- `variant` - "primary" | "secondary" | "success" | "danger" | "warning" (default: "primary")
+
+- `variant` - "primary" | "secondary" | "success" | "danger" | "warning"
+  (default: "primary")
 - `size` - "sm" | "md" (default: "md")
 - `children` - ReactNode
 - All standard HTML span attributes
 
 **Variants:**
+
 - primary: Branded color
 - secondary: Light gray
 - success: Green
@@ -254,6 +287,7 @@ Labeled badge component for highlighting information.
 - warning: Yellow
 
 **Usage:**
+
 ```tsx
 import { Badge } from "@/components/atoms";
 
@@ -265,14 +299,17 @@ import { Badge } from "@/components/atoms";
 ---
 
 #### **PriceBadge.tsx**
+
 Specialized badge for displaying formatted prices.
 
 **Props:**
+
 - `price` - number
 - `currency` - string (default: "VND")
 - All standard HTML span attributes
 
 **Usage:**
+
 ```tsx
 import { PriceBadge } from "@/components/atoms";
 
@@ -281,6 +318,7 @@ import { PriceBadge } from "@/components/atoms";
 ```
 
 **Output:**
+
 - VND: "50.000 ₫"
 - USD: "$99.99"
 
@@ -289,13 +327,16 @@ import { PriceBadge } from "@/components/atoms";
 ### Dividers (`dividers/`)
 
 #### **Divider.tsx**
+
 Visual separator element.
 
 **Props:**
+
 - `orientation` - "horizontal" | "vertical" (default: "horizontal")
 - All standard HTML hr attributes
 
 **Usage:**
+
 ```tsx
 import { Divider } from "@/components/atoms";
 
@@ -332,34 +373,41 @@ Change one variable in `globals.css` to update all atoms across the app.
 ## 🔄 Import Patterns
 
 ### Individual Imports
+
 ```tsx
-import { Button } from "@/components/atoms/buttons";
-import { TextInput, SearchInput } from "@/components/atoms/inputs";
-import { Heading, Text, Caption } from "@/components/atoms/typography";
 import { Badge, PriceBadge } from "@/components/atoms/badges";
+import { Button } from "@/components/atoms/buttons";
 import { Divider } from "@/components/atoms/dividers";
+import { SearchInput, TextInput } from "@/components/atoms/inputs";
+import { Caption, Heading, Text } from "@/components/atoms/typography";
 ```
 
 ### Barrel Exports (Recommended)
+
 ```tsx
 import {
-  Button,
-  IconButton,
-  TextInput,
-  SearchInput,
-  Textarea,
-  Heading,
-  Text,
-  Caption,
   Badge,
-  PriceBadge,
+  Button,
+  Caption,
   Divider,
+  Heading,
+  IconButton,
+  PriceBadge,
+  SearchInput,
+  Text,
+  TextInput,
+  Textarea,
 } from "@/components/atoms";
 ```
 
 ### Type Imports
+
 ```tsx
-import type { ButtonProps, TextInputProps, HeadingProps } from "@/components/atoms";
+import type {
+  ButtonProps,
+  HeadingProps,
+  TextInputProps,
+} from "@/components/atoms";
 ```
 
 ---
@@ -367,13 +415,10 @@ import type { ButtonProps, TextInputProps, HeadingProps } from "@/components/ato
 ## ✅ Usage Examples
 
 ### Form Field
+
 ```tsx
 <div className="space-y-4">
-  <TextInput
-    label="Name"
-    placeholder="Enter your name"
-    type="text"
-  />
+  <TextInput label="Name" placeholder="Enter your name" type="text" />
   <TextInput
     label="Email"
     placeholder="user@example.com"
@@ -385,11 +430,12 @@ import type { ButtonProps, TextInputProps, HeadingProps } from "@/components/ato
 ```
 
 ### Product Card
+
 ```tsx
 <div className="rounded-lg border p-4">
   <Heading level={3}>Product Name</Heading>
   <Text variant="body2">Product description</Text>
-  <div className="flex items-center justify-between mt-4">
+  <div className="mt-4 flex items-center justify-between">
     <PriceBadge price={50000} />
     <Button icon="fa-cart-plus">Add to Cart</Button>
   </div>
@@ -397,6 +443,7 @@ import type { ButtonProps, TextInputProps, HeadingProps } from "@/components/ato
 ```
 
 ### Rating Display
+
 ```tsx
 <div>
   <Heading level={4}>Reviews</Heading>
@@ -410,6 +457,7 @@ import type { ButtonProps, TextInputProps, HeadingProps } from "@/components/ato
 ## 🧪 Testing Atoms
 
 ### Props Validation
+
 ```tsx
 // ✅ Valid
 <Button variant="primary" size="sm">Click</Button>
@@ -420,7 +468,9 @@ import type { ButtonProps, TextInputProps, HeadingProps } from "@/components/ato
 ```
 
 ### Accessibility
+
 All atoms include:
+
 - Semantic HTML
 - ARIA labels where appropriate
 - Keyboard navigation support
@@ -466,7 +516,8 @@ components/atoms/
 
 ## 🚀 Next Steps
 
-Once atoms are comfortable, the next phase is creating **Molecules** - combinations of atoms:
+Once atoms are comfortable, the next phase is creating **Molecules** -
+combinations of atoms:
 
 - **ProductCard** - Image + Text + Badge + Button
 - **FormField** - Label + Input + Error Text
@@ -489,6 +540,5 @@ See `OPTIMIZATION_PLAN.md` for the full roadmap.
 
 ---
 
-**Status:** ✅ Complete & Ready for Use
-**Last Updated:** 2026-04-03
-**Phase:** 1 of 5
+**Status:** ✅ Complete & Ready for Use **Last Updated:** 2026-04-03 **Phase:**
+1 of 5

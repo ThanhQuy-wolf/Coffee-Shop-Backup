@@ -8,7 +8,11 @@ import {
   SummaryCard,
 } from "@/components/organisms/analytics";
 import type { PieSlice } from "@/components/organisms/analytics";
-import { calcChange, formatCurrency, formatCurrencyFull } from "@/lib/analytics-utils";
+import {
+  calcChange,
+  formatCurrency,
+  formatCurrencyFull,
+} from "@/lib/analytics-utils";
 import {
   MENU_CATEGORIES,
   MOCK_PRODUCT_SALES,
@@ -31,8 +35,15 @@ const PERIOD_LABELS: Record<AnalyticsPeriod, string> = {
 };
 
 const CATEGORY_COLORS = [
-  "#6F4E37", "#C8973A", "#A0785A", "#8B6914", "#D4A96A",
-  "#4A3728", "#F0D9A8", "#A08060", "#3D2B1F",
+  "#6F4E37",
+  "#C8973A",
+  "#A0785A",
+  "#8B6914",
+  "#D4A96A",
+  "#4A3728",
+  "#F0D9A8",
+  "#A08060",
+  "#3D2B1F",
 ];
 
 const REVENUE_MAP: Record<AnalyticsPeriod, RevenueDataPoint[]> = {
@@ -47,8 +58,8 @@ type ChartType = (typeof CHART_TYPES)[number];
 
 const CHART_META: Record<ChartType, { icon: string; label: string }> = {
   line: { icon: "fa-chart-line", label: "Line" },
-  bar:  { icon: "fa-chart-bar",  label: "Bar"  },
-  pie:  { icon: "fa-chart-pie",  label: "Pie"  },
+  bar: { icon: "fa-chart-bar", label: "Bar" },
+  pie: { icon: "fa-chart-pie", label: "Pie" },
 };
 
 // ─── Category filter select ───────────────────────────────────────────────────
@@ -74,7 +85,9 @@ function CategorySelect({
       >
         <option value="all">Tất cả</option>
         {categories.map((c) => (
-          <option key={c.id} value={c.id}>{c.name}</option>
+          <option key={c.id} value={c.id}>
+            {c.name}
+          </option>
         ))}
       </select>
     </div>
@@ -93,27 +106,28 @@ export default function AnalyticsPage() {
 
   // Split into halves for bar comparison
   const half = Math.floor(revenueData.length / 2);
-  const barCurrent  = revenueData.slice(half);
+  const barCurrent = revenueData.slice(half);
   const barPrevious = revenueData.slice(0, half).slice(0, barCurrent.length);
 
   // Filtered product sales
   const filteredSales = useMemo(
-    () => categoryFilter === "all"
-      ? MOCK_PRODUCT_SALES
-      : MOCK_PRODUCT_SALES.filter((p) => p.category === categoryFilter),
+    () =>
+      categoryFilter === "all"
+        ? MOCK_PRODUCT_SALES
+        : MOCK_PRODUCT_SALES.filter((p) => p.category === categoryFilter),
     [categoryFilter],
   );
 
   // Summary stats
   const totalRevenue = revenueData.reduce((s, d) => s + d.revenue, 0);
-  const totalOrders  = revenueData.reduce((s, d) => s + d.orders, 0);
-  const totalProfit  = filteredSales.reduce((s, d) => s + d.profit, 0);
+  const totalOrders = revenueData.reduce((s, d) => s + d.orders, 0);
+  const totalProfit = filteredSales.reduce((s, d) => s + d.profit, 0);
   const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
   // Period-over-period comparisons
   const curRevenue = barCurrent.reduce((s, d) => s + d.revenue, 0);
   const prevRevenue = barPrevious.reduce((s, d) => s + d.revenue, 0);
-  const curOrders  = barCurrent.reduce((s, d) => s + d.orders, 0);
+  const curOrders = barCurrent.reduce((s, d) => s + d.orders, 0);
   const prevOrders = barPrevious.reduce((s, d) => s + d.orders, 0);
   const revComp = calcChange(curRevenue, prevRevenue);
   const ordComp = calcChange(curOrders, prevOrders);
@@ -142,11 +156,13 @@ export default function AnalyticsPage() {
 
   // Totals for summary row
   const filteredRevenue = filteredSales.reduce((s, d) => s + d.revenue, 0);
-  const filteredProfit  = filteredSales.reduce((s, d) => s + d.profit, 0);
-  const filteredUnits   = filteredSales.reduce((s, d) => s + d.unitsSold, 0);
-  const avgMargin = filteredSales.length > 0
-    ? filteredSales.reduce((s, d) => s + d.profitMargin, 0) / filteredSales.length
-    : 0;
+  const filteredProfit = filteredSales.reduce((s, d) => s + d.profit, 0);
+  const filteredUnits = filteredSales.reduce((s, d) => s + d.unitsSold, 0);
+  const avgMargin =
+    filteredSales.length > 0
+      ? filteredSales.reduce((s, d) => s + d.profitMargin, 0) /
+        filteredSales.length
+      : 0;
 
   return (
     <div className="bg-background min-h-screen">
@@ -167,7 +183,9 @@ export default function AnalyticsPage() {
               <h1 className="text-foreground text-lg leading-tight font-bold">
                 Thống kê & Phân tích tài chính
               </h1>
-              <p className="text-xs text-(--color-text-muted)">Financial Analytics Dashboard</p>
+              <p className="text-xs text-(--color-text-muted)">
+                Financial Analytics Dashboard
+              </p>
             </div>
           </div>
 
@@ -192,8 +210,12 @@ export default function AnalyticsPage() {
               onChange={(e) => setPeriod(e.target.value as AnalyticsPeriod)}
               className="text-foreground block rounded-lg border border-(--color-border) bg-(--color-bg-card) px-2 py-1.5 text-xs sm:hidden"
             >
-              {(Object.entries(PERIOD_LABELS) as [AnalyticsPeriod, string][]).map(([k, v]) => (
-                <option key={k} value={k}>{v}</option>
+              {(
+                Object.entries(PERIOD_LABELS) as [AnalyticsPeriod, string][]
+              ).map(([k, v]) => (
+                <option key={k} value={k}>
+                  {v}
+                </option>
               ))}
             </select>
           </div>
@@ -207,18 +229,42 @@ export default function AnalyticsPage() {
             Tổng quan
           </h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <SummaryCard icon="fa-solid fa-sack-dollar" title="Tổng doanh thu"
-              value={formatCurrency(totalRevenue)} subtitle={PERIOD_LABELS[period]}
-              change={revComp.change} changePercent={revComp.changePercent} isPositive={revComp.isPositive} />
-            <SummaryCard icon="fa-solid fa-receipt" title="Số đơn hàng"
-              value={totalOrders.toLocaleString()} subtitle="Tổng đơn trong kỳ"
-              change={ordComp.change} changePercent={ordComp.changePercent} isPositive={ordComp.isPositive} />
-            <SummaryCard icon="fa-solid fa-circle-dollar-to-slot" title="Tổng lợi nhuận"
-              value={formatCurrency(totalProfit)} subtitle="Ước tính từ dữ liệu bán hàng"
-              change={proComp.change} changePercent={proComp.changePercent} isPositive={proComp.isPositive} />
-            <SummaryCard icon="fa-solid fa-basket-shopping" title="Giá trị đơn TB"
-              value={formatCurrency(avgOrderValue)} subtitle="Doanh thu / số đơn hàng"
-              change={0} changePercent={0} isPositive={true} />
+            <SummaryCard
+              icon="fa-solid fa-sack-dollar"
+              title="Tổng doanh thu"
+              value={formatCurrency(totalRevenue)}
+              subtitle={PERIOD_LABELS[period]}
+              change={revComp.change}
+              changePercent={revComp.changePercent}
+              isPositive={revComp.isPositive}
+            />
+            <SummaryCard
+              icon="fa-solid fa-receipt"
+              title="Số đơn hàng"
+              value={totalOrders.toLocaleString()}
+              subtitle="Tổng đơn trong kỳ"
+              change={ordComp.change}
+              changePercent={ordComp.changePercent}
+              isPositive={ordComp.isPositive}
+            />
+            <SummaryCard
+              icon="fa-solid fa-circle-dollar-to-slot"
+              title="Tổng lợi nhuận"
+              value={formatCurrency(totalProfit)}
+              subtitle="Ước tính từ dữ liệu bán hàng"
+              change={proComp.change}
+              changePercent={proComp.changePercent}
+              isPositive={proComp.isPositive}
+            />
+            <SummaryCard
+              icon="fa-solid fa-basket-shopping"
+              title="Giá trị đơn TB"
+              value={formatCurrency(avgOrderValue)}
+              subtitle="Doanh thu / số đơn hàng"
+              change={0}
+              changePercent={0}
+              isPositive={true}
+            />
           </div>
         </section>
 
@@ -241,7 +287,9 @@ export default function AnalyticsPage() {
                   }`}
                 >
                   <i className={`fa-solid text-xs ${CHART_META[t].icon}`}></i>
-                  <span className="hidden sm:inline">{CHART_META[t].label}</span>
+                  <span className="hidden sm:inline">
+                    {CHART_META[t].label}
+                  </span>
                 </button>
               ))}
             </div>
@@ -249,19 +297,29 @@ export default function AnalyticsPage() {
 
           {activeChart === "line" && (
             <>
-              <p className="mb-3 text-xs text-(--color-text-muted)">Doanh thu theo thời gian — {PERIOD_LABELS[period]}</p>
+              <p className="mb-3 text-xs text-(--color-text-muted)">
+                Doanh thu theo thời gian — {PERIOD_LABELS[period]}
+              </p>
               <LineChart data={revenueData} height={220} />
             </>
           )}
           {activeChart === "bar" && (
             <>
-              <p className="mb-3 text-xs text-(--color-text-muted)">So sánh doanh thu nửa đầu và nửa sau kỳ hiện tại</p>
-              <BarChart current={barCurrent} previous={barPrevious} height={220} />
+              <p className="mb-3 text-xs text-(--color-text-muted)">
+                So sánh doanh thu nửa đầu và nửa sau kỳ hiện tại
+              </p>
+              <BarChart
+                current={barCurrent}
+                previous={barPrevious}
+                height={220}
+              />
             </>
           )}
           {activeChart === "pie" && (
             <>
-              <p className="mb-3 text-xs text-(--color-text-muted)">Tỷ trọng doanh thu theo danh mục sản phẩm</p>
+              <p className="mb-3 text-xs text-(--color-text-muted)">
+                Tỷ trọng doanh thu theo danh mục sản phẩm
+              </p>
               <PieChart data={pieData} />
             </>
           )}
@@ -274,7 +332,10 @@ export default function AnalyticsPage() {
               <i className="fa-solid fa-fire mr-2 text-orange-500"></i>
               Top sản phẩm bán chạy
             </h2>
-            <CategorySelect value={categoryFilter} onChange={setCategoryFilter} />
+            <CategorySelect
+              value={categoryFilter}
+              onChange={setCategoryFilter}
+            />
           </div>
           <div className="space-y-3">
             {top5.map((p, i) => {
@@ -286,15 +347,24 @@ export default function AnalyticsPage() {
                       <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-(--color-accent-light) text-xs font-bold text-(--color-primary)">
                         {i + 1}
                       </span>
-                      <span className="text-foreground truncate text-sm font-medium">{p.name}</span>
+                      <span className="text-foreground truncate text-sm font-medium">
+                        {p.name}
+                      </span>
                     </div>
                     <div className="flex shrink-0 items-center gap-3 text-xs">
-                      <span className="text-(--color-text-muted) tabular-nums">{p.unitsSold} ly</span>
-                      <span className="font-semibold text-(--color-primary) tabular-nums">{formatCurrency(p.revenue)}</span>
+                      <span className="text-(--color-text-muted) tabular-nums">
+                        {p.unitsSold} ly
+                      </span>
+                      <span className="font-semibold text-(--color-primary) tabular-nums">
+                        {formatCurrency(p.revenue)}
+                      </span>
                     </div>
                   </div>
                   <div className="bg-background h-2 overflow-hidden rounded-full">
-                    <div className="h-full rounded-full bg-(--color-primary) transition-all duration-500" style={{ width: `${pct}%` }} />
+                    <div
+                      className="h-full rounded-full bg-(--color-primary) transition-all duration-500"
+                      style={{ width: `${pct}%` }}
+                    />
                   </div>
                 </div>
               );
@@ -309,30 +379,51 @@ export default function AnalyticsPage() {
               <i className="fa-solid fa-table text-foreground mr-2"></i>
               Phân tích chi tiết sản phẩm
             </h2>
-            <CategorySelect value={categoryFilter} onChange={setCategoryFilter} label="Lọc danh mục:" />
+            <CategorySelect
+              value={categoryFilter}
+              onChange={setCategoryFilter}
+              label="Lọc danh mục:"
+            />
           </div>
           <p className="mb-3 text-xs text-(--color-text-muted)">
-            Click vào tiêu đề cột để sắp xếp. Hiển thị {filteredSales.length} sản phẩm.
+            Click vào tiêu đề cột để sắp xếp. Hiển thị {filteredSales.length}{" "}
+            sản phẩm.
           </p>
           <ProductTable data={filteredSales} />
 
           {/* Summary row */}
           <div className="bg-background mt-4 flex flex-wrap gap-4 rounded-xl p-4 text-sm">
             <div>
-              <span className="text-(--color-text-muted)">Tổng doanh thu: </span>
-              <span className="font-semibold text-(--color-primary)">{formatCurrencyFull(filteredRevenue)}</span>
+              <span className="text-(--color-text-muted)">
+                Tổng doanh thu:{" "}
+              </span>
+              <span className="font-semibold text-(--color-primary)">
+                {formatCurrencyFull(filteredRevenue)}
+              </span>
             </div>
             <div>
-              <span className="text-(--color-text-muted)">Tổng lợi nhuận: </span>
-              <span className="font-semibold text-green-600">{formatCurrencyFull(filteredProfit)}</span>
+              <span className="text-(--color-text-muted)">
+                Tổng lợi nhuận:{" "}
+              </span>
+              <span className="font-semibold text-green-600">
+                {formatCurrencyFull(filteredProfit)}
+              </span>
             </div>
             <div>
-              <span className="text-(--color-text-muted)">Tổng sản lượng: </span>
-              <span className="text-foreground font-semibold">{filteredUnits.toLocaleString()} ly</span>
+              <span className="text-(--color-text-muted)">
+                Tổng sản lượng:{" "}
+              </span>
+              <span className="text-foreground font-semibold">
+                {filteredUnits.toLocaleString()} ly
+              </span>
             </div>
             <div>
-              <span className="text-(--color-text-muted)">Biên LN trung bình: </span>
-              <span className="font-semibold text-yellow-700">{avgMargin.toFixed(1)}%</span>
+              <span className="text-(--color-text-muted)">
+                Biên LN trung bình:{" "}
+              </span>
+              <span className="font-semibold text-yellow-700">
+                {avgMargin.toFixed(1)}%
+              </span>
             </div>
           </div>
         </section>
