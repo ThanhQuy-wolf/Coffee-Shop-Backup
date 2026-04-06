@@ -1,11 +1,9 @@
 "use client";
 
+import { Button, Heading, Text, Textarea } from "@/components/atoms";
 import { useState } from "react";
 
-interface ReviewModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
+import type { ReviewModalProps } from "./Modal.types";
 
 export default function ReviewModal({ isOpen, onClose }: ReviewModalProps) {
   const [rating, setRating] = useState(0);
@@ -50,21 +48,15 @@ export default function ReviewModal({ isOpen, onClose }: ReviewModalProps) {
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-(--color-accent-light) text-3xl">
               <i className="fa-solid fa-heart text-(--color-accent)"></i>
             </div>
-            <h2
-              id="review-modal-title"
-              className="text-foreground text-xl font-bold"
-            >
+            <Heading level={2} id="review-modal-title">
               Cảm ơn quý khách
-            </h2>
-            <p className="text-(--color-text-muted)">
+            </Heading>
+            <Text variant="body2" className="mt-2">
               Chúng tôi trân trọng đánh giá của bạn!
-            </p>
-            <button
-              onClick={handleClose}
-              className="mt-2 inline-flex items-center justify-center gap-2 rounded-xl bg-(--color-primary) px-6 py-2.5 text-white transition-colors hover:bg-(--color-primary-dark)"
-            >
+            </Text>
+            <Button onClick={handleClose} variant="primary" className="mt-4">
               Đóng
-            </button>
+            </Button>
           </div>
         ) : (
           /* Review form */
@@ -126,41 +118,36 @@ export default function ReviewModal({ isOpen, onClose }: ReviewModalProps) {
 
             {/* Review textarea */}
             <div className="mb-6">
-              <label
-                htmlFor="review-text"
-                className="mb-2 block text-sm font-medium text-(--color-text-secondary)"
-              >
-                Nhận xét (tùy chọn)
-              </label>
-              <textarea
+              <Textarea
                 id="review-text"
+                label="Nhận xét (tùy chọn)"
                 value={review}
                 onChange={(e) => setReview(e.target.value)}
                 placeholder="Chia sẻ cảm nhận của bạn về đồ uống, dịch vụ..."
                 rows={4}
-                className="text-foreground w-full resize-none rounded-xl border border-(--color-border) bg-transparent px-3 py-2.5 text-sm transition-colors placeholder:text-(--color-text-muted) focus:border-(--color-primary) focus:ring-2 focus:ring-(--color-primary)/20 focus:outline-none"
               />
             </div>
 
             {/* Footer buttons */}
             <div className="flex gap-3">
-              <button
+              <Button
                 type="button"
                 onClick={handleClose}
-                className="text-foreground inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-(--color-border) px-4 py-2.5 text-sm font-medium transition-colors hover:bg-(--color-border-light)"
+                variant="secondary"
+                className="flex-1"
+                icon="fa-arrow-left"
               >
-                <i className="fa-solid fa-arrow-left"></i>
                 Quay lại
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={handleSubmit}
                 disabled={rating === 0}
-                className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-(--color-primary) px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-(--color-primary-dark) disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex-1"
+                icon="fa-check"
               >
-                <i className="fa-solid fa-check"></i>
                 Xác nhận
-              </button>
+              </Button>
             </div>
           </>
         )}

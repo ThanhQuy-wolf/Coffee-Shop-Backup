@@ -1,5 +1,20 @@
 {
   "permissions": {
-    "allow": ["Bash(npx next build)"]
+    "allow": [
+      "Bash(npx next build)",
+      "Bash(npx tsc --noEmit)",
+      "Bash(npm run lint)",
+      "Bash(ls \"c:/VS code/CongNghePhanMem/Final/frondend/app/\\(main\\)/\")",
+      "Bash(ls \"c:/VS code/CongNghePhanMem/Final/frondend/app/\\(feed\\)/\")",
+      "Bash(ls \"c:/VS code/CongNghePhanMem/Final/frondend/app/\\(manager\\)/\")",
+      "Bash(ls \"c:/VS code/CongNghePhanMem/Final/frondend/app/\\(main\\)/payment/\")",
+      "Bash(ls \"c:/VS code/CongNghePhanMem/Final/frondend/app/\\(main\\)/login/\")",
+      "Bash(ls \"c:/VS code/CongNghePhanMem/Final/frondend/app/\\(main\\)/register/\")",
+      "Bash(ls \"c:/VS code/CongNghePhanMem/Final/frondend/app/\\(feed\\)/feed/\")",
+      "Bash(ls \"c:/VS code/CongNghePhanMem/Final/frondend/app/\\(manager\\)/manager/\")",
+      "Bash(npm run build)",
+      "Bash(cat \"c:/VS code/CongNghePhanMem/Final/frondend/app/\\(manager\\)/manager/page.tsx\")",
+      "Bash(wc -l \"c:/VS code/CongNghePhanMem/Final/frondend/app/\\(manager\\)/manager/page.tsx\")"
+    ]
   }
 }

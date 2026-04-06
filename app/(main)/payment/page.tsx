@@ -1,9 +1,10 @@
 "use client";
 
-import ReviewModal from "@/components/ReviewModal";
+import Button from "@/components/atoms/buttons/Button";
+import PaymentSummaryCard from "@/components/molecules/cards/PaymentSummaryCard";
+import ReviewModal from "@/components/organisms/modals/ReviewModal";
 import { useAuth } from "@/lib/auth-context";
 import { useCart } from "@/lib/cart-context";
-import Link from "next/link";
 import { useState } from "react";
 
 const formatPrice = (value: number) =>
@@ -23,15 +24,8 @@ export default function PaymentPage() {
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const isCustomer = user?.role === "customer";
 
-  const handlePayment = () => {
-    // UI-only: open review modal after "payment"
-    if (isCustomer) {
-      setIsReviewOpen(true);
-    }
-  };
-
   return (
-    <>
+    <div>
       <div className="mx-auto w-full max-w-screen-2xl px-4 py-6 md:px-6 md:py-8 lg:px-8">
         <div className="flex flex-col gap-6 xl:flex-row">
           <section className="min-w-0 flex-1">
@@ -81,7 +75,7 @@ export default function PaymentPage() {
                             <div className="flex items-center gap-2">
                               <button
                                 onClick={() => decreaseQty(item.id)}
-                                className="h-8 w-8 rounded-lg border border-(--color-border) hover:bg-(--color-border-light)"
+                                className="inline-flex items-center justify-center h-8 w-8 rounded-lg border border-(--color-border) hover:bg-(--color-border-light)"
                                 aria-label={`Giảm số lượng ${item.name}`}
                               >
                                 -
@@ -98,7 +92,7 @@ export default function PaymentPage() {
                               />
                               <button
                                 onClick={() => increaseQty(item.id)}
-                                className="h-8 w-8 rounded-lg border border-(--color-border) hover:bg-(--color-border-light)"
+                                className="inline-flex items-center justify-center h-8 w-8 rounded-lg border border-(--color-border) hover:bg-(--color-border-light)"
                                 aria-label={`Tăng số lượng ${item.name}`}
                               >
                                 +
@@ -106,15 +100,14 @@ export default function PaymentPage() {
                             </div>
                           </td>
                           <td className="px-4 py-3 text-right">
-                            <button
+                            <Button
                               onClick={() => removeFromCart(item.id)}
-                              className="inline-flex items-center justify-center gap-2 rounded-lg bg-red-500 px-3 py-2 text-white transition-colors hover:bg-red-600"
+                              variant="danger"
+                              size="md"
+                              style="payment"
                             >
-                              <i className="fa-solid fa-trash"></i>
-                              <span className="hidden lg:inline">
-                                Xóa sản phẩm
-                              </span>
-                            </button>
+                              Xóa sản phẩm
+                            </Button>
                           </td>
                         </tr>
                       ))}
@@ -125,59 +118,11 @@ export default function PaymentPage() {
             </div>
           </section>
 
-          <aside className="shrink-0 xl:w-85">
-            <div className="bg-card sticky top-[calc(var(--spacing-header-height)+1rem)] rounded-2xl border border-(--color-border-light) p-4 md:p-5">
-              <h2 className="mb-4 text-lg font-bold">Hóa đơn</h2>
-
-              <div className="flex items-center justify-between border-b border-(--color-border-light) pb-4">
-                <span className="text-(--color-text-muted)">Tổng cộng</span>
-                <span className="text-xl font-bold text-(--color-primary)">
-                  {formatPrice(totalPrice)}
-                </span>
-              </div>
-
-              <div className="mt-4 grid grid-cols-2 gap-3">
-                <button
-                  onClick={handlePayment}
-                  className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-(--color-primary) px-3 py-2.5 text-white transition-colors hover:bg-(--color-primary-dark)"
-                  type="button"
-                >
-                  <i className="fa-solid fa-money-bill-wave"></i>
-                  <span className="hidden lg:inline">Tiền mặt</span>
-                </button>
-
-                <button
-                  onClick={handlePayment}
-                  className="text-foreground inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-(--color-border) px-3 py-2.5 transition-colors hover:bg-(--color-border-light)"
-                  type="button"
-                >
-                  <i className="fa-solid fa-qrcode"></i>
-                  <span className="hidden lg:inline">QR Code</span>
-                </button>
-
-                {isCustomer && (
-                  <button
-                    onClick={() => setIsReviewOpen(true)}
-                    className="text-foreground inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-(--color-border) px-3 py-2.5 transition-colors hover:bg-(--color-border-light)"
-                    type="button"
-                  >
-                    <i className="fa-solid fa-star"></i>
-                    <span className="hidden lg:inline">Đánh giá</span>
-                  </button>
-                )}
-
-                <Link href="/" className={isCustomer ? "" : "col-span-2"}>
-                  <button
-                    className="text-foreground inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-(--color-border) px-3 py-2.5 transition-colors hover:bg-(--color-border-light)"
-                    type="button"
-                  >
-                    <i className="fa-solid fa-arrow-rotate-left"></i>
-                    <span className="hidden lg:inline">Quay về</span>
-                  </button>
-                </Link>
-              </div>
-            </div>
-          </aside>
+          <PaymentSummaryCard
+            totalPrice={totalPrice}
+            isCustomer={isCustomer}
+            backHref="/"
+          />
         </div>
       </div>
 
@@ -185,6 +130,6 @@ export default function PaymentPage() {
         isOpen={isReviewOpen}
         onClose={() => setIsReviewOpen(false)}
       />
-    </>
+    </div>
   );
 }

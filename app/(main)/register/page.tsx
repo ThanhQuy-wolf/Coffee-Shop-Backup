@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
+import Button from "@/components/atoms/buttons/Button";
 
 // Static OTP for demo (in production, this would be sent via SMS)
 const DEMO_OTP = "123456";
@@ -160,12 +161,9 @@ export default function RegisterPage() {
             {/* Buttons */}
             <div className="space-y-3 pt-2">
               {/* Submit Button */}
-              <button
-                type="submit"
-                className="w-full cursor-pointer rounded-xl border-none bg-(--color-primary) py-3 font-semibold text-white transition-all duration-150 hover:bg-(--color-primary-dark) active:scale-98"
-              >
+              <Button variant="primaryNoBorder" type="submit" style="login" size="lg">
                 Tiếp tục
-              </button>
+              </Button>
 
               {/* Back to Login */}
               <Link
@@ -229,21 +227,14 @@ export default function RegisterPage() {
             {/* Buttons */}
             <div className="space-y-3 pt-2">
               {/* Submit Button */}
-              <button
-                type="submit"
-                className="w-full cursor-pointer rounded-xl border-none bg-(--color-primary) py-3 font-semibold text-white transition-all duration-150 hover:bg-(--color-primary-dark) active:scale-98"
-              >
+              <Button variant="primaryNoBorder" type="submit" style="login" size="lg">
                 Hoàn tất đăng ký
-              </button>
+              </Button>
 
               {/* Back Button */}
-              <button
-                type="button"
-                onClick={handleBackToPhone}
-                className="w-full rounded-xl border-2 border-(--color-primary) bg-white py-3 font-semibold text-(--color-primary) transition-all duration-150 hover:bg-(--color-primary) hover:text-white active:scale-98"
-              >
+              <Button variant="bgWhite" onClick={handleBackToPhone} size="lg" style="login">
                 Thay đổi số điện thoại
-              </button>
+              </Button>
             </div>
 
             {/* Resend OTP (disabled in demo) */}

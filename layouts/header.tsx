@@ -79,15 +79,23 @@ export default function Header() {
               <span className="hidden sm:inline">Đăng nhập</span>
             </button>
           ) : user.role === "manager" ? (
-            /* Manager: gold badge */
-            <button
-              onClick={handleAuthClick}
-              title="Nhấn để đăng xuất"
-              className="flex cursor-pointer items-center gap-2.5 rounded-xl border border-(--color-accent) bg-(--color-accent-light) px-4 py-2.5 text-sm font-semibold text-(--color-primary-dark) transition-all duration-150 hover:bg-(--color-accent) hover:text-white active:scale-95"
-            >
-              <i className="fa-solid fa-user-tie text-base"></i>
-              <span className="hidden sm:inline">Quản lý</span>
-            </button>
+            /* Manager: dashboard link + logout */
+            <div className="flex items-center gap-2">
+              <Link
+                href="/manager"
+                className="flex items-center gap-2 rounded-xl border border-(--color-accent) bg-(--color-accent-light) px-4 py-2.5 text-sm font-semibold text-(--color-primary-dark) no-underline transition-all duration-150 hover:bg-(--color-accent) hover:text-white"
+              >
+                <i className="fa-solid fa-user-tie text-base"></i>
+                <span className="hidden sm:inline">Dashboard</span>
+              </Link>
+              <button
+                onClick={handleAuthClick}
+                title="Đăng xuất"
+                className="flex cursor-pointer items-center gap-2 rounded-xl border border-(--color-border) bg-transparent px-3 py-2.5 text-sm font-medium text-(--color-text-muted) transition-all duration-150 hover:border-red-300 hover:bg-red-50 hover:text-red-500 active:scale-95"
+              >
+                <i className="fa-solid fa-right-from-bracket text-base"></i>
+              </button>
+            </div>
           ) : user.role === "staff" ? (
             /* Staff: avatar + name */
             <button

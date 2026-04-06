@@ -20,10 +20,16 @@ app/
 │   │   └── page.tsx           # Trang đăng ký (/register)
 │   └── payment/
 │       └── page.tsx           # Trang thanh toán (/payment)
-└── (feed)/
-    ├── layout.tsx             # Feed layout
-    └── feed/
-        └── page.tsx           # Trang khám phá quán (/feed)
+├── (feed)/
+│   ├── layout.tsx             # Feed layout
+│   └── feed/
+│       └── page.tsx           # Trang khám phá quán (/feed)
+└── (manager)/
+    ├── layout.tsx             # Manager layout - auth guard + ManagerProvider
+    └── manager/
+        ├── page.tsx           # Manager Dashboard - quản lý thực đơn (/manager)
+        └── analytics/
+            └── page.tsx       # Financial Analytics (/manager/analytics)
 ```
 
 ---
@@ -434,12 +440,75 @@ Defined at `:root` for light mode, with dark mode variants:
 
 ---
 
+## (manager) Route Group
+
+### Layout (app/(manager)/layout.tsx)
+
+**Description:** Layout for manager routes. Guards access — redirects
+non-managers to `/`. Wraps children in `ManagerProvider`.
+
+---
+
+### Manager Dashboard (app/(manager)/manager/page.tsx)
+
+**Route:** `/manager` **Type:** Client component **Description:** Full menu
+management interface for the shop owner.
+
+#### Key Features
+
+- **Sidebar (desktop):** Brand, tab navigation (Thực đơn / Combo / Danh mục),
+  link to Financial Analytics, user info, logout
+- **Top bar:** Page title, mobile tab switcher, analytics shortcut button
+- **Tabs:** Products, Combos, Categories — each with CRUD modals
+- **Analytics link:** `fa-chart-line` button → `/manager/analytics`
+
+---
+
+### Financial Analytics (app/(manager)/manager/analytics/page.tsx)
+
+**Route:** `/manager/analytics` **Type:** Client component **Description:**
+Financial analytics and reporting dashboard for the shop manager.
+
+#### Key Features
+
+- **Summary cards:** Total revenue, orders, profit, average order value — each
+  with period-over-period comparison %
+- **Period selector:** Day / Week / Month / Year — switches revenue dataset
+- **Chart switcher:** Line chart (trend), Bar chart (current vs previous half),
+  Pie chart (revenue by category)
+- **SVG charts:** Pure SVG, no external library — hover tooltips stay inside
+  viewBox (auto-flip above/below for line points & bar tops), interactive
+  dots/slices
+- **Top 5 products:** Horizontal bar ranking filtered by category
+- **Product detail table:** All 18 products sortable by units sold, revenue,
+  profit, margin
+- **Summary row:** Totals for filtered data (revenue, profit, volume, avg
+  margin)
+- **Category filter:** Dropdown to filter both top-5 and detail table
+
+#### Data Sources
+
+- `MOCK_REVENUE_DAILY/WEEKLY/MONTHLY/YEARLY` from `lib/constants.ts`
+- `MOCK_PRODUCT_SALES` from `lib/constants.ts`
+- `MENU_CATEGORIES` for category labels
+
+#### State Management
+
+```tsx
+period: AnalyticsPeriod; // "day" | "week" | "month" | "year"
+activeChart: "line" | "bar" | "pie";
+categoryFilter: string; // category id or "all"
+```
+
+---
+
 ## Future Enhancements
 
 - [x] Payment page implementation
 - [x] Customer review modal (ReviewModal) with 5-star rating + textarea
+- [x] Manager dashboard (menu management)
+- [x] Financial Analytics dashboard (charts, profit analysis)
 - [ ] Order history/tracking page
-- [ ] Manager dashboard (menu management, order tracking)
 - [ ] User profile page
 - [ ] Cart checkout flow
 - [ ] Real backend API integration

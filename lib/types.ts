@@ -59,3 +59,58 @@ export interface Shop {
   address: string;
   image: string;
 }
+
+// ===== FINANCIAL ANALYTICS TYPES =====
+export type AnalyticsPeriod = "day" | "week" | "month" | "year";
+
+export interface RevenueDataPoint {
+  label: string; // e.g. "01/04", "Tuần 1", "Tháng 1"
+  revenue: number;
+  orders: number;
+}
+
+export interface ProductSalesStats {
+  productId: number;
+  name: string;
+  category: string;
+  unitsSold: number;
+  revenue: number;
+  costPrice: number; // giá nhập
+  sellingPrice: number; // giá bán
+  profit: number;
+  profitMargin: number; // %
+}
+
+export interface PeriodComparison {
+  current: number;
+  previous: number;
+  change: number; // absolute
+  changePercent: number; // %
+  isPositive: boolean;
+}
+
+export interface FinancialSummary {
+  totalRevenue: number;
+  totalOrders: number;
+  totalProfit: number;
+  averageOrderValue: number;
+  revenueComparison: PeriodComparison;
+  ordersComparison: PeriodComparison;
+  profitComparison: PeriodComparison;
+}
+
+// ===== COMBO TYPES =====
+export interface ComboItem {
+  productId: number;
+  quantity: number;
+}
+
+export interface Combo {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  image: string;
+  items: ComboItem[]; // list of products + quantities in this combo
+  available: boolean;
+}

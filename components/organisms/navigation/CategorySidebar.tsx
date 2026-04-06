@@ -2,17 +2,9 @@
 
 import { MENU_CATEGORIES, SHOP_INFO } from "@/lib/constants";
 import type { MenuCategory } from "@/lib/types";
+import type React from "react";
 
-interface NavbarProps {
-  /** Whether the sidebar is expanded (true) or icon-only (false) */
-  isOpen: boolean;
-  /** Toggle expand / collapse */
-  onToggle: () => void;
-  /** Currently selected category id */
-  activeCategory?: string;
-  /** Fired when user clicks a category */
-  onCategoryChange?: (id: string) => void;
-}
+import type { CategorySidebarProps } from "./Navigation.types";
 
 /**
  * Left sidebar — always visible, collapsible on all screen sizes.
@@ -23,12 +15,12 @@ interface NavbarProps {
  * Width transition is handled by Tailwind w-16 / w-60 + transition-all.
  * Parent controls open/close state via isOpen + onToggle props.
  */
-export default function Navbar({
+export default function CategorySidebar({
   isOpen,
   onToggle,
   activeCategory = "all",
   onCategoryChange,
-}: NavbarProps) {
+}: CategorySidebarProps) {
   return (
     <aside
       className={`sticky z-20 hidden shrink-0 flex-col overflow-x-hidden overflow-y-auto border-r border-(--color-border) bg-(--color-bg-sidebar) transition-all duration-250 ease-in-out md:flex xl:w-60 ${isOpen ? "w-60" : "w-16"} `}

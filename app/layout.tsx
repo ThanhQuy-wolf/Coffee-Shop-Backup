@@ -1,4 +1,4 @@
-import CartFab from "@/components/CartFab";
+import { CartFab } from "@/components/organisms/cart";
 import Footer from "@/layouts/footer";
 import Header from "@/layouts/header";
 import type { Metadata } from "next";

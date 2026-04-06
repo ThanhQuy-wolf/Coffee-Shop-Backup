@@ -172,6 +172,54 @@ interface Shop {
 
 ---
 
+### Financial Analytics Types
+
+Types for the Financial Analytics module (`/manager/analytics`).
+
+```typescript
+type AnalyticsPeriod = "day" | "week" | "month" | "year";
+
+interface RevenueDataPoint {
+  label: string; // display label (e.g. "01/04", "T3/W2")
+  revenue: number; // VND
+  orders: number;
+}
+
+interface ProductSalesStats {
+  productId: number;
+  name: string;
+  category: string;
+  unitsSold: number;
+  revenue: number;
+  costPrice: number; // giá nhập
+  sellingPrice: number; // giá bán
+  profit: number;
+  profitMargin: number; // %
+}
+
+interface PeriodComparison {
+  current: number;
+  previous: number;
+  change: number;
+  changePercent: number;
+  isPositive: boolean;
+}
+
+interface FinancialSummary {
+  totalRevenue: number;
+  totalOrders: number;
+  totalProfit: number;
+  averageOrderValue: number;
+  revenueComparison: PeriodComparison;
+  ordersComparison: PeriodComparison;
+  profitComparison: PeriodComparison;
+}
+```
+
+**Usage:** `app/(manager)/manager/analytics/page.tsx`
+
+---
+
 ## Constants (lib/constants.ts)
 
 **Description:** Mock data used throughout the application. Replace with API
@@ -287,6 +335,30 @@ Array of 5 coffee shops for the feed/discovery page.
 5. Trung Nguyên E-Coffee - Quận 1
 
 **Usage:** Feed page grid display
+
+---
+
+### MOCK_REVENUE_DAILY / WEEKLY / MONTHLY / YEARLY
+
+Revenue time-series data for different periods. Used in the Financial Analytics
+page.
+
+- `MOCK_REVENUE_DAILY` — 30 data points (April 2026, by day)
+- `MOCK_REVENUE_WEEKLY` — 12 data points (last 12 weeks)
+- `MOCK_REVENUE_MONTHLY` — 12 data points (last 12 months)
+- `MOCK_REVENUE_YEARLY` — 5 data points (2022–2026)
+
+Each `RevenueDataPoint`: `{ label, revenue (VND), orders }`.
+
+---
+
+### MOCK_PRODUCT_SALES
+
+Array of 18 `ProductSalesStats` — sales statistics for each product including
+cost price, selling price, profit and margin. Used in the analytics table and
+top-products ranking.
+
+**Usage:** `/manager/analytics` — product table, top-5 bar, pie chart
 
 ---
 

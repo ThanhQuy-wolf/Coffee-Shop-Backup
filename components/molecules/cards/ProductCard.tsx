@@ -1,15 +1,9 @@
 "use client";
 
+import { Button, Caption, Text } from "@/components/atoms";
 import Image from "next/image";
 
-interface CartProductProps {
-  image: string;
-  imageAlt?: string;
-  productName: string;
-  price: number | string;
-  description: string;
-  onBuy?: () => void;
-}
+import type { ProductCardProps } from "./Card.types";
 
 /**
  * Product card — fills the parent grid cell width (w-full).
@@ -21,14 +15,14 @@ interface CartProductProps {
  *
  * Responsive: card width is controlled by the parent grid, not the card itself.
  */
-export default function CartProduct({
+export default function ProductCard({
   image,
   imageAlt = "Ảnh sản phẩm",
   productName,
   price,
   description,
   onBuy,
-}: CartProductProps) {
+}: ProductCardProps) {
   const formattedPrice =
     typeof price === "number"
       ? price.toLocaleString("vi-VN", { style: "currency", currency: "VND" })
@@ -60,23 +54,17 @@ export default function CartProduct({
         <h3 className="text-foreground line-clamp-1 text-sm leading-tight font-bold">
           {productName}
         </h3>
-        <p className="line-clamp-2 text-xs leading-relaxed text-(--color-text-muted)">
-          {description}
-        </p>
+        <Caption className="line-clamp-2">{description}</Caption>
       </div>
 
       {/* ── Price + Buy button ── */}
       <div className="flex shrink-0 items-center justify-between border-t border-(--color-border-light) px-3 py-2.5">
-        <span className="text-sm font-bold text-(--color-primary)">
+        <Text variant="body2" className="font-bold">
           {formattedPrice}
-        </span>
-        <button
-          onClick={onBuy}
-          className="flex cursor-pointer items-center gap-1.5 rounded-lg border-none bg-(--color-primary) px-3 py-1.5 text-xs font-semibold whitespace-nowrap text-white transition-all duration-150 hover:bg-(--color-primary-dark) active:scale-95"
-        >
-          <i className="fa-solid fa-cart-plus"></i>
+        </Text>
+        <Button onClick={onBuy} variant="primary" size="sm" icon="fa-cart-plus">
           Mua
-        </button>
+        </Button>
       </div>
     </div>
   );
