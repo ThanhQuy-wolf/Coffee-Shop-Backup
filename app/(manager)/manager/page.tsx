@@ -90,6 +90,16 @@ export default function ManagerPage() {
                 Mới
               </span>
             </Link>
+            <Link
+              href="/staff/schedule"
+              className="hover:bg-background flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-(--color-text-secondary) no-underline transition-all hover:text-(--color-primary-dark)"
+            >
+              <i className="fa-solid fa-calendar-days w-4 text-center"></i>
+              <span className="flex-1 text-left">Ca làm</span>
+              <span className="rounded-full bg-(--color-accent-light) px-2 py-0.5 text-xs font-semibold text-(--color-primary)">
+                Mới
+              </span>
+            </Link>
           </div>
         </nav>
 

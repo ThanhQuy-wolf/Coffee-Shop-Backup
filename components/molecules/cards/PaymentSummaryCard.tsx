@@ -13,13 +13,14 @@ export default function PaymentSummaryCard({
   isCustomer = false,
   backHref,
 }: PaymentSummaryCardProps) {
-  const [isReviewOpen, setIsReviewOpen] = useState(false);
-  const handlePayment = () => {
+
+    const [isReviewOpen, setIsReviewOpen] = useState(false);
+    const handlePayment = () => {
     // UI-only: open review modal after "payment"
     if (isCustomer) {
-      setIsReviewOpen(true);
-    }
-  };
+        setIsReviewOpen(true);
+  }
+};
   return (
     <aside className="shrink-0 xl:w-85">
       <div className="bg-card sticky top-[calc(var(--spacing-header-height)+1rem)] rounded-2xl border border-(--color-border-light) p-4 md:p-5">

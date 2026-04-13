@@ -75,7 +75,7 @@ export default function PaymentPage() {
                             <div className="flex items-center gap-2">
                               <button
                                 onClick={() => decreaseQty(item.id)}
-                                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-(--color-border) hover:bg-(--color-border-light)"
+                                className="inline-flex items-center justify-center h-8 w-8 rounded-lg border border-(--color-border) hover:bg-(--color-border-light)"
                                 aria-label={`Giảm số lượng ${item.name}`}
                               >
                                 -
@@ -92,7 +92,7 @@ export default function PaymentPage() {
                               />
                               <button
                                 onClick={() => increaseQty(item.id)}
-                                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-(--color-border) hover:bg-(--color-border-light)"
+                                className="inline-flex items-center justify-center h-8 w-8 rounded-lg border border-(--color-border) hover:bg-(--color-border-light)"
                                 aria-label={`Tăng số lượng ${item.name}`}
                               >
                                 +

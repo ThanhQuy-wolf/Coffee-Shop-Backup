@@ -13,3 +13,7 @@ export type { FeedLayoutProps } from "./feed-layout";
 // Manager Layout
 export { ManagerLayout } from "./manager-layout";
 export type { ManagerLayoutProps } from "./manager-layout";
+
+// Staff Layout
+export { StaffLayout } from "./staff-layout";
+export type { StaffLayoutProps } from "./staff-layout";

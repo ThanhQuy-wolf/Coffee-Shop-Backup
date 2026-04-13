@@ -97,18 +97,27 @@ export default function Header() {
               </button>
             </div>
           ) : user.role === "staff" ? (
-            /* Staff: avatar + name */
-            <button
-              onClick={handleAuthClick}
-              title="Nhấn để đăng xuất"
-              className="bg-background flex cursor-pointer items-center gap-2.5 rounded-xl border border-(--color-border) px-4 py-2 text-sm font-semibold text-(--color-text-secondary) transition-all duration-150 hover:border-(--color-primary-light) hover:bg-(--color-border-light) active:scale-95"
-            >
-              {/* Avatar circle */}
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-(--color-primary-light) text-xs text-white">
-                <i className="fa-solid fa-user"></i>
-              </div>
-              <span className="hidden sm:inline">{user.name}</span>
-            </button>
+            /* Staff: Register shift + avatar + name */
+            <div className="flex items-center gap-2">
+              <Link
+                href="/staff/schedule"
+                className="flex items-center gap-2 rounded-xl border border-(--color-accent) bg-(--color-accent-light) px-4 py-2.5 text-sm font-semibold text-(--color-primary-dark) no-underline transition-all duration-150 hover:bg-(--color-accent) hover:text-white"
+              >
+                <i className="fa-solid fa-calendar-check text-base"></i>
+                <span className="hidden sm:inline">Ca làm</span>
+              </Link>
+              <button
+                onClick={handleAuthClick}
+                title="Nhấn để đăng xuất"
+                className="bg-background flex cursor-pointer items-center gap-2.5 rounded-xl border border-(--color-border) px-4 py-2 text-sm font-semibold text-(--color-text-secondary) transition-all duration-150 hover:border-(--color-primary-light) hover:bg-(--color-border-light) active:scale-95"
+              >
+                {/* Avatar circle */}
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-(--color-primary-light) text-xs text-white">
+                  <i className="fa-solid fa-user"></i>
+                </div>
+                <span className="hidden sm:inline">{user.name}</span>
+              </button>
+            </div>
           ) : (
             /* Customer: phone icon + label */
             <button

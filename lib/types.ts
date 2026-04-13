@@ -114,3 +114,30 @@ export interface Combo {
   items: ComboItem[]; // list of products + quantities in this combo
   available: boolean;
 }
+
+// ===== SHIFT / SCHEDULE TYPES =====
+export type ShiftStatus = "available" | "registered" | "approved_leave" | "absent";
+
+export interface RegisteredStaff {
+  id: number;
+  name: string;
+}
+
+export interface ShiftSlot {
+  id: string;
+  date: string; // ISO date string "YYYY-MM-DD"
+  startTime: string; // "HH:mm"
+  endTime: string; // "HH:mm"
+  durationHours: number;
+  wage: number; // VND per shift
+  department: string;
+  maxStaff: number;
+  registeredStaff: RegisteredStaff[];
+  status: ShiftStatus;
+}
+
+export interface Department {
+  id: string;
+  name: string;
+  icon: string; // FontAwesome class
+}
