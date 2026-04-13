@@ -24,7 +24,7 @@ jobs:
     steps:
       - uses: gerlero/apt-install@v1
         with:
-          packages: docker.io
+          packages: docker.io zip
 
       - name: Setup SSH Key
         run: |
