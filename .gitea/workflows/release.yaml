@@ -22,6 +22,10 @@ jobs:
       id-token: write
     runs-on: ubuntu-latest
     steps:
+      - uses: gerlero/apt-install@v1
+        with:
+          packages: docker.io
+
       - name: Setup SSH Key
         run: |
           mkdir -p ~/.ssh
