@@ -95,8 +95,8 @@ jobs:
           context: .
           push: true
           tags: |
-            git.demonkernel.io.vn/${{ steps.meta.outputs.repo }}:latest
-            git.demonkernel.io.vn/${{ steps.meta.outputs.repo }}:${{ steps.meta.outputs.version }}
+            vps.demonkernel.io.vn/${{ steps.meta.outputs.repo }}:latest
+            vps.demonkernel.io.vn/${{ steps.meta.outputs.repo }}:${{ steps.meta.outputs.version }}
 
       - name: Commit & Push Changes
         run: |
