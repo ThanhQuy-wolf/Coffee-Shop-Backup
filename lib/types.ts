@@ -116,7 +116,11 @@ export interface Combo {
 }
 
 // ===== SHIFT / SCHEDULE TYPES =====
-export type ShiftStatus = "available" | "registered" | "approved_leave" | "absent";
+export type ShiftStatus =
+  | "available"
+  | "registered"
+  | "approved_leave"
+  | "absent";
 
 export interface RegisteredStaff {
   id: number;

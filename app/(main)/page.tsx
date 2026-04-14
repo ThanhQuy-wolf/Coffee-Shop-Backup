@@ -1,10 +1,10 @@
 "use client";
 
+import { SearchBar } from "@/components/molecules/search-bar";
 import { CategorySidebar } from "@/components/organisms/navigation";
 import { ProductGrid } from "@/components/organisms/product-grid";
-import { SearchBar } from "@/components/molecules/search-bar";
-import { useMenu } from "@/lib/menu-context";
 import { MENU_CATEGORIES } from "@/lib/constants";
+import { useMenu } from "@/lib/menu-context";
 import { useEffect, useState } from "react";
 
 /**
@@ -72,10 +72,7 @@ export default function Home() {
         </div>
 
         {/* ── Product grid (organism handles mobile category menu + grid) ── */}
-        <ProductGrid
-          searchQuery={searchQuery}
-          isSidebarOpen={isSidebarOpen}
-        />
+        <ProductGrid searchQuery={searchQuery} isSidebarOpen={isSidebarOpen} />
       </main>
     </div>
   );

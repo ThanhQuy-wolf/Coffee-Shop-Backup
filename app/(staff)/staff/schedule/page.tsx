@@ -12,9 +12,18 @@ import Link from "next/link";
 import { useState } from "react";
 
 const MONTH_NAMES = [
-  "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4",
-  "Tháng 5", "Tháng 6", "Tháng 7", "Tháng 8",
-  "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12",
+  "Tháng 1",
+  "Tháng 2",
+  "Tháng 3",
+  "Tháng 4",
+  "Tháng 5",
+  "Tháng 6",
+  "Tháng 7",
+  "Tháng 8",
+  "Tháng 9",
+  "Tháng 10",
+  "Tháng 11",
+  "Tháng 12",
 ];
 
 function getMonday(d: Date): Date {
@@ -172,7 +181,9 @@ export default function StaffSchedulePage() {
         <div className="border-t border-(--color-border-light) p-3">
           <div className="flex items-center gap-3 rounded-xl p-3">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-(--color-accent-light)">
-              <i className={`fa-solid ${isManager ? "fa-user-tie" : "fa-user"} text-sm text-(--color-primary)`}></i>
+              <i
+                className={`fa-solid ${isManager ? "fa-user-tie" : "fa-user"} text-sm text-(--color-primary)`}
+              ></i>
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-foreground truncate text-sm font-semibold">
@@ -212,7 +223,9 @@ export default function StaffSchedulePage() {
               Đăng ký ca làm
             </h1>
             <p className="text-xs text-(--color-text-muted)">
-              {view === "week" ? weekLabel : `${MONTH_NAMES[currentDate.getMonth()]} ${currentDate.getFullYear()}`}
+              {view === "week"
+                ? weekLabel
+                : `${MONTH_NAMES[currentDate.getMonth()]} ${currentDate.getFullYear()}`}
             </p>
           </div>
 

@@ -152,7 +152,10 @@ export default function ProductsTab() {
               </tr>
             ) : (
               filtered.map((p) => (
-                <tr key={p.id} className="hover:bg-background transition-colors">
+                <tr
+                  key={p.id}
+                  className="hover:bg-background transition-colors"
+                >
                   <td className="px-4 py-3">
                     <div>
                       <p className="text-foreground font-medium">{p.name}</p>

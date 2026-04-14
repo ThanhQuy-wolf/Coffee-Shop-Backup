@@ -8,8 +8,18 @@ import { useMemo, useState } from "react";
 import type { WeeklyScheduleProps } from "./ShiftSchedule.types";
 
 const MONTH_NAMES_EN = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
 const DAY_LABELS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
@@ -40,10 +50,18 @@ export default function WeeklySchedule({
   onCreateShift,
   mobileCalendarHeader = false,
 }: WeeklyScheduleProps) {
-  const { currentDate, getWeekDates, getShiftsForDate, goToNextWeek, goToPrevWeek } = useShift();
+  const {
+    currentDate,
+    getWeekDates,
+    getShiftsForDate,
+    goToNextWeek,
+    goToPrevWeek,
+  } = useShift();
   const weekDates = getWeekDates();
 
-  const [selectedDate, setSelectedDate] = useState<string>(formatDateISO(weekDates[0] ?? currentDate));
+  const [selectedDate, setSelectedDate] = useState<string>(
+    formatDateISO(weekDates[0] ?? currentDate),
+  );
 
   const statusDotsByDate = useMemo(() => {
     const map: Record<string, string[]> = {};
@@ -51,10 +69,14 @@ export default function WeeklySchedule({
       const dateStr = formatDateISO(date);
       const dayShifts = getShiftsForDate(dateStr);
       const dots: string[] = [];
-      if (dayShifts.some((s) => s.status === "available")) dots.push("bg-sky-300");
-      if (dayShifts.some((s) => s.status === "registered")) dots.push("bg-blue-600");
-      if (dayShifts.some((s) => s.status === "approved_leave")) dots.push("bg-purple-400");
-      if (dayShifts.some((s) => s.status === "absent")) dots.push("bg-rose-400");
+      if (dayShifts.some((s) => s.status === "available"))
+        dots.push("bg-sky-300");
+      if (dayShifts.some((s) => s.status === "registered"))
+        dots.push("bg-blue-600");
+      if (dayShifts.some((s) => s.status === "approved_leave"))
+        dots.push("bg-purple-400");
+      if (dayShifts.some((s) => s.status === "absent"))
+        dots.push("bg-rose-400");
       map[dateStr] = dots.slice(0, 3);
     });
     return map;
@@ -106,7 +128,9 @@ export default function WeeklySchedule({
                   active ? "bg-(--color-primary)/10" : "bg-transparent"
                 }`}
               >
-                <span className={`text-xs font-medium ${i >= 5 ? "text-pink-500" : "text-(--color-primary-dark)"}`}>
+                <span
+                  className={`text-xs font-medium ${i >= 5 ? "text-pink-500" : "text-(--color-primary-dark)"}`}
+                >
                   {DAY_LABELS_EN[i]}
                 </span>
                 <span
@@ -122,7 +146,10 @@ export default function WeeklySchedule({
                 </span>
                 <div className="flex min-h-2 items-center gap-0.5">
                   {dots.map((dot, idx) => (
-                    <span key={idx} className={`h-1.5 w-1.5 rounded-full ${dot}`} />
+                    <span
+                      key={idx}
+                      className={`h-1.5 w-1.5 rounded-full ${dot}`}
+                    />
                   ))}
                 </div>
               </button>
@@ -133,19 +160,30 @@ export default function WeeklySchedule({
 
       <div className="space-y-3">
         {DEPARTMENTS.map((dept) => {
-          const deptShifts = getShiftsForDate(selectedDateStr).filter((s) => s.department === dept.id);
+          const deptShifts = getShiftsForDate(selectedDateStr).filter(
+            (s) => s.department === dept.id,
+          );
           if (deptShifts.length === 0 && !onCreateShift) return null;
           return (
-            <div key={dept.id} className="rounded-xl border border-(--color-border-light) bg-white p-3">
+            <div
+              key={dept.id}
+              className="rounded-xl border border-(--color-border-light) bg-white p-3"
+            >
               <div className="mb-2 flex items-center gap-2">
-                <i className={`${dept.icon} text-xs text-(--color-primary)`}></i>
+                <i
+                  className={`${dept.icon} text-xs text-(--color-primary)`}
+                ></i>
                 <span className="text-xs font-semibold text-(--color-text-secondary)">
                   {dept.name}
                 </span>
               </div>
               <div className="space-y-2">
                 {deptShifts.map((shift) => (
-                  <ShiftCard key={shift.id} shift={shift} onClick={onShiftClick} />
+                  <ShiftCard
+                    key={shift.id}
+                    shift={shift}
+                    onClick={onShiftClick}
+                  />
                 ))}
                 {onCreateShift && (
                   <button
@@ -174,13 +212,13 @@ export default function WeeklySchedule({
       <table className="w-full min-w-225 border-collapse">
         <thead>
           <tr>
-            <th className="w-28 border-b border-r border-(--color-border-light) bg-gray-50 px-3 py-3 text-left text-xs font-semibold text-(--color-text-muted) uppercase">
+            <th className="w-28 border-r border-b border-(--color-border-light) bg-gray-50 px-3 py-3 text-left text-xs font-semibold text-(--color-text-muted) uppercase">
               Bộ phận
             </th>
             {weekDates.map((date, i) => (
               <th
                 key={i}
-                className={`border-b border-r border-(--color-border-light) px-2 py-3 text-center text-xs ${
+                className={`border-r border-b border-(--color-border-light) px-2 py-3 text-center text-xs ${
                   isToday(date)
                     ? "bg-(--color-primary)/10 font-bold text-(--color-primary)"
                     : "bg-gray-50 font-semibold text-(--color-text-muted)"
@@ -197,9 +235,11 @@ export default function WeeklySchedule({
         <tbody>
           {DEPARTMENTS.map((dept) => (
             <tr key={dept.id}>
-              <td className="border-b border-r border-(--color-border-light) bg-gray-50/50 px-3 py-3 align-top">
+              <td className="border-r border-b border-(--color-border-light) bg-gray-50/50 px-3 py-3 align-top">
                 <div className="flex items-center gap-2">
-                  <i className={`${dept.icon} text-xs text-(--color-primary)`}></i>
+                  <i
+                    className={`${dept.icon} text-xs text-(--color-primary)`}
+                  ></i>
                   <span className="text-xs font-semibold text-(--color-text-secondary)">
                     {dept.name}
                   </span>
@@ -213,7 +253,7 @@ export default function WeeklySchedule({
                 return (
                   <td
                     key={i}
-                    className={`border-b border-r border-(--color-border-light) p-1.5 align-top ${
+                    className={`border-r border-b border-(--color-border-light) p-1.5 align-top ${
                       isToday(date) ? "bg-(--color-primary)/5" : ""
                     }`}
                   >

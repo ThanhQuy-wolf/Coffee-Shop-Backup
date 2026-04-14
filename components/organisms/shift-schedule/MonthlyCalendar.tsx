@@ -23,7 +23,10 @@ function isToday(d: Date): boolean {
   );
 }
 
-export default function MonthlyCalendar({ onShiftClick, onDateSelect }: MonthlyCalendarProps) {
+export default function MonthlyCalendar({
+  onShiftClick,
+  onDateSelect,
+}: MonthlyCalendarProps) {
   const { currentDate, shifts } = useShift();
 
   const calendarDays = useMemo(() => {
@@ -60,7 +63,9 @@ export default function MonthlyCalendar({ onShiftClick, onDateSelect }: MonthlyC
     const dateStr = formatDateISO(date);
     const dayShifts = shifts.filter((s) => s.date === dateStr);
     const available = dayShifts.filter((s) => s.status === "available").length;
-    const registered = dayShifts.filter((s) => s.status === "registered").length;
+    const registered = dayShifts.filter(
+      (s) => s.status === "registered",
+    ).length;
     const leave = dayShifts.filter((s) => s.status === "approved_leave").length;
     const absent = dayShifts.filter((s) => s.status === "absent").length;
     return { total: dayShifts.length, available, registered, leave, absent };
@@ -87,7 +92,7 @@ export default function MonthlyCalendar({ onShiftClick, onDateSelect }: MonthlyC
             return (
               <div
                 key={`empty-${i}`}
-                className="min-h-25 border-b border-r border-(--color-border-light) bg-gray-50/30"
+                className="min-h-25 border-r border-b border-(--color-border-light) bg-gray-50/30"
               />
             );
           }
@@ -100,7 +105,7 @@ export default function MonthlyCalendar({ onShiftClick, onDateSelect }: MonthlyC
               type="button"
               key={i}
               onClick={() => onDateSelect?.(formatDateISO(date))}
-              className={`min-h-25 cursor-pointer border-b border-r border-(--color-border-light) bg-transparent p-2 text-left transition hover:bg-gray-50 ${
+              className={`min-h-25 cursor-pointer border-r border-b border-(--color-border-light) bg-transparent p-2 text-left transition hover:bg-gray-50 ${
                 today ? "bg-(--color-primary)/5" : ""
               }`}
             >
@@ -108,7 +113,7 @@ export default function MonthlyCalendar({ onShiftClick, onDateSelect }: MonthlyC
                 className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-sm ${
                   today
                     ? "bg-(--color-primary) font-bold text-white"
-                    : "font-medium text-foreground"
+                    : "text-foreground font-medium"
                 }`}
               >
                 {date.getDate()}

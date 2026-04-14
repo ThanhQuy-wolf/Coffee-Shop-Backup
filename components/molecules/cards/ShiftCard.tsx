@@ -4,7 +4,10 @@ import type { ShiftSlot } from "@/lib/types";
 
 import type { ShiftCardProps } from "./ShiftCard.types";
 
-const STATUS_STYLES: Record<ShiftSlot["status"], { bg: string; text: string; label: string }> = {
+const STATUS_STYLES: Record<
+  ShiftSlot["status"],
+  { bg: string; text: string; label: string }
+> = {
   available: {
     bg: "bg-blue-50 border-blue-200",
     text: "text-blue-700",
@@ -34,7 +37,11 @@ function formatWage(wage: number): string {
   return wage.toLocaleString("vi-VN");
 }
 
-export default function ShiftCard({ shift, compact = false, onClick }: ShiftCardProps) {
+export default function ShiftCard({
+  shift,
+  compact = false,
+  onClick,
+}: ShiftCardProps) {
   const style = STATUS_STYLES[shift.status];
 
   if (compact) {
@@ -86,7 +93,7 @@ export default function ShiftCard({ shift, compact = false, onClick }: ShiftCard
 
       {shift.registeredStaff.length > 0 && (
         <div className="mt-2 border-t border-current/10 pt-2">
-          <p className="text-[10px] font-medium uppercase tracking-wide opacity-60">
+          <p className="text-[10px] font-medium tracking-wide uppercase opacity-60">
             Nhân viên ({shift.registeredStaff.length}/{shift.maxStaff})
           </p>
           <div className="mt-1 flex flex-wrap gap-1">

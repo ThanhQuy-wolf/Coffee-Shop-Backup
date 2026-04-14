@@ -26,14 +26,27 @@ function isToday(d: Date): boolean {
 }
 
 const MONTH_NAMES = [
-  "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4",
-  "Tháng 5", "Tháng 6", "Tháng 7", "Tháng 8",
-  "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12",
+  "Tháng 1",
+  "Tháng 2",
+  "Tháng 3",
+  "Tháng 4",
+  "Tháng 5",
+  "Tháng 6",
+  "Tháng 7",
+  "Tháng 8",
+  "Tháng 9",
+  "Tháng 10",
+  "Tháng 11",
+  "Tháng 12",
 ];
 
-export default function MobileShiftView({ onShiftClick }: MobileShiftViewProps) {
+export default function MobileShiftView({
+  onShiftClick,
+}: MobileShiftViewProps) {
   const { currentDate, shifts, goToNextMonth, goToPrevMonth } = useShift();
-  const [selectedDate, setSelectedDate] = useState<string>(formatDateISO(new Date(2026, 3, 10)));
+  const [selectedDate, setSelectedDate] = useState<string>(
+    formatDateISO(new Date(2026, 3, 10)),
+  );
 
   const calendarDays = useMemo(() => {
     const year = currentDate.getFullYear();
@@ -57,9 +70,12 @@ export default function MobileShiftView({ onShiftClick }: MobileShiftViewProps) 
     const dateStr = formatDateISO(date);
     const dayShifts = shifts.filter((s) => s.date === dateStr);
     const dots: string[] = [];
-    if (dayShifts.some((s) => s.status === "available")) dots.push("bg-amber-400");
-    if (dayShifts.some((s) => s.status === "registered")) dots.push("bg-green-500");
-    if (dayShifts.some((s) => s.status === "approved_leave")) dots.push("bg-purple-400");
+    if (dayShifts.some((s) => s.status === "available"))
+      dots.push("bg-amber-400");
+    if (dayShifts.some((s) => s.status === "registered"))
+      dots.push("bg-green-500");
+    if (dayShifts.some((s) => s.status === "approved_leave"))
+      dots.push("bg-purple-400");
     if (dayShifts.some((s) => s.status === "absent")) dots.push("bg-red-400");
     return dots;
   };
@@ -85,7 +101,7 @@ export default function MobileShiftView({ onShiftClick }: MobileShiftViewProps) 
           >
             <i className="fa-solid fa-chevron-left text-xs"></i>
           </button>
-          <h3 className="text-sm font-bold text-foreground">
+          <h3 className="text-foreground text-sm font-bold">
             {MONTH_NAMES[currentDate.getMonth()]} {currentDate.getFullYear()}
           </h3>
           <button
@@ -101,7 +117,10 @@ export default function MobileShiftView({ onShiftClick }: MobileShiftViewProps) 
         {/* Day headers */}
         <div className="mb-1 grid grid-cols-7">
           {DAY_HEADERS.map((day) => (
-            <div key={day} className="py-1 text-center text-[10px] font-semibold text-(--color-text-muted) uppercase">
+            <div
+              key={day}
+              className="py-1 text-center text-[10px] font-semibold text-(--color-text-muted) uppercase"
+            >
               {day}
             </div>
           ))}
@@ -133,7 +152,7 @@ export default function MobileShiftView({ onShiftClick }: MobileShiftViewProps) 
                     today
                       ? "bg-(--color-primary) font-bold text-white"
                       : selected
-                        ? "font-bold text-foreground"
+                        ? "text-foreground font-bold"
                         : "text-foreground"
                   }`}
                 >
@@ -153,7 +172,9 @@ export default function MobileShiftView({ onShiftClick }: MobileShiftViewProps) 
         <div className="mt-3 flex flex-wrap justify-center gap-3 border-t border-(--color-border-light) pt-2">
           <div className="flex items-center gap-1">
             <span className="h-2 w-2 rounded-full bg-amber-400"></span>
-            <span className="text-[10px] text-(--color-text-muted)">Còn trống</span>
+            <span className="text-[10px] text-(--color-text-muted)">
+              Còn trống
+            </span>
           </div>
           <div className="flex items-center gap-1">
             <span className="h-2 w-2 rounded-full bg-green-500"></span>
@@ -161,7 +182,9 @@ export default function MobileShiftView({ onShiftClick }: MobileShiftViewProps) 
           </div>
           <div className="flex items-center gap-1">
             <span className="h-2 w-2 rounded-full bg-purple-400"></span>
-            <span className="text-[10px] text-(--color-text-muted)">Nghỉ phép</span>
+            <span className="text-[10px] text-(--color-text-muted)">
+              Nghỉ phép
+            </span>
           </div>
           <div className="flex items-center gap-1">
             <span className="h-2 w-2 rounded-full bg-red-400"></span>
@@ -172,8 +195,9 @@ export default function MobileShiftView({ onShiftClick }: MobileShiftViewProps) 
 
       {/* Selected day shifts */}
       <div>
-        <h3 className="mb-3 text-sm font-bold text-foreground">
-          {dayOfWeek}, {selectedDateObj.getDate()}/{selectedDateObj.getMonth() + 1}/{selectedDateObj.getFullYear()}
+        <h3 className="text-foreground mb-3 text-sm font-bold">
+          {dayOfWeek}, {selectedDateObj.getDate()}/
+          {selectedDateObj.getMonth() + 1}/{selectedDateObj.getFullYear()}
           <span className="ml-2 text-xs font-normal text-(--color-text-muted)">
             ({selectedShifts.length} ca)
           </span>
@@ -182,24 +206,34 @@ export default function MobileShiftView({ onShiftClick }: MobileShiftViewProps) 
         {selectedShifts.length === 0 ? (
           <div className="rounded-xl border border-dashed border-(--color-border-light) py-8 text-center">
             <i className="fa-regular fa-calendar-xmark mb-2 text-2xl text-gray-300"></i>
-            <p className="text-sm text-(--color-text-muted)">Không có ca làm trong ngày này</p>
+            <p className="text-sm text-(--color-text-muted)">
+              Không có ca làm trong ngày này
+            </p>
           </div>
         ) : (
           <div className="space-y-3">
             {DEPARTMENTS.map((dept) => {
-              const deptShifts = selectedShifts.filter((s) => s.department === dept.id);
+              const deptShifts = selectedShifts.filter(
+                (s) => s.department === dept.id,
+              );
               if (deptShifts.length === 0) return null;
               return (
                 <div key={dept.id}>
                   <div className="mb-2 flex items-center gap-2">
-                    <i className={`${dept.icon} text-xs text-(--color-primary)`}></i>
+                    <i
+                      className={`${dept.icon} text-xs text-(--color-primary)`}
+                    ></i>
                     <span className="text-xs font-semibold text-(--color-text-secondary)">
                       {dept.name}
                     </span>
                   </div>
                   <div className="space-y-2">
                     {deptShifts.map((shift) => (
-                      <ShiftCard key={shift.id} shift={shift} onClick={onShiftClick} />
+                      <ShiftCard
+                        key={shift.id}
+                        shift={shift}
+                        onClick={onShiftClick}
+                      />
                     ))}
                   </div>
                 </div>

@@ -1,6 +1,12 @@
 "use client";
 
-import { ReactNode, createContext, useCallback, useContext, useState } from "react";
+import {
+  ReactNode,
+  createContext,
+  useCallback,
+  useContext,
+  useState,
+} from "react";
 
 import { MOCK_SHIFT_SLOTS } from "./constants";
 import type { ShiftSlot, ShiftStatus } from "./types";
@@ -24,7 +30,11 @@ interface ShiftContextType {
   goToToday: () => void;
 
   // Shift actions
-  registerShift: (shiftId: string, staffId: number, staffName: string) => { success: boolean; error?: string };
+  registerShift: (
+    shiftId: string,
+    staffId: number,
+    staffName: string,
+  ) => { success: boolean; error?: string };
   unregisterShift: (shiftId: string, staffId: number) => void;
   createShift: (shift: Omit<ShiftSlot, "id">) => void;
   updateShift: (shift: ShiftSlot) => void;
@@ -34,7 +44,13 @@ interface ShiftContextType {
   getShiftsForDate: (date: string) => ShiftSlot[];
   getShiftsForWeek: (weekStart: Date) => ShiftSlot[];
   getWeekDates: () => Date[];
-  hasConflict: (date: string, startTime: string, endTime: string, staffId: number, excludeShiftId?: string) => boolean;
+  hasConflict: (
+    date: string,
+    startTime: string,
+    endTime: string,
+    staffId: number,
+    excludeShiftId?: string,
+  ) => boolean;
   getWeeklyBudget: () => number;
 }
 
@@ -198,7 +214,15 @@ export function ShiftProvider({ children }: { children: ReactNode }) {
         return { success: false, error: "Bạn đã đăng ký ca này rồi." };
       }
 
-      if (hasConflict(shift.date, shift.startTime, shift.endTime, staffId, shiftId)) {
+      if (
+        hasConflict(
+          shift.date,
+          shift.startTime,
+          shift.endTime,
+          staffId,
+          shiftId,
+        )
+      ) {
         return {
           success: false,
           error: "Xung đột lịch! Bạn đã có ca làm trùng giờ trong ngày này.",
@@ -210,7 +234,10 @@ export function ShiftProvider({ children }: { children: ReactNode }) {
           s.id === shiftId
             ? {
                 ...s,
-                registeredStaff: [...s.registeredStaff, { id: staffId, name: staffName }],
+                registeredStaff: [
+                  ...s.registeredStaff,
+                  { id: staffId, name: staffName },
+                ],
                 status: "registered" as ShiftStatus,
               }
             : s,
@@ -230,7 +257,8 @@ export function ShiftProvider({ children }: { children: ReactNode }) {
         return {
           ...s,
           registeredStaff: updated,
-          status: updated.length === 0 ? ("available" as ShiftStatus) : s.status,
+          status:
+            updated.length === 0 ? ("available" as ShiftStatus) : s.status,
         };
       }),
     );

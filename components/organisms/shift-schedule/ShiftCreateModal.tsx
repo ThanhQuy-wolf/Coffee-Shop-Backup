@@ -6,7 +6,11 @@ import { useEffect, useState } from "react";
 
 import type { ShiftCreateModalProps } from "./ShiftSchedule.types";
 
-export default function ShiftCreateModal({ isOpen, onClose, defaultDate }: ShiftCreateModalProps) {
+export default function ShiftCreateModal({
+  isOpen,
+  onClose,
+  defaultDate,
+}: ShiftCreateModalProps) {
   const { createShift } = useShift();
 
   const [date, setDate] = useState(defaultDate ?? "2026-04-10");
@@ -72,7 +76,7 @@ export default function ShiftCreateModal({ isOpen, onClose, defaultDate }: Shift
         {/* Header */}
         <div className="flex items-center justify-between border-b border-(--color-border-light) px-5 py-4">
           <div>
-            <h2 className="text-base font-bold text-foreground">
+            <h2 className="text-foreground text-base font-bold">
               Tạo ca làm mới
             </h2>
             <p className="text-xs text-(--color-text-muted)">
@@ -101,7 +105,7 @@ export default function ShiftCreateModal({ isOpen, onClose, defaultDate }: Shift
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full rounded-xl border border-(--color-border-light) px-3 py-2.5 text-sm text-foreground outline-none transition focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary)"
+              className="text-foreground w-full rounded-xl border border-(--color-border-light) px-3 py-2.5 text-sm transition outline-none focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary)"
             />
           </div>
 
@@ -116,7 +120,7 @@ export default function ShiftCreateModal({ isOpen, onClose, defaultDate }: Shift
                 type="time"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="w-full rounded-xl border border-(--color-border-light) px-3 py-2.5 text-sm text-foreground outline-none transition focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary)"
+                className="text-foreground w-full rounded-xl border border-(--color-border-light) px-3 py-2.5 text-sm transition outline-none focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary)"
               />
             </div>
             <div>
@@ -128,7 +132,7 @@ export default function ShiftCreateModal({ isOpen, onClose, defaultDate }: Shift
                 type="time"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="w-full rounded-xl border border-(--color-border-light) px-3 py-2.5 text-sm text-foreground outline-none transition focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary)"
+                className="text-foreground w-full rounded-xl border border-(--color-border-light) px-3 py-2.5 text-sm transition outline-none focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary)"
               />
             </div>
           </div>
@@ -142,7 +146,7 @@ export default function ShiftCreateModal({ isOpen, onClose, defaultDate }: Shift
               title="Department"
               value={department}
               onChange={(e) => setDepartment(e.target.value)}
-              className="w-full rounded-xl border border-(--color-border-light) px-3 py-2.5 text-sm text-foreground outline-none transition focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary)"
+              className="text-foreground w-full rounded-xl border border-(--color-border-light) px-3 py-2.5 text-sm transition outline-none focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary)"
             >
               {DEPARTMENTS.map((dept) => (
                 <option key={dept.id} value={dept.id}>
@@ -165,7 +169,7 @@ export default function ShiftCreateModal({ isOpen, onClose, defaultDate }: Shift
                 max={10}
                 value={maxStaff}
                 onChange={(e) => setMaxStaff(Number(e.target.value))}
-                className="w-full rounded-xl border border-(--color-border-light) px-3 py-2.5 text-sm text-foreground outline-none transition focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary)"
+                className="text-foreground w-full rounded-xl border border-(--color-border-light) px-3 py-2.5 text-sm transition outline-none focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary)"
               />
             </div>
             <div>
@@ -179,7 +183,7 @@ export default function ShiftCreateModal({ isOpen, onClose, defaultDate }: Shift
                 step={10000}
                 value={wage}
                 onChange={(e) => setWage(Number(e.target.value))}
-                className="w-full rounded-xl border border-(--color-border-light) px-3 py-2.5 text-sm text-foreground outline-none transition focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary)"
+                className="text-foreground w-full rounded-xl border border-(--color-border-light) px-3 py-2.5 text-sm transition outline-none focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary)"
               />
             </div>
           </div>

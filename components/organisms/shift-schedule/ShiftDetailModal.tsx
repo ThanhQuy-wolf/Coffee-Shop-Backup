@@ -7,7 +7,11 @@ import { useState } from "react";
 
 import type { ShiftDetailModalProps } from "./ShiftSchedule.types";
 
-export default function ShiftDetailModal({ shift, isOpen, onClose }: ShiftDetailModalProps) {
+export default function ShiftDetailModal({
+  shift,
+  isOpen,
+  onClose,
+}: ShiftDetailModalProps) {
   const { user } = useAuth();
   const { registerShift, unregisterShift, deleteShift } = useShift();
   const [error, setError] = useState<string | null>(null);
@@ -17,7 +21,9 @@ export default function ShiftDetailModal({ shift, isOpen, onClose }: ShiftDetail
 
   const dept = DEPARTMENTS.find((d) => d.id === shift.department);
   const isManager = user?.role === "manager";
-  const isRegistered = user ? shift.registeredStaff.some((s) => s.id === user.id) : false;
+  const isRegistered = user
+    ? shift.registeredStaff.some((s) => s.id === user.id)
+    : false;
   const isFull = shift.registeredStaff.length >= shift.maxStaff;
 
   const handleRegister = () => {
@@ -68,10 +74,7 @@ export default function ShiftDetailModal({ shift, isOpen, onClose }: ShiftDetail
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/40"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
 
       {/* Modal */}
       <div className="relative w-full max-w-md rounded-2xl bg-white shadow-xl">
@@ -80,7 +83,7 @@ export default function ShiftDetailModal({ shift, isOpen, onClose }: ShiftDetail
           <div className="flex items-center gap-3">
             {dept && <i className={`${dept.icon} text-(--color-primary)`}></i>}
             <div>
-              <h2 className="text-base font-bold text-foreground">
+              <h2 className="text-foreground text-base font-bold">
                 Chi tiết ca làm
               </h2>
               <p className="text-xs text-(--color-text-muted)">{dept?.name}</p>
@@ -100,7 +103,9 @@ export default function ShiftDetailModal({ shift, isOpen, onClose }: ShiftDetail
         <div className="space-y-4 px-5 py-4">
           {/* Status badge */}
           <div className="flex items-center gap-2">
-            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusColor[shift.status]}`}>
+            <span
+              className={`rounded-full px-3 py-1 text-xs font-semibold ${statusColor[shift.status]}`}
+            >
               {statusLabel[shift.status]}
             </span>
           </div>
@@ -108,30 +113,41 @@ export default function ShiftDetailModal({ shift, isOpen, onClose }: ShiftDetail
           {/* Shift info grid */}
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-xl bg-gray-50 p-3">
-              <p className="text-[10px] font-semibold text-(--color-text-muted) uppercase">Ngày</p>
-              <p className="mt-1 text-sm font-bold text-foreground">
-                {new Date(shift.date + "T00:00:00").toLocaleDateString("vi-VN", {
-                  weekday: "long",
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                })}
+              <p className="text-[10px] font-semibold text-(--color-text-muted) uppercase">
+                Ngày
+              </p>
+              <p className="text-foreground mt-1 text-sm font-bold">
+                {new Date(shift.date + "T00:00:00").toLocaleDateString(
+                  "vi-VN",
+                  {
+                    weekday: "long",
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  },
+                )}
               </p>
             </div>
             <div className="rounded-xl bg-gray-50 p-3">
-              <p className="text-[10px] font-semibold text-(--color-text-muted) uppercase">Giờ làm</p>
-              <p className="mt-1 text-sm font-bold text-foreground">
+              <p className="text-[10px] font-semibold text-(--color-text-muted) uppercase">
+                Giờ làm
+              </p>
+              <p className="text-foreground mt-1 text-sm font-bold">
                 {shift.startTime} – {shift.endTime}
               </p>
             </div>
             <div className="rounded-xl bg-gray-50 p-3">
-              <p className="text-[10px] font-semibold text-(--color-text-muted) uppercase">Thời lượng</p>
-              <p className="mt-1 text-sm font-bold text-foreground">
+              <p className="text-[10px] font-semibold text-(--color-text-muted) uppercase">
+                Thời lượng
+              </p>
+              <p className="text-foreground mt-1 text-sm font-bold">
                 {shift.durationHours} giờ
               </p>
             </div>
             <div className="rounded-xl bg-gray-50 p-3">
-              <p className="text-[10px] font-semibold text-(--color-text-muted) uppercase">Lương ca</p>
+              <p className="text-[10px] font-semibold text-(--color-text-muted) uppercase">
+                Lương ca
+              </p>
               <p className="mt-1 text-sm font-bold text-(--color-primary)">
                 {shift.wage.toLocaleString("vi-VN")} VND
               </p>
@@ -141,10 +157,13 @@ export default function ShiftDetailModal({ shift, isOpen, onClose }: ShiftDetail
           {/* Registered staff */}
           <div>
             <p className="mb-2 text-xs font-semibold text-(--color-text-secondary)">
-              Nhân viên đã đăng ký ({shift.registeredStaff.length}/{shift.maxStaff})
+              Nhân viên đã đăng ký ({shift.registeredStaff.length}/
+              {shift.maxStaff})
             </p>
             {shift.registeredStaff.length === 0 ? (
-              <p className="text-xs italic text-(--color-text-muted)">Chưa có ai đăng ký</p>
+              <p className="text-xs text-(--color-text-muted) italic">
+                Chưa có ai đăng ký
+              </p>
             ) : (
               <div className="space-y-2">
                 {shift.registeredStaff.map((staff) => (
@@ -156,7 +175,7 @@ export default function ShiftDetailModal({ shift, isOpen, onClose }: ShiftDetail
                       <div className="flex h-7 w-7 items-center justify-center rounded-full bg-(--color-primary)/10">
                         <i className="fa-solid fa-user text-[10px] text-(--color-primary)"></i>
                       </div>
-                      <span className="text-sm font-medium text-foreground">
+                      <span className="text-foreground text-sm font-medium">
                         {staff.name}
                       </span>
                     </div>
@@ -193,16 +212,19 @@ export default function ShiftDetailModal({ shift, isOpen, onClose }: ShiftDetail
 
         {/* Footer actions */}
         <div className="flex gap-2 border-t border-(--color-border-light) px-5 py-4">
-          {!isRegistered && !isFull && shift.status !== "approved_leave" && shift.status !== "absent" && (
-            <button
-              type="button"
-              onClick={handleRegister}
-              className="flex-1 cursor-pointer rounded-xl border-none bg-(--color-primary) px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
-            >
-              <i className="fa-solid fa-calendar-plus mr-2"></i>
-              Đăng ký ca
-            </button>
-          )}
+          {!isRegistered &&
+            !isFull &&
+            shift.status !== "approved_leave" &&
+            shift.status !== "absent" && (
+              <button
+                type="button"
+                onClick={handleRegister}
+                className="flex-1 cursor-pointer rounded-xl border-none bg-(--color-primary) px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
+              >
+                <i className="fa-solid fa-calendar-plus mr-2"></i>
+                Đăng ký ca
+              </button>
+            )}
           {isRegistered && (
             <button
               type="button"
