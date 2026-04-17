@@ -48,10 +48,19 @@ export default function PaymentPage() {
                         <th scope="col" className="px-4 py-3 font-semibold">
                           Tên sản phẩm
                         </th>
-                        <th scope="col" className="px-4 py-3 font-semibold">Giá tiền</th>
-                        <th scope="col" className="px-4 py-3 font-semibold">Mô tả</th>
-                        <th scope="col" className="px-4 py-3 font-semibold">Số lượng</th>
-                        <th scope="col" className="px-4 py-3 text-right font-semibold">
+                        <th scope="col" className="px-4 py-3 font-semibold">
+                          Giá tiền
+                        </th>
+                        <th scope="col" className="px-4 py-3 font-semibold">
+                          Mô tả
+                        </th>
+                        <th scope="col" className="px-4 py-3 font-semibold">
+                          Số lượng
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-4 py-3 text-right font-semibold"
+                        >
                           Xóa
                         </th>
                       </tr>
@@ -75,7 +84,7 @@ export default function PaymentPage() {
                             <div className="flex items-center gap-2">
                               <button
                                 onClick={() => decreaseQty(item.id)}
-                                className="inline-flex items-center justify-center h-8 w-8 rounded-lg border border-(--color-border) hover:bg-(--color-border-light)"
+                                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-(--color-border) hover:bg-(--color-border-light)"
                                 aria-label={`Giảm số lượng ${item.name}`}
                               >
                                 -
@@ -92,7 +101,7 @@ export default function PaymentPage() {
                               />
                               <button
                                 onClick={() => increaseQty(item.id)}
-                                className="inline-flex items-center justify-center h-8 w-8 rounded-lg border border-(--color-border) hover:bg-(--color-border-light)"
+                                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-(--color-border) hover:bg-(--color-border-light)"
                                 aria-label={`Tăng số lượng ${item.name}`}
                               >
                                 +

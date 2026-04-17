@@ -1,6 +1,13 @@
 ---
 name: ui-ux-testing
-description: Automated visual regression testing and UI/UX analysis for web applications. Use this skill whenever developers mention "test this UI", "visual regression", "test the UI", "check this interface", "UI testing", or want to create automated tests for web pages. Analyzes URLs and generates comprehensive test strategies including Playwright/Cypress test scripts, manual testing checklists, visual regression detection, and detailed reports with findings and recommendations.
+description:
+  Automated visual regression testing and UI/UX analysis for web applications.
+  Use this skill whenever developers mention "test this UI", "visual
+  regression", "test the UI", "check this interface", "UI testing", or want to
+  create automated tests for web pages. Analyzes URLs and generates
+  comprehensive test strategies including Playwright/Cypress test scripts,
+  manual testing checklists, visual regression detection, and detailed reports
+  with findings and recommendations.
 compatibility:
   tools: Claude in Chrome browser automation
   frameworks: Playwright, Cypress, Selenium
@@ -8,21 +15,28 @@ compatibility:
 
 # UI/UX Testing Skill
 
-This skill helps developers create automated visual regression tests and comprehensive UI/UX testing strategies for web applications.
+This skill helps developers create automated visual regression tests and
+comprehensive UI/UX testing strategies for web applications.
 
 ## Overview
 
-When a developer asks you to test a UI or create visual regression tests, this skill guides you through:
+When a developer asks you to test a UI or create visual regression tests, this
+skill guides you through:
 
 1. **Analyzing the target URL** - Inspect the web page structure and components
-2. **Generating test strategies** - Create both automated and manual testing approaches
-3. **Writing test code** - Generate Playwright/Cypress test scripts or Selenium code
-4. **Creating test checklists** - Manual testing steps for visual regression and UX flows
-5. **Generating reports** - Detailed findings, issues, and recommendations in markdown/HTML
+2. **Generating test strategies** - Create both automated and manual testing
+   approaches
+3. **Writing test code** - Generate Playwright/Cypress test scripts or Selenium
+   code
+4. **Creating test checklists** - Manual testing steps for visual regression and
+   UX flows
+5. **Generating reports** - Detailed findings, issues, and recommendations in
+   markdown/HTML
 
 ## When to Trigger
 
 Trigger this skill when the user:
+
 - Provides a URL and asks to "test this UI"
 - Requests "visual regression testing" for a web page
 - Wants to "check accessibility" or test a component
@@ -35,6 +49,7 @@ Trigger this skill when the user:
 ### Step 1: Inspect the Target URL
 
 Use Claude in Chrome to:
+
 - Navigate to the provided URL
 - Take screenshots of different viewport sizes (desktop, tablet, mobile)
 - Inspect the DOM structure using `read_page` tool
@@ -44,6 +59,7 @@ Use Claude in Chrome to:
 ### Step 2: Create a Test Strategy
 
 Based on your inspection, identify:
+
 - **Visual elements** to regression test (buttons, forms, headers, layouts)
 - **Interactive flows** to test (hover states, click handlers, form submission)
 - **Responsive breakpoints** to validate (mobile, tablet, desktop)
@@ -55,48 +71,51 @@ Based on your inspection, identify:
 **For Automated Testing (Choose one or more):**
 
 #### Playwright (Recommended)
+
 ```javascript
 // Example structure
-import { test, expect } from '@playwright/test';
+import { expect, test } from "@playwright/test";
 
-test('visual regression - homepage', async ({ page }) => {
-  await page.goto('https://example.com');
-  
+test("visual regression - homepage", async ({ page }) => {
+  await page.goto("https://example.com");
+
   // Capture baseline screenshot
-  await expect(page).toHaveScreenshot('homepage.png');
-  
+  await expect(page).toHaveScreenshot("homepage.png");
+
   // Test interactive elements
-  await page.hover('button.primary');
-  await expect(page).toHaveScreenshot('button-hover.png');
+  await page.hover("button.primary");
+  await expect(page).toHaveScreenshot("button-hover.png");
 });
 
-test('responsive layout - mobile', async ({ page }) => {
+test("responsive layout - mobile", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
-  await page.goto('https://example.com');
-  await expect(page).toHaveScreenshot('mobile-layout.png');
+  await page.goto("https://example.com");
+  await expect(page).toHaveScreenshot("mobile-layout.png");
 });
 ```
 
 #### Cypress
+
 ```javascript
-describe('Visual Regression Tests', () => {
+describe("Visual Regression Tests", () => {
   beforeEach(() => {
-    cy.visit('https://example.com');
+    cy.visit("https://example.com");
   });
 
-  it('captures baseline screenshot', () => {
-    cy.screenshot('homepage');
-    cy.get('[data-testid="header"]').should('be.visible');
+  it("captures baseline screenshot", () => {
+    cy.screenshot("homepage");
+    cy.get('[data-testid="header"]').should("be.visible");
   });
 
-  it('tests button hover state', () => {
-    cy.get('button.primary').trigger('mouseenter');
-    cy.screenshot('button-hover-state');
+  it("tests button hover state", () => {
+    cy.get("button.primary").trigger("mouseenter");
+    cy.screenshot("button-hover-state");
   });
 });
 ```
 
 #### Selenium
+
 ```python
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -156,6 +175,7 @@ Create an HTML/Markdown report with:
 # UI/UX Testing Report
 
 ## Executive Summary
+
 - URL tested: [URL]
 - Viewports tested: Desktop (1920x1080), Tablet (768x1024), Mobile (375x667)
 - Testing date: [Date]
@@ -164,6 +184,7 @@ Create an HTML/Markdown report with:
 ## Issues Found
 
 ### Critical (Breaks functionality)
+
 1. **Issue Title**
    - Severity: Critical
    - Location: [Element/Component]
@@ -173,12 +194,14 @@ Create an HTML/Markdown report with:
    - Screenshot: [If applicable]
 
 ### Major (Significant visual/UX impact)
+
 1. **Issue Title**
    - Severity: Major
    - Location: [Element/Component]
    - Impact: [User impact]
 
 ### Minor (Polish/optimization)
+
 1. **Issue Title**
    - Severity: Minor
    - Location: [Element/Component]
@@ -187,22 +210,25 @@ Create an HTML/Markdown report with:
 ## Visual Regression Analysis
 
 ### Desktop (1920x1080)
+
 - [List observations]
 - [List changes from baseline if available]
 
 ### Tablet (768x1024)
+
 - [List observations]
 - [Responsive issues found]
 
 ### Mobile (375x667)
+
 - [List observations]
 - [Mobile-specific issues]
 
 ## Accessibility Assessment
 
-| Element | Issue | WCAG Level | Recommendation |
-|---------|-------|-----------|-----------------|
-| [Element] | [Issue] | [AA/AAA] | [Fix] |
+| Element   | Issue   | WCAG Level | Recommendation |
+| --------- | ------- | ---------- | -------------- |
+| [Element] | [Issue] | [AA/AAA]   | [Fix]          |
 
 ## Recommendations
 
@@ -223,6 +249,7 @@ Create an HTML/Markdown report with:
 - Regression risk: [High/Medium/Low]
 
 ---
+
 Generated using UI/UX Testing Skill
 ```
 
@@ -237,12 +264,14 @@ Based on what the developer needs, generate:
 
 ## Best Practices
 
-- **Multiple viewports:** Always test at least mobile (375px), tablet (768px), and desktop (1920px)
+- **Multiple viewports:** Always test at least mobile (375px), tablet (768px),
+  and desktop (1920px)
 - **Visual baselines:** Save baseline screenshots before making changes
 - **Critical paths:** Prioritize testing main user workflows first
 - **Accessibility first:** Include WCAG AA compliance checks
 - **Clear assertions:** Make test assertions explicit and meaningful
-- **Maintainability:** Use data attributes (data-testid) for reliable element selection
+- **Maintainability:** Use data attributes (data-testid) for reliable element
+  selection
 
 ## Example: Complete Testing Session
 
@@ -270,5 +299,4 @@ Based on what the developer needs, generate:
 
 ---
 
-**Last Updated:** 2024
-**Skill Version:** 1.0
+**Last Updated:** 2024 **Skill Version:** 1.0

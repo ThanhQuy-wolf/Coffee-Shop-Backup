@@ -42,6 +42,7 @@ Main interactive button component with multiple variants and sizes.
 - All standard HTML button attributes
 
 **Usage:**
+
 ```tsx
 import { Button } from "@/components/atoms";
 
@@ -59,6 +60,7 @@ import { Button } from "@/components/atoms";
 ```
 
 **Styling:**
+
 - Primary: Branded color with dark hover
 - Secondary: Border style with light background on hover
 - Danger: Red for destructive actions
@@ -78,6 +80,7 @@ Button designed specifically for icon-only interactions.
 - All standard HTML button attributes
 
 **Usage:**
+
 ```tsx
 import { IconButton } from "@/components/atoms";
 
@@ -102,6 +105,7 @@ General text input field with optional label, error, and icon.
 - All standard HTML input attributes
 
 **Usage:**
+
 ```tsx
 import { TextInput } from "@/components/atoms";
 
@@ -135,6 +139,7 @@ Search input with built-in search icon and clear button.
 - All standard HTML input attributes
 
 **Usage:**
+
 ```tsx
 import { SearchInput } from "@/components/atoms";
 
@@ -161,6 +166,7 @@ Multi-line text input with optional label and error.
 - All standard HTML textarea attributes
 
 **Usage:**
+
 ```tsx
 import { Textarea } from "@/components/atoms";
 
@@ -188,6 +194,7 @@ Semantic heading component with level-based sizing.
 - All standard HTML heading attributes
 
 **Sizing:**
+
 - Level 1: text-3xl font-bold
 - Level 2: text-2xl font-bold
 - Level 3: text-xl font-bold
@@ -196,6 +203,7 @@ Semantic heading component with level-based sizing.
 - Level 6: text-sm font-semibold
 
 **Usage:**
+
 ```tsx
 import { Heading } from "@/components/atoms";
 
@@ -217,12 +225,14 @@ Paragraph text with semantic variants.
 - All standard HTML paragraph attributes
 
 **Variants:**
+
 - body1: text-base (main content)
 - body2: text-sm (secondary content)
 - caption: text-xs (smallest text)
 - label: text-sm font-medium (form labels)
 
 **Usage:**
+
 ```tsx
 import { Text } from "@/components/atoms";
 
@@ -244,6 +254,7 @@ Small caption/note text component.
 - All standard HTML span attributes
 
 **Usage:**
+
 ```tsx
 import { Caption } from "@/components/atoms";
 
@@ -268,6 +279,7 @@ Labeled badge component for highlighting information.
 - All standard HTML span attributes
 
 **Variants:**
+
 - primary: Branded color
 - secondary: Light gray
 - success: Green
@@ -275,6 +287,7 @@ Labeled badge component for highlighting information.
 - warning: Yellow
 
 **Usage:**
+
 ```tsx
 import { Badge } from "@/components/atoms";
 
@@ -296,6 +309,7 @@ Specialized badge for displaying formatted prices.
 - All standard HTML span attributes
 
 **Usage:**
+
 ```tsx
 import { PriceBadge } from "@/components/atoms";
 
@@ -304,6 +318,7 @@ import { PriceBadge } from "@/components/atoms";
 ```
 
 **Output:**
+
 - VND: "50.000 ₫"
 - USD: "$99.99"
 
@@ -321,6 +336,7 @@ Visual separator element.
 - All standard HTML hr attributes
 
 **Usage:**
+
 ```tsx
 import { Divider } from "@/components/atoms";
 
@@ -414,6 +430,7 @@ import type {
 ```
 
 ### Product Card
+
 ```tsx
 <div className="rounded-lg border p-4">
   <Heading level={3}>Product Name</Heading>
@@ -426,6 +443,7 @@ import type {
 ```
 
 ### Rating Display
+
 ```tsx
 <div>
   <Heading level={4}>Reviews</Heading>
@@ -439,6 +457,7 @@ import type {
 ## 🧪 Testing Atoms
 
 ### Props Validation
+
 ```tsx
 // ✅ Valid
 <Button variant="primary" size="sm">Click</Button>

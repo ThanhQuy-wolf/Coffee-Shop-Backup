@@ -62,7 +62,13 @@ export default function ProductCard({
         <Text variant="body2" className="font-bold">
           {formattedPrice}
         </Text>
-        <Button onClick={onBuy} variant="primary" size="sm" icon="fa-cart-plus" aria-label={`Mua ${productName}`}>
+        <Button
+          onClick={onBuy}
+          variant="primary"
+          size="sm"
+          icon="fa-cart-plus"
+          aria-label={`Mua ${productName}`}
+        >
           Mua
         </Button>
       </div>

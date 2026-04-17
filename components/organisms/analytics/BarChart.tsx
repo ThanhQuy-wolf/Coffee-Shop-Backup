@@ -16,10 +16,16 @@ interface BarChartProps {
  * Tooltip auto-flips above/below bar top to stay inside the viewBox.
  */
 export function BarChart({ current, previous, height = 200 }: BarChartProps) {
-  const [hovered, setHovered] = useState<{ set: "cur" | "prev"; idx: number } | null>(null);
+  const [hovered, setHovered] = useState<{
+    set: "cur" | "prev";
+    idx: number;
+  } | null>(null);
   const W = 800;
   const H = height;
-  const padL = 56, padR = 16, padT = 16, padB = 40;
+  const padL = 56,
+    padR = 16,
+    padT = 16,
+    padB = 40;
   const chartW = W - padL - padR;
   const chartH = H - padT - padB;
 
