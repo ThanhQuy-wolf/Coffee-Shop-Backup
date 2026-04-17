@@ -21,9 +21,11 @@ export default function SearchInput({
       />
       {value && onClear && (
         <button
+          title="Xóa"
           type="button"
           onClick={onClear}
           className="absolute top-1/2 right-3 -translate-y-1/2 text-(--color-text-muted) transition-colors hover:text-(--color-primary)"
+          aria-label="Xóa"
         >
           <i className="fa-solid fa-xmark text-sm"></i>
         </button>

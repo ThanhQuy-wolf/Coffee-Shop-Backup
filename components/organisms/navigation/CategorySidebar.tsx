@@ -47,6 +47,7 @@ export default function CategorySidebar({
         <button
           onClick={onToggle}
           title={isOpen ? "Thu gọn menu" : "Mở rộng menu"}
+          aria-label={isOpen ? "Thu gọn menu" : "Mở rộng menu"}
           className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border-none bg-transparent text-(--color-text-muted) transition-colors duration-150 hover:bg-(--color-border-light) hover:text-(--color-primary) xl:hidden"
         >
           <i

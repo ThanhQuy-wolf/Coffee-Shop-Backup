@@ -91,6 +91,7 @@ export default function Header() {
               <button
                 onClick={handleAuthClick}
                 title="Đăng xuất"
+                aria-label="Đăng xuất"
                 className="flex cursor-pointer items-center gap-2 rounded-xl border border-(--color-border) bg-transparent px-3 py-2.5 text-sm font-medium text-(--color-text-muted) transition-all duration-150 hover:border-red-300 hover:bg-red-50 hover:text-red-500 active:scale-95"
               >
                 <i className="fa-solid fa-right-from-bracket text-base"></i>
@@ -109,6 +110,7 @@ export default function Header() {
               <button
                 onClick={handleAuthClick}
                 title="Nhấn để đăng xuất"
+                aria-label="Đăng xuất"
                 className="bg-background flex cursor-pointer items-center gap-2.5 rounded-xl border border-(--color-border) px-4 py-2 text-sm font-semibold text-(--color-text-secondary) transition-all duration-150 hover:border-(--color-primary-light) hover:bg-(--color-border-light) active:scale-95"
               >
                 {/* Avatar circle */}

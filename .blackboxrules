@@ -1,5 +1,0 @@
-## Rules:
-    - Khi làm một tính năng mới, trước khi hoàn thành phải update các file mark down mà thư mục đó được update.
-    - Khi có từ khóa "Yêu cầu" và một list các yêu cầu thì phải hoàn thành ĐÚNG yêu cầu, không thêm không bớt.
-    - Sử dụng thư viện tailwind CSS để code css cho project.
-    - Mỗi feature được update đều phải được responsive với các kích cỡ màn hình như smartphone, tablet, desktop.

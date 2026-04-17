@@ -67,15 +67,13 @@ Dành cho khách hàng:
 
 Dành cho quản lý:
 
-- Sidebar desktop: Brand, tab navigation (Thực đơn / Combo / Danh mục), link tới
-  Analytics
+- Sidebar desktop: Brand, tab navigation (Thực đơn / Combo / Danh mục), link tới Analytics
 - CRUD sản phẩm, combo, danh mục qua modals
 - Auth guard: tự động redirect non-manager về `/`
 
 #### 9. **Trang Phân Tích Tài Chính** (`app/(manager)/manager/analytics`)
 
-- Summary cards: Doanh thu, đơn hàng, lợi nhuận, giá trị đơn trung bình (so sánh
-  kỳ trước)
+- Summary cards: Doanh thu, đơn hàng, lợi nhuận, giá trị đơn trung bình (so sánh kỳ trước)
 - Bộ chọn kỳ: Ngày / Tuần / Tháng / Năm
 - Biểu đồ SVG thuần: Line, Bar, Pie — hover tooltips tương tác
 - Bảng top 5 sản phẩm và bảng chi tiết có thể sắp xếp
@@ -198,18 +196,18 @@ frondend/
 
 ## Công Nghệ Sử Dụng
 
-| Công nghệ        | Phiên bản | Mục đích                              |
-| ---------------- | --------- | ------------------------------------- |
-| Next.js          | 16.1.7    | React Framework (App Router)          |
-| React            | 19.2.3    | Thư viện UI                           |
-| TypeScript       | ^5        | Kiểu dữ liệu tĩnh                     |
-| Tailwind CSS     | ^4.2.2    | Utility-first CSS framework           |
-| Geist Font       | -         | Font chữ (Google Fonts via next/font) |
-| FontAwesome      | 6.7.2     | Icon library (CDN)                    |
-| pnpm             | -         | Package manager                       |
-| ESLint           | ^9        | Linting                               |
-| Prettier         | ^3        | Code formatting                       |
-| semantic-release | ^25       | Automated versioning & release        |
+| Công nghệ    | Phiên bản | Mục đích                              |
+| ------------ | --------- | ------------------------------------- |
+| Next.js      | 16.1.7    | React Framework (App Router)          |
+| React        | 19.2.3    | Thư viện UI                           |
+| TypeScript   | ^5        | Kiểu dữ liệu tĩnh                     |
+| Tailwind CSS | ^4.2.2    | Utility-first CSS framework           |
+| Geist Font   | -         | Font chữ (Google Fonts via next/font) |
+| FontAwesome  | 6.7.2     | Icon library (CDN)                    |
+| pnpm         | -         | Package manager                       |
+| ESLint       | ^9        | Linting                               |
+| Prettier     | ^3        | Code formatting                       |
+| semantic-release | ^25   | Automated versioning & release        |
 
 ---
 
@@ -227,11 +225,11 @@ frondend/
 
 ### Tài Khoản Demo
 
-| Loại tài khoản | Tên đăng nhập | Mật khẩu      |
-| -------------- | ------------- | ------------- |
-| Manager        | admin         | admin         |
-| Staff          | Nguyễn Văn An | Nguyễn Văn An |
-| Customer       | 0987654321    | user1         |
+| Loại tài khoản | Tên đăng nhập  | Mật khẩu       |
+| -------------- | -------------- | -------------- |
+| Manager        | admin          | admin          |
+| Staff          | Nguyễn Văn An  | Nguyễn Văn An  |
+| Customer       | 0987654321     | user1          |
 
 ### Design & Styling
 
@@ -245,18 +243,14 @@ frondend/
 Dự án tuân theo **Atomic Design** pattern — chi tiết tại `Atomic.md`:
 
 - **Atoms** - Nguyên tố cơ bản: Button, Input, Badge, Text, Heading, Divider
-- **Molecules** - Nhóm atoms: ProductCard, ShopCard, SearchBar,
-  PaymentSummaryCard
-- **Organisms** - Phần UI phức tạp: CategorySidebar, CartFab, ProductGrid,
-  ShopGrid, ReviewModal, analytics charts, manager tabs/modals
-- **Templates** - Bố cục trang: MainLayout, AuthLayout, FeedLayout,
-  ManagerLayout
+- **Molecules** - Nhóm atoms: ProductCard, ShopCard, SearchBar, PaymentSummaryCard
+- **Organisms** - Phần UI phức tạp: CategorySidebar, CartFab, ProductGrid, ShopGrid, ReviewModal, analytics charts, manager tabs/modals
+- **Templates** - Bố cục trang: MainLayout, AuthLayout, FeedLayout, ManagerLayout
 
 ### Data & Integration
 
 - Mock data nằm trong `lib/constants.ts`
-- Context providers trong `app/providers.tsx`: AuthProvider, MenuProvider,
-  CartProvider
+- Context providers trong `app/providers.tsx`: AuthProvider, MenuProvider, CartProvider
 - ManagerProvider được thêm bởi `app/(manager)/layout.tsx`
 - Thay bằng API calls khi backend sẵn sàng
 - Ảnh sản phẩm: thêm vào `public/imgs/products/`

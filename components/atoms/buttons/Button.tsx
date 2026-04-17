@@ -8,6 +8,7 @@ export default function Button({
   size = "md",
   icon,
   iconPosition = "left",
+  className = "",
   disabled = false,
   children,
   ...props
@@ -43,7 +44,7 @@ export default function Button({
 
   return (
     <button
-      className={`${styles[style]} ${variants[variant]} ${sizes[size]}`}
+      className={`${styles[style]} ${variants[variant]} ${sizes[size]} ${className}`}
       disabled={disabled}
       {...props}
     >

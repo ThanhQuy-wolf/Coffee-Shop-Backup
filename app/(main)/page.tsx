@@ -1,10 +1,10 @@
 "use client";
 
-import { SearchBar } from "@/components/molecules/search-bar";
 import { CategorySidebar } from "@/components/organisms/navigation";
 import { ProductGrid } from "@/components/organisms/product-grid";
-import { MENU_CATEGORIES } from "@/lib/constants";
+import { SearchBar } from "@/components/molecules/search-bar";
 import { useMenu } from "@/lib/menu-context";
+import { MENU_CATEGORIES } from "@/lib/constants";
 import { useEffect, useState } from "react";
 
 /**
@@ -56,15 +56,18 @@ export default function Home() {
         <div className="mb-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
           {/* Title + count */}
           <div className="shrink-0">
-            <h2 className="text-foreground text-xl font-bold">
+            <h1 className="text-foreground text-xl font-bold">
               {activeCategoryLabel}
-            </h2>
+            </h1>
           </div>
 
           {/* Search bar */}
           <SearchBar
             value={searchQuery}
-            onChange={setSearchQuery}
+            onChange={(q) => {
+              if (q && activeCategory !== "all") setActiveCategory("all");
+              setSearchQuery(q);
+            }}
             onClear={() => setSearchQuery("")}
             placeholder="Tìm kiếm món..."
             className="sm:max-w-xs"
@@ -72,7 +75,10 @@ export default function Home() {
         </div>
 
         {/* ── Product grid (organism handles mobile category menu + grid) ── */}
-        <ProductGrid searchQuery={searchQuery} isSidebarOpen={isSidebarOpen} />
+        <ProductGrid
+          searchQuery={searchQuery}
+          isSidebarOpen={isSidebarOpen}
+        />
       </main>
     </div>
   );

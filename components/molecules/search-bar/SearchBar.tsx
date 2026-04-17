@@ -17,6 +17,7 @@ export default function SearchBar({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
+        aria-label="Tìm kiếm món ăn"
         className="bg-card text-foreground border-border placeholder:text-muted-foreground focus:border-primary focus:ring-primary focus:ring-opacity-20 w-full rounded-xl border py-2 pr-9 pl-9 text-sm transition-all duration-150 outline-none focus:ring-2"
       />
       {value && (

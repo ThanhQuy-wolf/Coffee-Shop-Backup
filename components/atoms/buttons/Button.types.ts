@@ -15,6 +15,7 @@ export interface ButtonProps extends Omit<
   size?: "sm" | "md" | "lg";
   icon?: string; // FontAwesome class like "fa-solid fa-cart-plus"
   iconPosition?: "left" | "right";
+  className?: string;
   disabled?: boolean;
   children: React.ReactNode;
 }
