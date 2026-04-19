@@ -31,7 +31,7 @@ jobs:
           echo "Acquire::http::Proxy \"$http_proxy\";" > /etc/apt/apt.conf.d/80proxy
           apt-get update
           apt-get install -y --no-install-recommends --no-install-suggests \
-            docker-cli zip
+            docker-cli zip docker-buildx
 
       - name: Setup SSH Key
         run: |
