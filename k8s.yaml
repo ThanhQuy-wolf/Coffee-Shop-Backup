@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: frontend-container
-        image: git.demonkernel.io.vn/foodsurf/frontend:1.2.0
+        image: git.demonkernel.io.vn/foodsurf/frontend:1.2.3
         ports:
           - containerPort: 3000
         resources:

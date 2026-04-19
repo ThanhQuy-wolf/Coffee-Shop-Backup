@@ -44,8 +44,6 @@ export default function RegisterPage() {
       return;
     }
 
-    
-
     // Move to OTP step
     setStep("otp");
     setErrors({ phone: "", otp: "" });
