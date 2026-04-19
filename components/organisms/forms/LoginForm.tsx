@@ -4,7 +4,7 @@ import LoginInput from "@/components/atoms/inputs/LoginInput";
 import { useAuth } from "@/lib/auth-context";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { SubmitEvent, useState } from "react";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -39,12 +39,12 @@ export default function LoginForm() {
     return isValid;
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!validate()) return;
 
-    const success = login(username, password);
+    const success = await login(username, password);
 
     if (success) {
       router.push("/");

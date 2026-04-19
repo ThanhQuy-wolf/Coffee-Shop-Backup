@@ -12,7 +12,7 @@ import type { User } from "./types";
 
 interface AuthContextType {
   user: User | null;
-  login: (username: string, password: string) => boolean;
+  login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
   registerPhone: string | null;
   setRegisterPhone: (phone: string | null) => void;
@@ -112,16 +112,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const login = (username: string, password: string): boolean => {
-    const authEntry = MOCK_AUTH_DB[username as keyof typeof MOCK_AUTH_DB];
+  const login = async (phone: string, password: string): Promise<boolean> => {
+    try {
+      const response = await fetch("/api/customer/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ phone, password }),
+      });
 
-    if (authEntry && authEntry.password === password) {
-      setUser(authEntry.user);
-      localStorage.setItem("coffee-shop-user", JSON.stringify(authEntry.user));
-      return true;
+      if (response.ok) {
+        const userData = await response.json();
+
+        setUser(userData);
+        localStorage.setItem("coffee-shop-user", JSON.stringify(userData));
+
+        return true;
+      } else {
+        console.error("Đăng nhập thất bại:", response.statusText);
+        return false;
+      }
+    } catch (error) {
+      console.error("Lỗi kết nối API:", error);
+      return false;
     }
-
-    return false;
   };
 
   const logout = () => {
