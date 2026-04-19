@@ -19,6 +19,18 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async rewrites() {
+    const rewrites = [];
+
+    if (process.env.NODE_ENV !== "production") {
+      rewrites.push({
+        source: "/api/:path*",
+        destination: "http://host.docker.internal:32080/api/:path*",
+      });
+    }
+
+    return rewrites;
+  },
 };
 
 export default nextConfig;

@@ -22,9 +22,16 @@ jobs:
       id-token: write
     runs-on: ubuntu-latest
     steps:
-      - uses: gerlero/apt-install@v1
-        with:
-          packages: docker.io zip
+      - name: Install dependencies with Proxy
+        env:
+          http_proxy: "http://host.docker.internal:3142"
+          https_proxy: "http://host.docker.internal:3142"
+        run: |
+          # Kiểm tra proxy có hoạt động không
+          echo "Acquire::http::Proxy \"$http_proxy\";" > /etc/apt/apt.conf.d/80proxy
+          apt-get update
+          apt-get install -y --no-install-recommends --no-install-suggests \
+            docker-cli zip
 
       - name: Setup SSH Key
         run: |
@@ -43,7 +50,19 @@ jobs:
         with:
           version: latest
           run_install: false
-          cache: true
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
 
       - name: Update dependencies
         run: pnpm update

@@ -6,7 +6,7 @@ import { SHOP_INFO } from "@/lib/constants";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { SubmitEvent, useState } from "react";
 
 // Static OTP for demo (in production, this would be sent via SMS)
 const DEMO_OTP = "123456";
@@ -28,7 +28,7 @@ export default function RegisterPage() {
     return phoneRegex.test(phoneNumber);
   };
 
-  const handlePhoneSubmit = (e: FormEvent) => {
+  const handlePhoneSubmit = (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!phone.trim()) {
@@ -44,12 +44,14 @@ export default function RegisterPage() {
       return;
     }
 
+    
+
     // Move to OTP step
     setStep("otp");
     setErrors({ phone: "", otp: "" });
   };
 
-  const handleOtpSubmit = (e: FormEvent) => {
+  const handleOtpSubmit = (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!otp.trim()) {
