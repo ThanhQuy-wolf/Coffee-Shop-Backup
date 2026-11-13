@@ -1,12 +1,10 @@
 import Button from "@/components/atoms/buttons/Button";
 import { ReviewModal } from "@/components/organisms/modals";
+import { formatVND } from "@/lib/utils/currency";
 import Link from "next/link";
 import { useState } from "react";
 
 import type { PaymentSummaryCardProps } from "./Card.types";
-
-const formatPrice = (value: number) =>
-  value.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
 
 export default function PaymentSummaryCard({
   totalPrice,
@@ -28,7 +26,7 @@ export default function PaymentSummaryCard({
         <div className="flex items-center justify-between border-b border-(--color-border-light) pb-4">
           <span className="text-(--color-text-muted)">Tổng cộng</span>
           <span className="text-xl font-bold text-(--color-primary)">
-            {formatPrice(totalPrice)}
+            {formatVND(totalPrice)}
           </span>
         </div>
 

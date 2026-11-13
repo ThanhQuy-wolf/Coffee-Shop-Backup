@@ -67,16 +67,16 @@ application.
 
 ### Providers Included
 
-1. **AuthProvider** (lib/auth-context.tsx)
+1. **AuthProvider** (lib/contexts/auth-context.tsx)
    - Manages user authentication state
    - Persists user in localStorage
    - Enables login/logout/register flows
 
-2. **MenuProvider** (lib/menu-context.tsx)
+2. **MenuProvider** (lib/contexts/menu-context.tsx)
    - Shares active category state
    - Syncs Header mobile menu and Navbar sidebar
 
-3. **CartProvider** (lib/cart-context.tsx)
+3. **CartProvider** (lib/contexts/cart-context.tsx)
    - Manages shopping cart state
    - Persists cart items in localStorage
    - Provides add/remove/update operations
@@ -344,7 +344,7 @@ filteredShops: Shop[]   // Filtered results
 
 #### Data Source
 
-- MOCK_SHOPS from lib/constants.ts
+- getShops() from lib/services/shops.ts
 
 ---
 
@@ -488,8 +488,8 @@ Financial analytics and reporting dashboard for the shop manager.
 
 #### Data Sources
 
-- `MOCK_REVENUE_DAILY/WEEKLY/MONTHLY/YEARLY` from `lib/constants.ts`
-- `MOCK_PRODUCT_SALES` from `lib/constants.ts`
+- `getRevenue(period)` from `lib/services/analytics.ts`
+- `getProductSales()` from `lib/services/analytics.ts`
 - `MENU_CATEGORIES` for category labels
 
 #### State Management

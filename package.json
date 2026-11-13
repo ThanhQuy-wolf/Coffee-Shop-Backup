@@ -1,5 +1,5 @@
 {
-  "name": "temp",
+  "name": "drinkool-frontend",
   "version": "1.2.3",
   "private": true,
   "scripts": {
@@ -17,7 +17,6 @@
     "next": "16.1.7",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "tailwind": "^4.0.0",
     "tailwindcss": "^4.2.2",
     "typescript": "^5.9.3"
   },

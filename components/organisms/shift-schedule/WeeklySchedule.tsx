@@ -2,7 +2,8 @@
 
 import ShiftCard from "@/components/molecules/cards/ShiftCard";
 import { DEPARTMENTS } from "@/lib/constants";
-import { useShift } from "@/lib/shift-context";
+import { useShift } from "@/lib/contexts/shift-context";
+import { formatDateISO, formatDateShort, isToday } from "@/lib/utils/date";
 import { useMemo, useState } from "react";
 
 import type { WeeklyScheduleProps } from "./ShiftSchedule.types";
@@ -24,26 +25,6 @@ const MONTH_NAMES_EN = [
 
 const DAY_LABELS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 const DAY_LABELS_EN = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
-function formatDateShort(d: Date): string {
-  return `${d.getDate().toString().padStart(2, "0")}/${(d.getMonth() + 1).toString().padStart(2, "0")}`;
-}
-
-function formatDateISO(d: Date): string {
-  const y = d.getFullYear();
-  const m = (d.getMonth() + 1).toString().padStart(2, "0");
-  const day = d.getDate().toString().padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
-function isToday(d: Date): boolean {
-  const today = new Date(2026, 3, 10);
-  return (
-    d.getDate() === today.getDate() &&
-    d.getMonth() === today.getMonth() &&
-    d.getFullYear() === today.getFullYear()
-  );
-}
 
 export default function WeeklySchedule({
   onShiftClick,

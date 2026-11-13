@@ -1,0 +1,11 @@
+# Keep the Docker build context small and reproducible
+node_modules
+.next
+.git
+*.md
+!README.md
+release.zip
+temp_release
+tsconfig.tsbuildinfo
+npm-debug.log*
+.env*.local

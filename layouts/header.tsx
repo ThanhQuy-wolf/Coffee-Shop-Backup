@@ -1,7 +1,7 @@
 "use client";
 
-import { useAuth } from "@/lib/auth-context";
 import { SHOP_INFO } from "@/lib/constants";
+import { useAuth } from "@/lib/contexts/auth-context";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";

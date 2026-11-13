@@ -2,50 +2,25 @@
 
 import ShiftCard from "@/components/molecules/cards/ShiftCard";
 import { DEPARTMENTS } from "@/lib/constants";
-import { useShift } from "@/lib/shift-context";
+import { useShift } from "@/lib/contexts/shift-context";
+import {
+  MONTH_NAMES_VI,
+  SCHEDULE_TODAY,
+  formatDateISO,
+  isToday,
+} from "@/lib/utils/date";
 import { useMemo, useState } from "react";
 
 import type { MobileShiftViewProps } from "./ShiftSchedule.types";
 
 const DAY_HEADERS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 
-function formatDateISO(d: Date): string {
-  const y = d.getFullYear();
-  const m = (d.getMonth() + 1).toString().padStart(2, "0");
-  const day = d.getDate().toString().padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
-function isToday(d: Date): boolean {
-  const today = new Date(2026, 3, 10);
-  return (
-    d.getDate() === today.getDate() &&
-    d.getMonth() === today.getMonth() &&
-    d.getFullYear() === today.getFullYear()
-  );
-}
-
-const MONTH_NAMES = [
-  "Tháng 1",
-  "Tháng 2",
-  "Tháng 3",
-  "Tháng 4",
-  "Tháng 5",
-  "Tháng 6",
-  "Tháng 7",
-  "Tháng 8",
-  "Tháng 9",
-  "Tháng 10",
-  "Tháng 11",
-  "Tháng 12",
-];
-
 export default function MobileShiftView({
   onShiftClick,
 }: MobileShiftViewProps) {
   const { currentDate, shifts, goToNextMonth, goToPrevMonth } = useShift();
   const [selectedDate, setSelectedDate] = useState<string>(
-    formatDateISO(new Date(2026, 3, 10)),
+    formatDateISO(SCHEDULE_TODAY),
   );
 
   const calendarDays = useMemo(() => {
@@ -102,7 +77,7 @@ export default function MobileShiftView({
             <i className="fa-solid fa-chevron-left text-xs"></i>
           </button>
           <h3 className="text-foreground text-sm font-bold">
-            {MONTH_NAMES[currentDate.getMonth()]} {currentDate.getFullYear()}
+            {MONTH_NAMES_VI[currentDate.getMonth()]} {currentDate.getFullYear()}
           </h3>
           <button
             title="Trở lại tháng sau"

@@ -1,7 +1,9 @@
 "use client";
 
-import type { Product } from "@/lib/types";
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useMemo } from "react";
+
+import { useLocalStorage } from "../hooks/use-local-storage";
+import type { Product } from "../types";
 
 export interface CartItem {
   id: number;
@@ -25,25 +27,21 @@ interface CartContextValue {
 const STORAGE_KEY = "coffee-shop-cart";
 const CartContext = createContext<CartContextValue | null>(null);
 
+function parseCart(v: unknown): CartItem[] {
+  if (!Array.isArray(v)) return [];
+  return v.filter(
+    (i): i is CartItem => !!i && typeof i.id === "number" && i.quantity > 0,
+  );
+}
+
+const EMPTY_CART: CartItem[] = [];
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([]);
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-      const parsed = JSON.parse(raw) as CartItem[];
-      if (Array.isArray(parsed)) {
-        setItems(parsed.filter((i) => i && i.id && i.quantity > 0));
-      }
-    } catch {
-      localStorage.removeItem(STORAGE_KEY);
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-  }, [items]);
+  const [items, setItems] = useLocalStorage<CartItem[]>(
+    STORAGE_KEY,
+    EMPTY_CART,
+    parseCart,
+  );
 
   const addToCart = (product: Product) => {
     setItems((prev) => {
@@ -117,19 +115,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     [items],
   );
 
-  const value = useMemo(
-    () => ({
-      items,
-      totalItems,
-      totalPrice,
-      addToCart,
-      increaseQty,
-      decreaseQty,
-      removeFromCart,
-      setQuantity,
-    }),
-    [items, totalItems, totalPrice],
-  );
+  const value: CartContextValue = {
+    items,
+    totalItems,
+    totalPrice,
+    addToCart,
+    increaseQty,
+    decreaseQty,
+    removeFromCart,
+    setQuantity,
+  };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

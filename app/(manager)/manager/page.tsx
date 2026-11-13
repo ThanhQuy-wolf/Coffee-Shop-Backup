@@ -5,8 +5,8 @@ import {
   CombosTab,
   ProductsTab,
 } from "@/components/organisms/manager";
-import { useAuth } from "@/lib/auth-context";
-import { useManager } from "@/lib/manager-context";
+import { useAuth } from "@/lib/contexts/auth-context";
+import { useManager } from "@/lib/contexts/manager-context";
 import Link from "next/link";
 
 export default function ManagerPage() {

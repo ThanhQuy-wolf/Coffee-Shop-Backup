@@ -8,8 +8,14 @@ import {
   useState,
 } from "react";
 
-import { MOCK_SHIFT_SLOTS } from "./constants";
-import type { ShiftSlot, ShiftStatus } from "./types";
+import { getShiftSlots } from "../services/shifts";
+import type { ShiftSlot, ShiftStatus } from "../types";
+import {
+  SCHEDULE_TODAY,
+  formatDateISO as formatDate,
+  getWeekDates as getWeekDatesOf,
+  timeToMinutes,
+} from "../utils/date";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -60,27 +66,6 @@ const ShiftContext = createContext<ShiftContextType | undefined>(undefined);
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function getMonday(d: Date): Date {
-  const date = new Date(d);
-  const day = date.getDay();
-  const diff = date.getDate() - day + (day === 0 ? -6 : 1);
-  date.setDate(diff);
-  date.setHours(0, 0, 0, 0);
-  return date;
-}
-
-function formatDate(d: Date): string {
-  const y = d.getFullYear();
-  const m = (d.getMonth() + 1).toString().padStart(2, "0");
-  const day = d.getDate().toString().padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
-function timeToMinutes(time: string): number {
-  const [h, m] = time.split(":").map(Number);
-  return h * 60 + m;
-}
-
 function timesOverlap(
   start1: string,
   end1: string,
@@ -97,9 +82,11 @@ function timesOverlap(
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
 export function ShiftProvider({ children }: { children: ReactNode }) {
-  const [shifts, setShifts] = useState<ShiftSlot[]>(MOCK_SHIFT_SLOTS);
+  const [shifts, setShifts] = useState<ShiftSlot[]>(getShiftSlots);
   const [view, setView] = useState<ScheduleView>("week");
-  const [currentDate, setCurrentDate] = useState<Date>(new Date(2026, 3, 10)); // April 10, 2026
+  const [currentDate, setCurrentDate] = useState<Date>(
+    new Date(SCHEDULE_TODAY),
+  );
 
   // ── Navigation ──────────────────────────────────────────────────────────
 
@@ -136,18 +123,13 @@ export function ShiftProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const goToToday = useCallback(() => {
-    setCurrentDate(new Date(2026, 3, 10));
+    setCurrentDate(new Date(SCHEDULE_TODAY));
   }, []);
 
   // ── Query helpers ───────────────────────────────────────────────────────
 
   const getWeekDates = useCallback((): Date[] => {
-    const monday = getMonday(currentDate);
-    return Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(monday);
-      d.setDate(monday.getDate() + i);
-      return d;
-    });
+    return getWeekDatesOf(currentDate);
   }, [currentDate]);
 
   const getShiftsForDate = useCallback(

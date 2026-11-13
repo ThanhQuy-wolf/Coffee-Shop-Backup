@@ -1,8 +1,9 @@
 "use client";
 
-import { AuthProvider } from "@/lib/auth-context";
-import { CartProvider } from "@/lib/cart-context";
-import { MenuProvider } from "@/lib/menu-context";
+import { AuthProvider } from "@/lib/contexts/auth-context";
+import { CartProvider } from "@/lib/contexts/cart-context";
+import { CatalogProvider } from "@/lib/contexts/catalog-context";
+import { MenuProvider } from "@/lib/contexts/menu-context";
 
 /**
  * Client-side providers wrapper.
@@ -12,9 +13,11 @@ import { MenuProvider } from "@/lib/menu-context";
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <AuthProvider>
-      <MenuProvider>
-        <CartProvider>{children}</CartProvider>
-      </MenuProvider>
+      <CatalogProvider>
+        <MenuProvider>
+          <CartProvider>{children}</CartProvider>
+        </MenuProvider>
+      </CatalogProvider>
     </AuthProvider>
   );
 }

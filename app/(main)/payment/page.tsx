@@ -3,12 +3,10 @@
 import Button from "@/components/atoms/buttons/Button";
 import PaymentSummaryCard from "@/components/molecules/cards/PaymentSummaryCard";
 import ReviewModal from "@/components/organisms/modals/ReviewModal";
-import { useAuth } from "@/lib/auth-context";
-import { useCart } from "@/lib/cart-context";
+import { useAuth } from "@/lib/contexts/auth-context";
+import { useCart } from "@/lib/contexts/cart-context";
+import { formatVND } from "@/lib/utils/currency";
 import { useState } from "react";
-
-const formatPrice = (value: number) =>
-  value.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
 
 export default function PaymentPage() {
   const {
@@ -75,7 +73,7 @@ export default function PaymentPage() {
                             {item.name}
                           </td>
                           <td className="px-4 py-3 font-semibold text-(--color-primary)">
-                            {formatPrice(item.price)}
+                            {formatVND(item.price)}
                           </td>
                           <td className="max-w-70 px-4 py-3 text-(--color-text-muted)">
                             <p className="line-clamp-2">{item.description}</p>

@@ -1,7 +1,7 @@
 "use client";
 
 import { ShopCard } from "@/components/molecules/cards";
-import { MOCK_SHOPS } from "@/lib/constants";
+import { getShops } from "@/lib/services/shops";
 
 import type { ShopGridProps } from "./ShopGrid.types";
 
@@ -9,7 +9,7 @@ export default function ShopGrid({
   searchName = "",
   searchAddress = "",
 }: ShopGridProps) {
-  const filtered = MOCK_SHOPS.filter((shop) => {
+  const filtered = getShops().filter((shop) => {
     const matchesName =
       searchName.trim() === "" ||
       shop.name.toLowerCase().includes(searchName.toLowerCase());

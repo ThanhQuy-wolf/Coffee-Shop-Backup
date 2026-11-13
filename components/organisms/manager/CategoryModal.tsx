@@ -1,5 +1,6 @@
 "use client";
 
+import { Modal, ModalHeader } from "@/components/molecules/modal";
 import type { MenuCategory } from "@/lib/types";
 import { useState } from "react";
 
@@ -45,79 +46,66 @@ export default function CategoryModal({
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-(--color-border-light) px-6 py-4">
-          <h2 className="text-foreground text-lg font-bold">
-            {isEdit ? "Chỉnh sửa danh mục" : "Thêm danh mục mới"}
-          </h2>
-          <button
-            title="Close"
-            onClick={onClose}
-            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-none bg-transparent text-(--color-text-muted) transition-colors hover:bg-(--color-border-light) hover:text-(--color-primary)"
-          >
-            <i className="fa-solid fa-xmark"></i>
-          </button>
+    <Modal onClose={onClose}>
+      <ModalHeader
+        title={isEdit ? "Chỉnh sửa danh mục" : "Thêm danh mục mới"}
+        onClose={onClose}
+      />
+
+      <form onSubmit={handleSubmit} className="space-y-4 px-6 py-5">
+        <div>
+          <label className="mb-1 block text-sm font-medium text-(--color-text-secondary)">
+            Tên danh mục <span className="text-red-500">*</span>
+          </label>
+          <input
+            required
+            type="text"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            className="text-foreground w-full rounded-xl border border-(--color-border) bg-white px-3 py-2 text-sm transition outline-none focus:border-(--color-primary) focus:ring-2 focus:ring-(--color-primary)/20"
+            placeholder="Ví dụ: Cà Phê"
+          />
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 px-6 py-5">
-          <div>
-            <label className="mb-1 block text-sm font-medium text-(--color-text-secondary)">
-              Tên danh mục <span className="text-red-500">*</span>
-            </label>
-            <input
-              required
-              type="text"
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="text-foreground w-full rounded-xl border border-(--color-border) bg-white px-3 py-2 text-sm transition outline-none focus:border-(--color-primary) focus:ring-2 focus:ring-(--color-primary)/20"
-              placeholder="Ví dụ: Cà Phê"
-            />
+        <div>
+          <label className="mb-2 block text-sm font-medium text-(--color-text-secondary)">
+            Icon
+          </label>
+          <div className="grid grid-cols-8 gap-2">
+            {FA_ICONS.map((icon) => (
+              <button
+                key={icon}
+                type="button"
+                onClick={() => setForm({ ...form, icon })}
+                title={icon}
+                className={`flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border transition ${
+                  form.icon === icon
+                    ? "border-(--color-primary) bg-(--color-primary) text-white"
+                    : "bg-background border-(--color-border-light) text-(--color-text-secondary) hover:border-(--color-primary-light) hover:text-(--color-primary)"
+                }`}
+              >
+                <i className={`${icon} text-sm`}></i>
+              </button>
+            ))}
           </div>
+        </div>
 
-          <div>
-            <label className="mb-2 block text-sm font-medium text-(--color-text-secondary)">
-              Icon
-            </label>
-            <div className="grid grid-cols-8 gap-2">
-              {FA_ICONS.map((icon) => (
-                <button
-                  key={icon}
-                  type="button"
-                  onClick={() => setForm({ ...form, icon })}
-                  title={icon}
-                  className={`flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border transition ${
-                    form.icon === icon
-                      ? "border-(--color-primary) bg-(--color-primary) text-white"
-                      : "bg-background border-(--color-border-light) text-(--color-text-secondary) hover:border-(--color-primary-light) hover:text-(--color-primary)"
-                  }`}
-                >
-                  <i className={`${icon} text-sm`}></i>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex gap-3 pt-1">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 cursor-pointer rounded-xl border border-(--color-border) bg-white px-4 py-2.5 text-sm font-medium text-(--color-text-secondary) transition hover:bg-(--color-border-light)"
-            >
-              Hủy
-            </button>
-            <button
-              type="submit"
-              className="flex-1 cursor-pointer rounded-xl border-none bg-(--color-primary) px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-(--color-primary-dark) active:scale-95"
-            >
-              {isEdit ? "Lưu thay đổi" : "Thêm danh mục"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <div className="flex gap-3 pt-1">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 cursor-pointer rounded-xl border border-(--color-border) bg-white px-4 py-2.5 text-sm font-medium text-(--color-text-secondary) transition hover:bg-(--color-border-light)"
+          >
+            Hủy
+          </button>
+          <button
+            type="submit"
+            className="flex-1 cursor-pointer rounded-xl border-none bg-(--color-primary) px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-(--color-primary-dark) active:scale-95"
+          >
+            {isEdit ? "Lưu thay đổi" : "Thêm danh mục"}
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 }

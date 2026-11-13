@@ -1,7 +1,7 @@
 import Button from "@/components/atoms/buttons/Button";
 import ErrorMessageLogin from "@/components/atoms/errors/ErrorMessageLogin";
 import LoginInput from "@/components/atoms/inputs/LoginInput";
-import { useAuth } from "@/lib/auth-context";
+import { useAuth } from "@/lib/contexts/auth-context";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SubmitEvent, useState } from "react";

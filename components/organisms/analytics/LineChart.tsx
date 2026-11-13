@@ -1,7 +1,7 @@
 "use client";
 
-import { formatCurrency } from "@/lib/analytics-utils";
 import type { RevenueDataPoint } from "@/lib/types";
+import { formatCurrency } from "@/lib/utils/analytics";
 import { useState } from "react";
 
 interface LineChartProps {

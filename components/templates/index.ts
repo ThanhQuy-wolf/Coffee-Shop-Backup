@@ -17,3 +17,7 @@ export type { ManagerLayoutProps } from "./manager-layout";
 // Staff Layout
 export { StaffLayout } from "./staff-layout";
 export type { StaffLayoutProps } from "./staff-layout";
+
+// Role Guard
+export { RoleGuard } from "./role-guard";
+export type { RoleGuardProps } from "./role-guard";

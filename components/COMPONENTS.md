@@ -106,22 +106,22 @@ the manager route group.
 
 ## Contexts Documentation
 
-### AuthContext (`lib/auth-context.tsx`)
+### AuthContext (`lib/contexts/auth-context.tsx`)
 
 Manages user authentication state including login, logout, and registration.
 Uses localStorage for persistence.
 
-### CartContext (`lib/cart-context.tsx`)
+### CartContext (`lib/contexts/cart-context.tsx`)
 
 Manages shopping cart state with localStorage persistence. Tracks items,
 quantities, and totals.
 
-### MenuContext (`lib/menu-context.tsx`)
+### MenuContext (`lib/contexts/menu-context.tsx`)
 
 Provides shared activeCategory state across components. Synchronizes Header
 mobile menu and CategorySidebar selection.
 
-### ManagerContext (`lib/manager-context.tsx`)
+### ManagerContext (`lib/contexts/manager-context.tsx`)
 
 Manages menu CRUD state (products, combos, categories) for the manager
 dashboard.

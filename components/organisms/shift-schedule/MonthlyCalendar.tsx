@@ -1,27 +1,12 @@
 "use client";
 
-import { useShift } from "@/lib/shift-context";
+import { useShift } from "@/lib/contexts/shift-context";
+import { formatDateISO, isToday } from "@/lib/utils/date";
 import { useMemo } from "react";
 
 import type { MonthlyCalendarProps } from "./ShiftSchedule.types";
 
 const DAY_HEADERS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
-
-function formatDateISO(d: Date): string {
-  const y = d.getFullYear();
-  const m = (d.getMonth() + 1).toString().padStart(2, "0");
-  const day = d.getDate().toString().padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
-function isToday(d: Date): boolean {
-  const today = new Date(2026, 3, 10);
-  return (
-    d.getDate() === today.getDate() &&
-    d.getMonth() === today.getMonth() &&
-    d.getFullYear() === today.getFullYear()
-  );
-}
 
 export default function MonthlyCalendar({
   onShiftClick,

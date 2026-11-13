@@ -1,23 +1,25 @@
 "use client";
 
-import { ReactNode, createContext, useContext, useState } from "react";
+import { ReactNode, createContext, useContext, useMemo, useState } from "react";
 
-import { MENU_CATEGORIES, MOCK_COMBOS, MOCK_PRODUCTS } from "./constants";
-import type { Combo, ComboItem, MenuCategory, Product } from "./types";
+import {
+  getAllCategory,
+  getCategories,
+  getCombos,
+  getProducts,
+} from "../services/catalog";
+import type { Combo, MenuCategory, Product } from "../types";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type ManagerTab = "products" | "combos" | "categories";
-
-interface ManagerContextType {
+export interface CatalogContextType {
   // Data
   products: Product[];
   combos: Combo[];
+  /** Real categories (no "all"), as managed by the manager */
   categories: MenuCategory[];
-
-  // Active tab
-  activeTab: ManagerTab;
-  setActiveTab: (tab: ManagerTab) => void;
+  /** "Tất cả" + categories — for customer-facing menus */
+  menuCategories: MenuCategory[];
 
   // Product actions
   addProduct: (product: Omit<Product, "id">) => void;
@@ -39,18 +41,23 @@ interface ManagerContextType {
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 
-const ManagerContext = createContext<ManagerContextType | undefined>(undefined);
+const CatalogContext = createContext<CatalogContextType | undefined>(undefined);
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
-export function ManagerProvider({ children }: { children: ReactNode }) {
-  const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
-  const [combos, setCombos] = useState<Combo[]>(MOCK_COMBOS);
+const ALL_CATEGORY = getAllCategory();
+
+/**
+ * Menu catalog (products, combos, categories) shared by the whole app.
+ * Mounted at the root so changes made in /manager show up on the customer
+ * menu. Data is in-memory mock data for now — swap the initial state and
+ * actions for API calls when the backend is ready.
+ */
+export function CatalogProvider({ children }: { children: ReactNode }) {
+  const [products, setProducts] = useState<Product[]>(getProducts);
+  const [combos, setCombos] = useState<Combo[]>(getCombos);
   // Filter out the "all" pseudo-category — managers manage real categories only
-  const [categories, setCategories] = useState<MenuCategory[]>(
-    MENU_CATEGORIES.filter((c) => c.id !== "all"),
-  );
-  const [activeTab, setActiveTab] = useState<ManagerTab>("products");
+  const [categories, setCategories] = useState<MenuCategory[]>(getCategories);
 
   // ── Product actions ──────────────────────────────────────────────────────
 
@@ -125,14 +132,18 @@ export function ManagerProvider({ children }: { children: ReactNode }) {
     setCategories((prev) => prev.filter((c) => c.id !== id));
   };
 
+  const menuCategories = useMemo(
+    () => [ALL_CATEGORY, ...categories],
+    [categories],
+  );
+
   return (
-    <ManagerContext.Provider
+    <CatalogContext.Provider
       value={{
         products,
         combos,
         categories,
-        activeTab,
-        setActiveTab,
+        menuCategories,
         addProduct,
         updateProduct,
         deleteProduct,
@@ -147,16 +158,16 @@ export function ManagerProvider({ children }: { children: ReactNode }) {
       }}
     >
       {children}
-    </ManagerContext.Provider>
+    </CatalogContext.Provider>
   );
 }
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
-export function useManager() {
-  const context = useContext(ManagerContext);
+export function useCatalog() {
+  const context = useContext(CatalogContext);
   if (context === undefined) {
-    throw new Error("useManager must be used within a ManagerProvider");
+    throw new Error("useCatalog must be used within a CatalogProvider");
   }
   return context;
 }

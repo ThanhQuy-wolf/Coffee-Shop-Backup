@@ -1,6 +1,7 @@
 "use client";
 
 import { Button, Caption, Text } from "@/components/atoms";
+import { formatVND } from "@/lib/utils/currency";
 import Image from "next/image";
 
 import type { ProductCardProps } from "./Card.types";
@@ -23,10 +24,7 @@ export default function ProductCard({
   description,
   onBuy,
 }: ProductCardProps) {
-  const formattedPrice =
-    typeof price === "number"
-      ? price.toLocaleString("vi-VN", { style: "currency", currency: "VND" })
-      : price;
+  const formattedPrice = typeof price === "number" ? formatVND(price) : price;
 
   return (
     <div className="flex w-full cursor-default flex-col overflow-hidden rounded-2xl border border-(--color-border-light) bg-(--color-bg-card) shadow-[0_2px_8px_var(--color-shadow-sm)] transition-all duration-250 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_var(--color-shadow-md)]">

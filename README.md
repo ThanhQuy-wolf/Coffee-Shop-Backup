@@ -44,21 +44,21 @@ Dành cho khách hàng:
 - Invoice aside sticky với tổng giá và nút thanh toán (Tiền mặt, QR)
 - Modal đánh giá 5 sao dành riêng cho khách hàng (ReviewModal)
 
-#### 5. **Hệ Thống Giỏ Hàng** (`lib/cart-context.tsx`)
+#### 5. **Hệ Thống Giỏ Hàng** (`lib/contexts/cart-context.tsx`)
 
 - Lưu trữ trạng thái giỏ trong localStorage
 - Thêm/xóa/tăng/giảm số lượng sản phẩm
 - Tính tổng giá và số mặt hàng
 - Persist dữ liệu giữa các session
 
-#### 6. **Hệ Thống Xác Thực** (`lib/auth-context.tsx`)
+#### 6. **Hệ Thống Xác Thực** (`lib/contexts/auth-context.tsx`)
 
 - Quản lý trạng thái người dùng (login/logout/register)
 - Lưu thông tin user trong localStorage
 - Mock auth database với 3 loại tài khoản
 - Hỗ trợ hoàn tất đăng ký qua OTP
 
-#### 7. **Hệ Thống Danh Mục** (`lib/menu-context.tsx`)
+#### 7. **Hệ Thống Danh Mục** (`lib/contexts/menu-context.tsx`)
 
 - Chia sẻ trạng thái category giữa Header mobile và Sidebar
 - Tự động clear search khi thay đổi category
@@ -88,7 +88,7 @@ Dành cho quản lý:
 ### Yêu cầu hệ thống
 
 - Node.js >= 18
-- pnpm (khuyến nghị) hoặc npm
+- pnpm (dự án chỉ dùng `pnpm-lock.yaml`)
 
 ### Cài đặt
 
@@ -116,6 +116,17 @@ pnpm build && pnpm start
 pnpm lint
 pnpm format
 ```
+
+### Docker
+
+```bash
+docker build -t drinkool-frontend .
+docker run -p 3000:3000 drinkool-frontend
+```
+
+Image dùng bản build `standalone` của Next.js (xem `dockerfile`).
+Khi chạy `pnpm dev`, `/api/*` được chuyển tiếp tới backend ở
+`http://host.docker.internal:32080`; đặt biến `API_PROXY_URL` để đổi địa chỉ.
 
 ### Release
 
@@ -159,14 +170,14 @@ frondend/
 |   +-- header.tsx              # Sticky top header + auth info
 |   +-- footer.tsx              # Footer + shop info
 |   +-- LAYOUTS.md              # Tài liệu chi tiết layouts
-+-- lib/                        # Shared logic & data
-|   +-- constants.ts            # Mock data (products, shops, users, analytics, shop info)
++-- lib/                        # Shared logic & data (chi tiết: lib/LIB.md)
 |   +-- types.ts                # TypeScript interfaces
-|   +-- auth-context.tsx        # Authentication context & provider
-|   +-- cart-context.tsx        # Shopping cart context & provider
-|   +-- menu-context.tsx        # Menu/Category context & provider
-|   +-- manager-context.tsx     # Manager CRUD context & provider
-|   +-- analytics-utils.ts      # Financial analytics helper utilities
+|   +-- constants.ts            # Cấu hình thật: SHOP_INFO, SOCIAL_LINKS, DEPARTMENTS
+|   +-- contexts/               # auth, cart, catalog, manager, menu, shift
+|   +-- services/               # Nơi duy nhất lấy dữ liệu (API hoặc mock)
+|   +-- mock-data/              # Dữ liệu giả, chỉ services/ được import
+|   +-- hooks/                  # useLocalStorage, useHydrated
+|   +-- utils/                  # currency, date, analytics
 |   +-- LIB.md                  # Tài liệu chi tiết về lib
 +-- types/                      # Global TypeScript declarations
 |   +-- css.d.ts                # CSS module type shim
@@ -190,8 +201,8 @@ frondend/
 +-- package.json
 +-- pnpm-lock.yaml
 +-- pnpm-workspace.yaml
-+-- dockerfile
-+-- k8s.yaml
++-- dockerfile                  # Build image Docker (Next.js standalone)
++-- .dockerignore
 ```
 
 ---
@@ -254,7 +265,7 @@ Dự án tuân theo **Atomic Design** pattern — chi tiết tại `Atomic.md`:
 
 ### Data & Integration
 
-- Mock data nằm trong `lib/constants.ts`
+- Mock data nằm trong `lib/mock-data/`, chỉ được đọc qua `lib/services/`
 - Context providers trong `app/providers.tsx`: AuthProvider, MenuProvider,
   CartProvider
 - ManagerProvider được thêm bởi `app/(manager)/layout.tsx`

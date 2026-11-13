@@ -136,7 +136,7 @@ The header cycles through 3 auth states (for UI demo):
 
 - **next/image** - Logo image rendering
 - **next/link** - Navigation links
-- **lib/constants:** SHOP_INFO, MOCK_USERS
+- **lib/constants:** SHOP_INFO
 - **lib/types:** User
 - **FontAwesome icons:** fa-sign-in-alt, fa-sign-out-alt, fa-user-tie,
   fa-user-circle

@@ -3,8 +3,8 @@
 import { SearchBar } from "@/components/molecules/search-bar";
 import { CategorySidebar } from "@/components/organisms/navigation";
 import { ProductGrid } from "@/components/organisms/product-grid";
-import { MENU_CATEGORIES } from "@/lib/constants";
-import { useMenu } from "@/lib/menu-context";
+import { useCatalog } from "@/lib/contexts/catalog-context";
+import { useMenu } from "@/lib/contexts/menu-context";
 import { useEffect, useState } from "react";
 
 /**
@@ -19,6 +19,7 @@ import { useEffect, useState } from "react";
  */
 export default function Home() {
   const { activeCategory, setActiveCategory } = useMenu();
+  const { menuCategories } = useCatalog();
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -38,7 +39,7 @@ export default function Home() {
   }, [activeCategory]);
 
   const activeCategoryLabel =
-    MENU_CATEGORIES.find((c) => c.id === activeCategory)?.name ?? "Tất cả";
+    menuCategories.find((c) => c.id === activeCategory)?.name ?? "Tất cả";
 
   return (
     <div className="bg-background flex min-h-[calc(100vh-var(--spacing-header-height))] items-start">

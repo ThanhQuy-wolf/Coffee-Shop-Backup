@@ -1,10 +1,12 @@
 "use client";
 
-import { MENU_CATEGORIES, SHOP_INFO } from "@/lib/constants";
+import { SHOP_INFO } from "@/lib/constants";
+import { useCatalog } from "@/lib/contexts/catalog-context";
 import type { MenuCategory } from "@/lib/types";
 import type React from "react";
 
 import type { CategorySidebarProps } from "./Navigation.types";
+import { categoryButtonClass, categoryIconClass } from "./categoryStyles";
 
 /**
  * Left sidebar — always visible, collapsible on all screen sizes.
@@ -21,6 +23,8 @@ export default function CategorySidebar({
   activeCategory = "all",
   onCategoryChange,
 }: CategorySidebarProps) {
+  const { menuCategories } = useCatalog();
+
   return (
     <aside
       className={`sticky z-20 hidden shrink-0 flex-col overflow-x-hidden overflow-y-auto border-r border-(--color-border) bg-(--color-bg-sidebar) transition-all duration-250 ease-in-out md:flex xl:w-60 ${isOpen ? "w-60" : "w-16"} `}
@@ -61,22 +65,18 @@ export default function CategorySidebar({
       {/* ── Category list ── */}
       <nav className="flex-1 py-2">
         <ul className="flex flex-col gap-0.5 px-2">
-          {MENU_CATEGORIES.map((cat: MenuCategory) => {
+          {menuCategories.map((cat: MenuCategory) => {
             const isActive = activeCategory === cat.id;
             return (
               <li key={cat.id}>
                 <button
                   onClick={() => onCategoryChange?.(cat.id)}
                   title={!isOpen ? cat.name : undefined}
-                  className={`flex w-full cursor-pointer items-center rounded-xl border-none text-sm font-medium transition-all duration-150 xl:justify-start xl:gap-3 xl:px-3 xl:py-2.5 ${isOpen ? "gap-3 px-3 py-2.5" : "justify-center px-0 py-2.5"} ${
-                    isActive
-                      ? "bg-(--color-primary) text-white shadow-sm"
-                      : "bg-transparent text-(--color-text-secondary) hover:bg-(--color-border-light) hover:text-(--color-primary-dark)"
-                  } `}
+                  className={`flex w-full cursor-pointer items-center rounded-xl border-none text-sm font-medium transition-all duration-150 xl:justify-start xl:gap-3 xl:px-3 xl:py-2.5 ${isOpen ? "gap-3 px-3 py-2.5" : "justify-center px-0 py-2.5"} ${categoryButtonClass(isActive)}`}
                 >
                   {/* Icon */}
                   <i
-                    className={` ${cat.icon} w-5 shrink-0 text-center text-base ${isActive ? "text-white" : "text-(--color-primary)"} `}
+                    className={` ${cat.icon} w-5 shrink-0 text-center text-base ${categoryIconClass(isActive)}`}
                   ></i>
 
                   {/* Label — hidden when collapsed, always shown on xl+ */}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useManager } from "@/lib/manager-context";
+import { useManager } from "@/lib/contexts/manager-context";
 import type { Product } from "@/lib/types";
 import { useState } from "react";
 

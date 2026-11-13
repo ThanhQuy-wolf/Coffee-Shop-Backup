@@ -1,4 +1,4 @@
-import { formatCurrency } from "@/lib/analytics-utils";
+import { formatCurrency } from "@/lib/utils/analytics";
 
 export interface SummaryCardProps {
   icon: string;

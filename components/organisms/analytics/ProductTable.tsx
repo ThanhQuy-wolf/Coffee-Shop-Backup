@@ -1,24 +1,58 @@
 "use client";
 
-import { formatCurrencyFull } from "@/lib/analytics-utils";
-import { MENU_CATEGORIES } from "@/lib/constants";
+import { useCatalog } from "@/lib/contexts/catalog-context";
 import type { ProductSalesStats } from "@/lib/types";
+import { formatCurrencyFull } from "@/lib/utils/analytics";
 import { useMemo, useState } from "react";
 
 interface ProductTableProps {
   data: ProductSalesStats[];
 }
 
-const categoryName = (id: string) =>
-  MENU_CATEGORIES.find((c) => c.id === id)?.name ?? id;
+type SortKey = keyof ProductSalesStats;
+type SortDir = "asc" | "desc";
+
+function SortTh({
+  col,
+  label,
+  className = "",
+  sortKey,
+  sortDir,
+  onSort,
+}: {
+  col: SortKey;
+  label: string;
+  className?: string;
+  sortKey: SortKey;
+  sortDir: SortDir;
+  onSort: (col: SortKey) => void;
+}) {
+  const icon =
+    sortKey === col
+      ? sortDir === "desc"
+        ? "fa-sort-down text-(--color-primary)"
+        : "fa-sort-up text-(--color-primary)"
+      : "fa-sort text-(--color-text-muted)";
+  return (
+    <th
+      className={`cursor-pointer px-4 py-3 font-semibold text-(--color-text-secondary) hover:text-(--color-primary) ${className}`}
+      onClick={() => onSort(col)}
+    >
+      {label} <i className={`fa-solid ml-1 text-xs ${icon}`} />
+    </th>
+  );
+}
 
 /**
  * Sortable product sales table.
  * Click column headers to sort ascending/descending.
  */
 export function ProductTable({ data }: ProductTableProps) {
-  const [sortKey, setSortKey] = useState<keyof ProductSalesStats>("revenue");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const { categories } = useCatalog();
+  const categoryName = (id: string) =>
+    categories.find((c) => c.id === id)?.name ?? id;
+  const [sortKey, setSortKey] = useState<SortKey>("revenue");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
 
   const sorted = useMemo(
     () =>
@@ -30,42 +64,13 @@ export function ProductTable({ data }: ProductTableProps) {
     [data, sortKey, sortDir],
   );
 
-  const handleSort = (key: keyof ProductSalesStats) => {
+  const handleSort = (key: SortKey) => {
     if (key === sortKey) setSortDir((d) => (d === "desc" ? "asc" : "desc"));
     else {
       setSortKey(key);
       setSortDir("desc");
     }
   };
-
-  const sortIcon = (col: keyof ProductSalesStats) => (
-    <i
-      className={`fa-solid ml-1 text-xs ${
-        sortKey === col
-          ? sortDir === "desc"
-            ? "fa-sort-down text-(--color-primary)"
-            : "fa-sort-up text-(--color-primary)"
-          : "fa-sort text-(--color-text-muted)"
-      }`}
-    />
-  );
-
-  const SortTh = ({
-    col,
-    label,
-    className = "",
-  }: {
-    col: keyof ProductSalesStats;
-    label: string;
-    className?: string;
-  }) => (
-    <th
-      className={`cursor-pointer px-4 py-3 font-semibold text-(--color-text-secondary) hover:text-(--color-primary) ${className}`}
-      onClick={() => handleSort(col)}
-    >
-      {label} {sortIcon(col)}
-    </th>
-  );
 
   return (
     <div className="overflow-x-auto rounded-xl border border-(--color-border-light)">
@@ -81,16 +86,44 @@ export function ProductTable({ data }: ProductTableProps) {
             <th className="px-4 py-3 text-left font-semibold text-(--color-text-secondary)">
               Danh mục
             </th>
-            <SortTh col="unitsSold" label="Số lượng" className="text-right" />
-            <SortTh col="revenue" label="Doanh thu" className="text-right" />
+            <SortTh
+              sortKey={sortKey}
+              sortDir={sortDir}
+              onSort={handleSort}
+              col="unitsSold"
+              label="Số lượng"
+              className="text-right"
+            />
+            <SortTh
+              sortKey={sortKey}
+              sortDir={sortDir}
+              onSort={handleSort}
+              col="revenue"
+              label="Doanh thu"
+              className="text-right"
+            />
             <th className="px-4 py-3 text-right font-semibold text-(--color-text-secondary)">
               Giá nhập
             </th>
             <th className="px-4 py-3 text-right font-semibold text-(--color-text-secondary)">
               Giá bán
             </th>
-            <SortTh col="profit" label="Lợi nhuận" className="text-right" />
-            <SortTh col="profitMargin" label="Biên LN" className="text-right" />
+            <SortTh
+              sortKey={sortKey}
+              sortDir={sortDir}
+              onSort={handleSort}
+              col="profit"
+              label="Lợi nhuận"
+              className="text-right"
+            />
+            <SortTh
+              sortKey={sortKey}
+              sortDir={sortDir}
+              onSort={handleSort}
+              col="profitMargin"
+              label="Biên LN"
+              className="text-right"
+            />
           </tr>
         </thead>
         <tbody>

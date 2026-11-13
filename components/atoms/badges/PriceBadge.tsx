@@ -1,3 +1,4 @@
+import { formatVND } from "@/lib/utils/currency";
 import { HTMLAttributes } from "react";
 
 export interface PriceBadgeProps extends HTMLAttributes<HTMLSpanElement> {
@@ -13,12 +14,7 @@ export default function PriceBadge({
   ...props
 }: PriceBadgeProps) {
   const formattedPrice =
-    currency === "VND"
-      ? price.toLocaleString("vi-VN", {
-          style: "currency",
-          currency: "VND",
-        })
-      : `${price.toFixed(2)} ${currency}`;
+    currency === "VND" ? formatVND(price) : `${price.toFixed(2)} ${currency}`;
 
   return (
     <span
