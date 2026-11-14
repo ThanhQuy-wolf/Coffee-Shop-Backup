@@ -1,10 +1,11 @@
 "use client";
 
 import { Modal, ModalHeader } from "@/components/molecules/modal";
-import type { MenuCategory } from "@/lib/types";
+import type { CategoryInput } from "@/lib/types";
 import { useState } from "react";
 
 import type { CategoryModalProps } from "./Manager.types";
+import { inputCls, labelCls, useSaveForm } from "./useSaveForm";
 
 const FA_ICONS = [
   "fa-solid fa-mug-hot",
@@ -27,23 +28,17 @@ const FA_ICONS = [
 
 export default function CategoryModal({
   category,
+  nextSortOrder,
   onSave,
   onClose,
 }: CategoryModalProps) {
   const isEdit = category !== null;
-  const [form, setForm] = useState<Omit<MenuCategory, "id">>({
+  const [form, setForm] = useState<CategoryInput>({
     name: category?.name ?? "",
     icon: category?.icon ?? FA_ICONS[0],
+    sortOrder: category?.sortOrder ?? nextSortOrder,
   });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isEdit && category) {
-      onSave({ ...form, id: category.id });
-    } else {
-      onSave(form);
-    }
-  };
+  const { submit, error, saving } = useSaveForm(onSave, onClose);
 
   return (
     <Modal onClose={onClose}>
@@ -52,18 +47,39 @@ export default function CategoryModal({
         onClose={onClose}
       />
 
-      <form onSubmit={handleSubmit} className="space-y-4 px-6 py-5">
+      <form
+        onSubmit={submit(() => ({ ...form, name: form.name.trim() }))}
+        className="space-y-4 px-6 py-5"
+      >
         <div>
-          <label className="mb-1 block text-sm font-medium text-(--color-text-secondary)">
+          <label htmlFor="category-name" className={labelCls}>
             Tên danh mục <span className="text-red-500">*</span>
           </label>
           <input
+            id="category-name"
             required
+            maxLength={50}
             type="text"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="text-foreground w-full rounded-xl border border-(--color-border) bg-white px-3 py-2 text-sm transition outline-none focus:border-(--color-primary) focus:ring-2 focus:ring-(--color-primary)/20"
+            className={inputCls}
             placeholder="Ví dụ: Cà Phê"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="category-order" className={labelCls}>
+            Thứ tự hiển thị
+          </label>
+          <input
+            id="category-order"
+            type="number"
+            min={0}
+            value={form.sortOrder}
+            onChange={(e) =>
+              setForm({ ...form, sortOrder: Number(e.target.value) })
+            }
+            className={inputCls}
           />
         </div>
 
@@ -90,6 +106,15 @@ export default function CategoryModal({
           </div>
         </div>
 
+        {error && (
+          <p
+            role="alert"
+            className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
+          >
+            {error}
+          </p>
+        )}
+
         <div className="flex gap-3 pt-1">
           <button
             type="button"
@@ -100,7 +125,8 @@ export default function CategoryModal({
           </button>
           <button
             type="submit"
-            className="flex-1 cursor-pointer rounded-xl border-none bg-(--color-primary) px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-(--color-primary-dark) active:scale-95"
+            disabled={saving}
+            className="flex-1 cursor-pointer rounded-xl border-none bg-(--color-primary) px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-(--color-primary-dark) active:scale-95 disabled:opacity-50"
           >
             {isEdit ? "Lưu thay đổi" : "Thêm danh mục"}
           </button>

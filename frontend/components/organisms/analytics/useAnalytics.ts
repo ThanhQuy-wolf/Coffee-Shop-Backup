@@ -1,102 +1,95 @@
 "use client";
 
 import { useCatalog } from "@/lib/contexts/catalog-context";
-import { getProductSales, getRevenue } from "@/lib/services/analytics";
-import type { AnalyticsPeriod } from "@/lib/types";
-import { calcChange } from "@/lib/utils/analytics";
-import { useMemo } from "react";
+import { ALL_CATEGORY_ID, analyticsService } from "@/lib/services";
+import type {
+  AnalyticsPeriod,
+  ProductSalesStats,
+  ReportSummary,
+  RevenueReport,
+} from "@/lib/types";
+import { errorMessage } from "@/lib/utils/errors";
+import { useEffect, useMemo, useState } from "react";
 
 import type { PieSlice } from "./PieChart";
 import { CATEGORY_COLORS } from "./constants";
 
-/**
- * All derived numbers for the analytics page (summary, comparisons,
- * chart data, top products, filtered totals) for a period + category filter.
- */
-export function useAnalytics(period: AnalyticsPeriod, categoryFilter: string) {
-  const { categories } = useCatalog();
-  const productSales = getProductSales();
+/** Loads RP-1 → RP-3 for one period and derives the numbers the sections show. */
+export function useAnalytics(period: AnalyticsPeriod, categoryFilter: number) {
+  const { shopId } = useCatalog();
+  const [summary, setSummary] = useState<ReportSummary | null>(null);
+  const [revenue, setRevenue] = useState<RevenueReport | null>(null);
+  const [sales, setSales] = useState<ProductSalesStats[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
-  // Revenue data for selected period
-  const revenueData = getRevenue(period);
+  useEffect(() => {
+    let alive = true;
+    Promise.all([
+      analyticsService.getSummary(shopId, period),
+      analyticsService.getRevenue(shopId, period),
+    ]).then(
+      ([s, r]) => {
+        if (!alive) return;
+        setSummary(s);
+        setRevenue(r);
+      },
+      (err) => alive && setError(errorMessage(err)),
+    );
+    return () => {
+      alive = false;
+    };
+  }, [shopId, period]);
 
-  // Split into halves for bar comparison
-  const half = Math.floor(revenueData.length / 2);
-  const barCurrent = revenueData.slice(half);
-  const barPrevious = revenueData.slice(0, half).slice(0, barCurrent.length);
+  useEffect(() => {
+    let alive = true;
+    analyticsService
+      .getProductSales(
+        shopId,
+        categoryFilter === ALL_CATEGORY_ID ? undefined : categoryFilter,
+      )
+      .then(
+        (rows) => alive && setSales(rows),
+        (err) => alive && setError(errorMessage(err)),
+      );
+    return () => {
+      alive = false;
+    };
+  }, [shopId, categoryFilter]);
 
-  // Filtered product sales
-  const filteredSales = useMemo(
-    () =>
-      categoryFilter === "all"
-        ? productSales
-        : productSales.filter((p) => p.category === categoryFilter),
-    [categoryFilter, productSales],
+  const pieData = useMemo(
+    (): PieSlice[] =>
+      (revenue?.byCategory ?? [])
+        .map((c, i) => ({
+          label: c.name,
+          value: c.revenue,
+          color: CATEGORY_COLORS[i % CATEGORY_COLORS.length],
+        }))
+        .sort((a, b) => b.value - a.value),
+    [revenue],
   );
 
-  // Summary stats
-  const totalRevenue = revenueData.reduce((s, d) => s + d.revenue, 0);
-  const totalOrders = revenueData.reduce((s, d) => s + d.orders, 0);
-  const totalProfit = filteredSales.reduce((s, d) => s + d.profit, 0);
-  const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-
-  // Period-over-period comparisons
-  const curRevenue = barCurrent.reduce((s, d) => s + d.revenue, 0);
-  const prevRevenue = barPrevious.reduce((s, d) => s + d.revenue, 0);
-  const curOrders = barCurrent.reduce((s, d) => s + d.orders, 0);
-  const prevOrders = barPrevious.reduce((s, d) => s + d.orders, 0);
-  const revComp = calcChange(curRevenue, prevRevenue);
-  const ordComp = calcChange(curOrders, prevOrders);
-  const proComp = calcChange(curRevenue * 0.65, prevRevenue * 0.65);
-
-  // Pie data: revenue by category
-  const pieData = useMemo((): PieSlice[] => {
-    const byCategory: Record<string, number> = {};
-    productSales.forEach((p) => {
-      byCategory[p.category] = (byCategory[p.category] ?? 0) + p.revenue;
-    });
-    return Object.entries(byCategory)
-      .map(([catId, rev], i) => ({
-        label: categories.find((c) => c.id === catId)?.name ?? catId,
-        value: rev,
-        color: CATEGORY_COLORS[i % CATEGORY_COLORS.length],
-      }))
-      .sort((a, b) => b.value - a.value);
-  }, [productSales, categories]);
-
-  // Top 5 products
   const top5 = useMemo(
-    () => [...filteredSales].sort((a, b) => b.revenue - a.revenue).slice(0, 5),
-    [filteredSales],
+    () => [...sales].sort((a, b) => b.revenue - a.revenue).slice(0, 5),
+    [sales],
   );
 
-  // Totals for summary row
-  const filteredRevenue = filteredSales.reduce((s, d) => s + d.revenue, 0);
-  const filteredProfit = filteredSales.reduce((s, d) => s + d.profit, 0);
-  const filteredUnits = filteredSales.reduce((s, d) => s + d.unitsSold, 0);
-  const avgMargin =
-    filteredSales.length > 0
-      ? filteredSales.reduce((s, d) => s + d.profitMargin, 0) /
-        filteredSales.length
-      : 0;
+  // Rows without a cost price would show a fake 100% margin (BR-10)
+  const withCost = sales.filter((d) => !d.missingCost);
 
   return {
-    revenueData,
-    barCurrent,
-    barPrevious,
-    filteredSales,
-    totalRevenue,
-    totalOrders,
-    totalProfit,
-    avgOrderValue,
-    revComp,
-    ordComp,
-    proComp,
+    error,
+    summary,
+    revenueData: revenue?.series ?? [],
+    barCurrent: revenue?.currentHalf ?? [],
+    barPrevious: revenue?.previousHalf ?? [],
     pieData,
     top5,
-    filteredRevenue,
-    filteredProfit,
-    filteredUnits,
-    avgMargin,
+    filteredSales: sales,
+    filteredRevenue: sales.reduce((s, d) => s + d.revenue, 0),
+    filteredProfit: withCost.reduce((s, d) => s + d.profit, 0),
+    filteredUnits: sales.reduce((s, d) => s + d.unitsSold, 0),
+    avgMargin: withCost.length
+      ? withCost.reduce((s, d) => s + d.profitMargin, 0) / withCost.length
+      : 0,
   };
 }

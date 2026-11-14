@@ -9,7 +9,6 @@ import type { MonthlyCalendarProps } from "./ShiftSchedule.types";
 const DAY_HEADERS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 
 export default function MonthlyCalendar({
-  onShiftClick,
   onDateSelect,
 }: MonthlyCalendarProps) {
   const { currentDate, shifts } = useShift();
@@ -47,12 +46,12 @@ export default function MonthlyCalendar({
   const getShiftSummary = (date: Date) => {
     const dateStr = formatDateISO(date);
     const dayShifts = shifts.filter((s) => s.date === dateStr);
-    const available = dayShifts.filter((s) => s.status === "available").length;
-    const registered = dayShifts.filter(
-      (s) => s.status === "registered",
+    const available = dayShifts.filter((s) => s.view === "available").length;
+    const registered = dayShifts.filter((s) => s.view === "registered").length;
+    const leave = dayShifts.filter(
+      (s) => s.view === "approved_leave" || s.view === "leave_requested",
     ).length;
-    const leave = dayShifts.filter((s) => s.status === "approved_leave").length;
-    const absent = dayShifts.filter((s) => s.status === "absent").length;
+    const absent = dayShifts.filter((s) => s.view === "absent").length;
     return { total: dayShifts.length, available, registered, leave, absent };
   };
 

@@ -47,7 +47,7 @@ header, full viewport height minus header.
 ### CartFab (`organisms/cart/CartFab.tsx`)
 
 **Description:** Floating Action Button displaying cart item count. Links to
-/payment page.
+/checkout page.
 
 ### ProductGrid (`organisms/product-grid/ProductGrid.tsx`)
 

@@ -7,8 +7,8 @@ import { CategorySelect } from "./CategorySelect";
 
 export interface TopProductsSectionProps {
   top5: ProductSalesStats[];
-  categoryFilter: string;
-  onCategoryChange: (id: string) => void;
+  categoryFilter: number;
+  onCategoryChange: (id: number) => void;
 }
 
 /** Top-5 best sellers with revenue bars. */
@@ -27,6 +27,11 @@ export function TopProductsSection({
         <CategorySelect value={categoryFilter} onChange={onCategoryChange} />
       </div>
       <div className="space-y-3">
+        {top5.length === 0 && (
+          <p className="text-sm text-(--color-text-muted)">
+            Chưa có dữ liệu bán hàng.
+          </p>
+        )}
         {top5.map((p, i) => {
           const pct = (p.revenue / top5[0].revenue) * 100;
           return (

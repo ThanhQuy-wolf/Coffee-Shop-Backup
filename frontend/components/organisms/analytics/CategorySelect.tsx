@@ -1,6 +1,7 @@
 "use client";
 
 import { useCatalog } from "@/lib/contexts/catalog-context";
+import { ALL_CATEGORY_ID } from "@/lib/services";
 
 /** Category filter <select> used by the analytics sections. */
 export function CategorySelect({
@@ -8,8 +9,8 @@ export function CategorySelect({
   onChange,
   label = "Danh mục:",
 }: {
-  value: string;
-  onChange: (v: string) => void;
+  value: number;
+  onChange: (v: number) => void;
   label?: string;
 }) {
   const { categories } = useCatalog();
@@ -19,10 +20,10 @@ export function CategorySelect({
       <select
         title="Danh mục"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => onChange(Number(e.target.value))}
         className="bg-background text-foreground rounded-lg border border-(--color-border) px-2 py-1.5 text-xs"
       >
-        <option value="all">Tất cả</option>
+        <option value={ALL_CATEGORY_ID}>Tất cả</option>
         {categories.map((c) => (
           <option key={c.id} value={c.id}>
             {c.name}

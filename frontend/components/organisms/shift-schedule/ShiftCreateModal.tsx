@@ -1,188 +1,193 @@
 "use client";
 
 import { Modal, ModalHeader } from "@/components/molecules/modal";
-import { DEPARTMENTS } from "@/lib/constants";
 import { useShift } from "@/lib/contexts/shift-context";
-import { SCHEDULE_TODAY, formatDateISO } from "@/lib/utils/date";
+import { SCHEDULE_TODAY, formatDateISO, timeToMinutes } from "@/lib/utils/date";
+import { errorMessage } from "@/lib/utils/errors";
 import { useState } from "react";
 
-import type { ShiftCreateModalProps } from "./ShiftSchedule.types";
+import type { ShiftFormModalProps } from "./ShiftSchedule.types";
 
+const inputCls =
+  "text-foreground w-full rounded-xl border border-(--color-border-light) px-3 py-2.5 text-sm transition outline-none focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary)";
+const labelCls =
+  "mb-1 block text-xs font-semibold text-(--color-text-secondary)";
+
+/** Create (FR-23) or edit (FR-24) a shift. */
 export default function ShiftCreateModal({
-  isOpen,
   onClose,
   defaultDate,
-}: ShiftCreateModalProps) {
-  const { createShift } = useShift();
+  shift,
+}: ShiftFormModalProps) {
+  const { createShift, updateShift, departments } = useShift();
+  const isEdit = !!shift;
 
-  const [date, setDate] = useState(
-    defaultDate ?? formatDateISO(SCHEDULE_TODAY),
-  );
-  const [startTime, setStartTime] = useState("08:00");
-  const [endTime, setEndTime] = useState("12:00");
-  const [department, setDepartment] = useState("bar");
-  const [maxStaff, setMaxStaff] = useState(2);
-  const [wage, setWage] = useState(120000);
+  const [form, setForm] = useState({
+    date: shift?.date ?? defaultDate ?? formatDateISO(SCHEDULE_TODAY),
+    startTime: shift?.startTime ?? "08:00",
+    endTime: shift?.endTime ?? "12:00",
+    departmentId: shift?.departmentId ?? departments[0]?.id ?? 0,
+    maxStaff: shift?.maxStaff ?? 2,
+    wage: shift?.wage ?? 120000,
+    allowCrossDepartment: shift?.allowCrossDepartment ?? false,
+  });
   const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
-  if (!isOpen) return null;
+  const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) =>
+    setForm((f) => ({ ...f, [key]: value }));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-
-    // Validate
-    if (!date || !startTime || !endTime) {
-      setError("Vui lòng điền đầy đủ thông tin.");
+    // Same check as the server (BR-40), so the common mistake fails fast
+    if (timeToMinutes(form.endTime) <= timeToMinutes(form.startTime)) {
+      setError("Giờ kết thúc phải sau giờ bắt đầu, trong cùng một ngày.");
       return;
     }
-
-    const [sh, sm] = startTime.split(":").map(Number);
-    const [eh, em] = endTime.split(":").map(Number);
-    const startMinutes = sh * 60 + sm;
-    const endMinutes = eh * 60 + em;
-
-    if (endMinutes <= startMinutes) {
-      setError("Giờ kết thúc phải sau giờ bắt đầu.");
-      return;
+    setSaving(true);
+    try {
+      if (shift) await updateShift(shift.id, form, shift.version);
+      else await createShift(form);
+      onClose();
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setSaving(false);
     }
-
-    const durationHours = (endMinutes - startMinutes) / 60;
-
-    createShift({
-      date,
-      startTime,
-      endTime,
-      durationHours,
-      wage,
-      department,
-      maxStaff,
-      registeredStaff: [],
-      status: "available",
-    });
-
-    onClose();
   };
 
   return (
     <Modal onClose={onClose}>
       <ModalHeader
-        title="Tạo ca làm mới"
-        subtitle="Thêm khung giờ ca làm cho nhân viên"
+        title={isEdit ? "Sửa ca làm" : "Tạo ca làm mới"}
+        subtitle={
+          isEdit
+            ? "Người đã đăng ký sẽ được kiểm tra trùng lịch"
+            : "Thêm khung giờ ca làm cho nhân viên"
+        }
         onClose={onClose}
       />
 
-      {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-4 px-5 py-4">
-        {/* Date */}
         <div>
-          <label className="mb-1 block text-xs font-semibold text-(--color-text-secondary)">
+          <label htmlFor="shift-date" className={labelCls}>
             Ngày
           </label>
           <input
-            title="Date"
+            id="shift-date"
             type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="text-foreground w-full rounded-xl border border-(--color-border-light) px-3 py-2.5 text-sm transition outline-none focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary)"
+            value={form.date}
+            onChange={(e) => set("date", e.target.value)}
+            className={inputCls}
           />
         </div>
 
-        {/* Time range */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="mb-1 block text-xs font-semibold text-(--color-text-secondary)">
+            <label htmlFor="shift-start" className={labelCls}>
               Giờ bắt đầu
             </label>
             <input
-              title="Start Time"
+              id="shift-start"
               type="time"
-              value={startTime}
-              onChange={(e) => setStartTime(e.target.value)}
-              className="text-foreground w-full rounded-xl border border-(--color-border-light) px-3 py-2.5 text-sm transition outline-none focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary)"
+              value={form.startTime}
+              onChange={(e) => set("startTime", e.target.value)}
+              className={inputCls}
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold text-(--color-text-secondary)">
+            <label htmlFor="shift-end" className={labelCls}>
               Giờ kết thúc
             </label>
             <input
-              title="End Time"
+              id="shift-end"
               type="time"
-              value={endTime}
-              onChange={(e) => setEndTime(e.target.value)}
-              className="text-foreground w-full rounded-xl border border-(--color-border-light) px-3 py-2.5 text-sm transition outline-none focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary)"
+              value={form.endTime}
+              onChange={(e) => set("endTime", e.target.value)}
+              className={inputCls}
             />
           </div>
         </div>
 
-        {/* Department */}
         <div>
-          <label className="mb-1 block text-xs font-semibold text-(--color-text-secondary)">
+          <label htmlFor="shift-dept" className={labelCls}>
             Bộ phận
           </label>
           <select
-            title="Department"
-            value={department}
-            onChange={(e) => setDepartment(e.target.value)}
-            className="text-foreground w-full rounded-xl border border-(--color-border-light) px-3 py-2.5 text-sm transition outline-none focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary)"
+            id="shift-dept"
+            value={form.departmentId}
+            onChange={(e) => set("departmentId", Number(e.target.value))}
+            className={inputCls}
           >
-            {DEPARTMENTS.map((dept) => (
-              <option key={dept.id} value={dept.id}>
-                {dept.name}
+            {departments.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.name}
               </option>
             ))}
           </select>
         </div>
 
-        {/* Max staff & Wage */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="mb-1 block text-xs font-semibold text-(--color-text-secondary)">
-              Số nhân viên tối đa
+            <label htmlFor="shift-max" className={labelCls}>
+              Số người tối đa (1–20)
             </label>
             <input
-              title="Max Staff"
+              id="shift-max"
               type="number"
               min={1}
-              max={10}
-              value={maxStaff}
-              onChange={(e) => setMaxStaff(Number(e.target.value))}
-              className="text-foreground w-full rounded-xl border border-(--color-border-light) px-3 py-2.5 text-sm transition outline-none focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary)"
+              max={20}
+              value={form.maxStaff}
+              onChange={(e) => set("maxStaff", Number(e.target.value))}
+              className={inputCls}
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold text-(--color-text-secondary)">
+            <label htmlFor="shift-wage" className={labelCls}>
               Lương ca (VND)
             </label>
             <input
-              title="Wage"
+              id="shift-wage"
               type="number"
-              min={0}
+              min={1}
               step={10000}
-              value={wage}
-              onChange={(e) => setWage(Number(e.target.value))}
-              className="text-foreground w-full rounded-xl border border-(--color-border-light) px-3 py-2.5 text-sm transition outline-none focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary)"
+              value={form.wage}
+              onChange={(e) => set("wage", Number(e.target.value))}
+              className={inputCls}
             />
           </div>
         </div>
 
-        {/* Error */}
+        <label className="flex items-center gap-2 text-sm text-(--color-text-secondary)">
+          <input
+            type="checkbox"
+            checked={form.allowCrossDepartment}
+            onChange={(e) => set("allowCrossDepartment", e.target.checked)}
+          />
+          Cho phép nhân viên bộ phận khác đăng ký (BR-46)
+        </label>
+
         {error && (
-          <div className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div
+            role="alert"
+            className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700"
+          >
             <i className="fa-solid fa-circle-exclamation mr-2"></i>
             {error}
           </div>
         )}
 
-        {/* Actions */}
         <div className="flex gap-2 pt-2">
           <button
             type="submit"
-            className="flex-1 cursor-pointer rounded-xl border-none bg-(--color-primary) px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
+            disabled={saving}
+            className="flex-1 cursor-pointer rounded-xl border-none bg-(--color-primary) px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
           >
-            <i className="fa-solid fa-plus mr-2"></i>
-            Tạo ca làm
+            <i
+              className={`fa-solid ${isEdit ? "fa-floppy-disk" : "fa-plus"} mr-2`}
+            ></i>
+            {isEdit ? "Lưu thay đổi" : "Tạo ca làm"}
           </button>
           <button
             type="button"

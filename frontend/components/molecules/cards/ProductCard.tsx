@@ -22,6 +22,7 @@ export default function ProductCard({
   productName,
   price,
   description,
+  badge,
   onBuy,
 }: ProductCardProps) {
   const formattedPrice = typeof price === "number" ? formatVND(price) : price;
@@ -50,6 +51,11 @@ export default function ProductCard({
       {/* ── Name + description ── */}
       <div className="flex flex-1 flex-col gap-1 px-3 pt-2.5 pb-1.5">
         <h3 className="text-foreground line-clamp-1 text-sm leading-tight font-bold">
+          {badge && (
+            <span className="mr-1.5 rounded-md bg-(--color-accent-light) px-1.5 py-0.5 text-[10px] font-semibold text-(--color-primary-dark)">
+              {badge}
+            </span>
+          )}
           {productName}
         </h3>
         <Caption className="line-clamp-2">{description}</Caption>

@@ -49,8 +49,8 @@ function SortTh({
  */
 export function ProductTable({ data }: ProductTableProps) {
   const { categories } = useCatalog();
-  const categoryName = (id: string) =>
-    categories.find((c) => c.id === id)?.name ?? id;
+  const categoryName = (id: number) =>
+    categories.find((c) => c.id === id)?.name ?? `#${id}`;
   const [sortKey, setSortKey] = useState<SortKey>("revenue");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
@@ -103,7 +103,7 @@ export function ProductTable({ data }: ProductTableProps) {
               className="text-right"
             />
             <th className="px-4 py-3 text-right font-semibold text-(--color-text-secondary)">
-              Giá nhập
+              Giá vốn
             </th>
             <th className="px-4 py-3 text-right font-semibold text-(--color-text-secondary)">
               Giá bán
@@ -138,7 +138,7 @@ export function ProductTable({ data }: ProductTableProps) {
               </td>
               <td className="px-4 py-3">
                 <span className="rounded-full bg-(--color-accent-light) px-2 py-0.5 text-xs text-(--color-primary)">
-                  {categoryName(row.category)}
+                  {categoryName(row.categoryId)}
                 </span>
               </td>
               <td className="text-foreground px-4 py-3 text-right tabular-nums">
@@ -148,26 +148,39 @@ export function ProductTable({ data }: ProductTableProps) {
                 {formatCurrencyFull(row.revenue)}
               </td>
               <td className="px-4 py-3 text-right text-(--color-text-muted) tabular-nums">
-                {formatCurrencyFull(row.costPrice)}
+                {row.missingCost ? (
+                  <span
+                    className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700"
+                    title="BR-10: chưa khai báo giá vốn"
+                  >
+                    Chưa có giá vốn
+                  </span>
+                ) : (
+                  formatCurrencyFull(row.costPrice)
+                )}
               </td>
               <td className="px-4 py-3 text-right text-(--color-text-secondary) tabular-nums">
                 {formatCurrencyFull(row.sellingPrice)}
               </td>
               <td className="px-4 py-3 text-right font-medium text-green-600 tabular-nums">
-                {formatCurrencyFull(row.profit)}
+                {row.missingCost ? "—" : formatCurrencyFull(row.profit)}
               </td>
               <td className="px-4 py-3 text-right">
-                <span
-                  className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${
-                    row.profitMargin >= 70
-                      ? "bg-green-100 text-green-700"
-                      : row.profitMargin >= 60
-                        ? "bg-yellow-100 text-yellow-700"
-                        : "bg-red-100 text-red-600"
-                  }`}
-                >
-                  {row.profitMargin.toFixed(1)}%
-                </span>
+                {row.missingCost ? (
+                  <span className="text-xs text-(--color-text-muted)">—</span>
+                ) : (
+                  <span
+                    className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${
+                      row.profitMargin >= 70
+                        ? "bg-green-100 text-green-700"
+                        : row.profitMargin >= 60
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-red-100 text-red-600"
+                    }`}
+                  >
+                    {row.profitMargin.toFixed(1)}%
+                  </span>
+                )}
               </td>
             </tr>
           ))}

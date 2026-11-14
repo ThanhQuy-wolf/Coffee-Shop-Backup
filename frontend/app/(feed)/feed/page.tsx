@@ -2,11 +2,35 @@
 
 import { SearchBar } from "@/components/molecules/search-bar";
 import { ShopGrid } from "@/components/organisms/shop-grid";
-import { useState } from "react";
+import { shopService } from "@/lib/services";
+import type { Shop } from "@/lib/types";
+import { errorMessage } from "@/lib/utils/errors";
+import { useEffect, useState } from "react";
 
 export default function FeedPage() {
   const [searchName, setSearchName] = useState("");
   const [searchAddress, setSearchAddress] = useState("");
+  const [shops, setShops] = useState<Shop[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  // S-1 filters on the server; wait for a short pause in typing
+  useEffect(() => {
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      shopService
+        .list({ q: searchName, address: searchAddress })
+        .then((list) => {
+          if (cancelled) return;
+          setShops(list);
+          setError(null);
+        })
+        .catch((err) => !cancelled && setError(errorMessage(err)));
+    }, 250);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [searchName, searchAddress]);
 
   const hasFilters = searchName || searchAddress;
 
@@ -25,7 +49,21 @@ export default function FeedPage() {
 
         {/* Shop grid */}
         <div className="mb-10">
-          <ShopGrid searchName={searchName} searchAddress={searchAddress} />
+          {error ? (
+            <p
+              role="alert"
+              className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700"
+            >
+              {error}
+            </p>
+          ) : shops === null ? (
+            <p className="py-24 text-center text-sm text-(--color-text-muted)">
+              <i className="fa-solid fa-spinner fa-spin mr-2"></i>Đang tải
+              quán...
+            </p>
+          ) : (
+            <ShopGrid shops={shops} />
+          )}
           {hasFilters && (
             <div className="mt-4 flex justify-center">
               <button

@@ -12,7 +12,7 @@ export type { ProductGridProps } from "./product-grid";
 
 // Modals
 export { ReviewModal } from "./modals";
-export type { ReviewModalProps, ConfirmModalProps } from "./modals";
+export type { ReviewModalProps } from "./modals";
 
 // Shop Grid
 export { ShopGrid } from "./shop-grid";
@@ -28,6 +28,8 @@ export {
   ProductsTab,
   CategoriesTab,
   CombosTab,
+  ShopInfoTab,
+  ReviewsTab,
 } from "./manager";
 export type {
   ProductModalProps,
@@ -50,5 +52,5 @@ export type {
   MonthlyCalendarProps,
   MobileShiftViewProps,
   ShiftDetailModalProps,
-  ShiftCreateModalProps,
+  ShiftFormModalProps,
 } from "./shift-schedule";

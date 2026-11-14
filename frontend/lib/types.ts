@@ -1,66 +1,297 @@
-// ===== USER TYPES =====
-export type UserRole = "manager" | "staff" | "customer";
+// Domain types. Field names follow docs/04-erd.md in camelCase, and the
+// request/response shapes follow docs/05-api.md.
+
+// ===== COMMON =====
+export interface Page<T> {
+  items: T[];
+  page: number;
+  size: number;
+  total: number;
+}
+
+// ===== ACCOUNT (app_user) =====
+export type UserRole = "CUSTOMER" | "STAFF" | "MANAGER";
 
 export interface User {
   id: number;
-  name: string;
   role: UserRole;
-  avatar: string | null;
-  phone?: string;
+  fullName: string;
+  phone: string | null;
+  username: string | null;
+  avatarUrl: string | null;
+  /** null for CUSTOMER */
+  shopId: number | null;
+  departmentId: number | null;
 }
 
-// ===== MENU TYPES =====
-export interface MenuCategory {
-  id: string;
-  name: string;
-  icon: string; // FontAwesome class e.g. "fa-solid fa-mug-hot"
+export interface AuthSession {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+  user: User;
 }
 
-// ===== PRODUCT TYPES =====
-export interface Product {
+export type NotificationType =
+  | "SHIFT_CANCELLED"
+  | "ASSIGNMENT_REMOVED"
+  | "LEAVE_APPROVED"
+  | "LEAVE_REJECTED"
+  | "LEAVE_EXPIRED";
+
+export interface AppNotification {
   id: number;
-  name: string;
-  category: string; // matches MenuCategory.id
-  price: number;
-  image: string;
-  description: string;
-  available?: boolean;
+  type: NotificationType;
+  message: string;
+  readAt: string | null;
+  createdAt: string;
 }
 
-// ===== SHOP INFO TYPES =====
-export interface WifiInfo {
-  name: string;
-  password: string;
-}
-
-export interface ShopInfo {
-  name: string;
-  tagline: string;
-  logo: string;
-  address: string;
-  phone: string;
-  managerPhone: string;
-  email: string;
-  wifi: WifiInfo;
-  openHours: string;
-}
-
-// ===== SOCIAL LINKS TYPES =====
+// ===== SHOP (shop, shop_setting) =====
 export interface SocialLinks {
-  facebook: string;
-  tiktok: string;
-  website: string;
+  facebook?: string;
+  tiktok?: string;
+  website?: string;
 }
 
-// ===== SHOP (QUÁN NƯỚC) TYPES =====
 export interface Shop {
   id: number;
+  /** Prefix of order codes, e.g. "CF" in CF-260410-0042 */
+  code: string;
   name: string;
+  tagline: string;
   address: string;
-  image: string;
+  phone: string;
+  email: string;
+  logoUrl: string;
+  coverImageUrl: string;
+  openHours: string;
+  wifiName: string;
+  wifiPassword: string;
+  socialLinks: SocialLinks;
+  isActive: boolean;
 }
 
-// ===== FINANCIAL ANALYTICS TYPES =====
+export type ShopUpdate = Omit<Shop, "id" | "code" | "isActive">;
+
+export interface ShopSettings {
+  paymentTimeoutMinutes: number; // P-06
+  maxItemQuantity: number; // P-08
+  reviewWindowDays: number; // P-09
+  shiftCancelHours: number; // P-10
+  attendanceEditDays: number; // P-11
+  shiftBookingDays: number; // P-12
+}
+
+// ===== MENU (category, product, combo, combo_item) =====
+export interface MenuCategory {
+  id: number;
+  shopId: number;
+  name: string;
+  /** FontAwesome class, e.g. "fa-solid fa-mug-hot" */
+  icon: string;
+  sortOrder: number;
+  productCount?: number;
+}
+
+export type CategoryInput = Pick<MenuCategory, "name" | "icon" | "sortOrder">;
+
+export interface Product {
+  id: number;
+  shopId: number;
+  categoryId: number;
+  name: string;
+  description: string;
+  price: number;
+  /** 0 = not declared yet (BR-10) */
+  costPrice: number;
+  imageUrl: string;
+  isAvailable: boolean;
+}
+
+export type ProductInput = Omit<Product, "id" | "shopId">;
+
+export interface ComboItem {
+  productId: number;
+  quantity: number;
+}
+
+export interface Combo {
+  id: number;
+  shopId: number;
+  name: string;
+  description: string;
+  price: number;
+  imageUrl: string;
+  isAvailable: boolean;
+  items: ComboItem[];
+  /** isAvailable and every component product is available (BR-13) */
+  sellable: boolean;
+}
+
+export type ComboInput = Omit<Combo, "id" | "shopId" | "sellable">;
+
+/** GET /shops/{shopId}/menu — only what is on sale */
+export interface Menu {
+  shop: Shop;
+  categories: MenuCategory[];
+  products: Product[];
+  combos: Combo[];
+}
+
+// ===== ORDER (customer_order, order_item, payment) =====
+export type OrderStatus =
+  | "PENDING_PAYMENT"
+  | "PAID"
+  | "PREPARING"
+  | "READY"
+  | "COMPLETED"
+  | "CANCELLED";
+
+export type PaymentMethod = "CASH" | "QR";
+export type PaymentStatus = "PENDING" | "CONFIRMED" | "VOIDED" | "REFUNDED";
+export type OrderItemType = "PRODUCT" | "COMBO";
+
+export interface OrderItem {
+  type: OrderItemType;
+  id: number;
+  name: string;
+  unitPrice: number;
+  quantity: number;
+  lineTotal: number;
+}
+
+export interface Payment {
+  method: PaymentMethod;
+  status: PaymentStatus;
+  amount: number;
+  /** Bank transfer content for QR = order code (BR-25) */
+  transferContent: string;
+  confirmedAt: string | null;
+}
+
+export interface Order {
+  id: number;
+  code: string;
+  shopId: number;
+  shopName: string;
+  status: OrderStatus;
+  total: number;
+  version: number;
+  tableLabel: string | null;
+  note: string | null;
+  customerId: number | null;
+  /** Staff only see the last 3 digits (NFR-07) */
+  customerPhone: string | null;
+  /** Returned only to the guest who placed the order */
+  guestToken?: string;
+  paymentDeadline: string;
+  payment: Payment;
+  items: OrderItem[];
+  review: Review | null;
+  createdAt: string;
+  paidAt: string | null;
+  completedAt: string | null;
+  cancelledAt: string | null;
+  cancelReason: string | null;
+}
+
+export interface CreateOrderRequest {
+  paymentMethod: PaymentMethod;
+  tableLabel?: string;
+  note?: string;
+  items: {
+    type: OrderItemType;
+    id: number;
+    quantity: number;
+    /** Price the customer saw, checked against the current price (BR-22) */
+    unitPrice: number;
+  }[];
+}
+
+// ===== REVIEW =====
+export interface Review {
+  id: number;
+  orderId: number;
+  orderCode: string;
+  shopId: number;
+  customerName: string;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+}
+
+export interface ReviewList extends Page<Review> {
+  average: number;
+  countByRating: Record<1 | 2 | 3 | 4 | 5, number>;
+}
+
+// ===== SHIFT (department, shift, shift_assignment) =====
+export interface Department {
+  id: number;
+  shopId: number;
+  code: string;
+  name: string;
+  icon: string;
+}
+
+export interface StaffMember {
+  id: number;
+  fullName: string;
+  role: UserRole;
+  departmentId: number | null;
+}
+
+export type ShiftStatus = "OPEN" | "CANCELLED";
+
+export type AssignmentStatus =
+  | "REGISTERED"
+  | "CANCELLED"
+  | "LEAVE_REQUESTED"
+  | "LEAVE_APPROVED"
+  | "ATTENDED"
+  | "ABSENT";
+
+export interface ShiftAssignment {
+  id: number;
+  shiftId: number;
+  staffId: number;
+  staffName: string;
+  status: AssignmentStatus;
+  leaveReason: string | null;
+}
+
+export interface Shift {
+  id: number;
+  shopId: number;
+  departmentId: number;
+  /** "YYYY-MM-DD" */
+  date: string;
+  /** "HH:mm" */
+  startTime: string;
+  endTime: string;
+  wage: number;
+  maxStaff: number;
+  allowCrossDepartment: boolean;
+  status: ShiftStatus;
+  version: number;
+  /** Assignments that hold a seat (BR-43) */
+  occupied: number;
+  remaining: number;
+  assignments: ShiftAssignment[];
+}
+
+export type ShiftInput = Pick<
+  Shift,
+  | "departmentId"
+  | "date"
+  | "startTime"
+  | "endTime"
+  | "wage"
+  | "maxStaff"
+  | "allowCrossDepartment"
+>;
+
+// ===== REPORTS =====
 export type AnalyticsPeriod = "day" | "week" | "month" | "year";
 
 export interface RevenueDataPoint {
@@ -69,79 +300,54 @@ export interface RevenueDataPoint {
   orders: number;
 }
 
+export interface MetricComparison {
+  current: number;
+  previous: number;
+  /** null when the previous period is 0 (BR-53) */
+  changePercent: number | null;
+}
+
+/** RP-1 */
+export interface ReportSummary {
+  revenue: MetricComparison;
+  orders: MetricComparison;
+  grossProfit: MetricComparison;
+  averageOrderValue: number;
+}
+
+export interface CategoryRevenue {
+  /** null = combo lines (BR-51) */
+  categoryId: number | null;
+  name: string;
+  revenue: number;
+}
+
+/** RP-2 */
+export interface RevenueReport {
+  series: RevenueDataPoint[];
+  currentHalf: RevenueDataPoint[];
+  previousHalf: RevenueDataPoint[];
+  byCategory: CategoryRevenue[];
+}
+
+/** RP-3 row */
 export interface ProductSalesStats {
   productId: number;
   name: string;
-  category: string;
+  categoryId: number;
   unitsSold: number;
   revenue: number;
-  costPrice: number; // giá nhập
-  sellingPrice: number; // giá bán
+  costPrice: number;
+  sellingPrice: number;
   profit: number;
   profitMargin: number; // %
+  /** unit_cost = 0 on the sold lines (BR-10) */
+  missingCost: boolean;
 }
 
-export interface PeriodComparison {
-  current: number;
-  previous: number;
-  change: number; // absolute
-  changePercent: number; // %
-  isPositive: boolean;
-}
-
-export interface FinancialSummary {
-  totalRevenue: number;
-  totalOrders: number;
-  totalProfit: number;
-  averageOrderValue: number;
-  revenueComparison: PeriodComparison;
-  ordersComparison: PeriodComparison;
-  profitComparison: PeriodComparison;
-}
-
-// ===== COMBO TYPES =====
-export interface ComboItem {
-  productId: number;
-  quantity: number;
-}
-
-export interface Combo {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  image: string;
-  items: ComboItem[]; // list of products + quantities in this combo
-  available: boolean;
-}
-
-// ===== SHIFT / SCHEDULE TYPES =====
-export type ShiftStatus =
-  | "available"
-  | "registered"
-  | "approved_leave"
-  | "absent";
-
-export interface RegisteredStaff {
-  id: number;
-  name: string;
-}
-
-export interface ShiftSlot {
-  id: string;
-  date: string; // ISO date string "YYYY-MM-DD"
-  startTime: string; // "HH:mm"
-  endTime: string; // "HH:mm"
-  durationHours: number;
-  wage: number; // VND per shift
-  department: string;
-  maxStaff: number;
-  registeredStaff: RegisteredStaff[];
-  status: ShiftStatus;
-}
-
-export interface Department {
-  id: string;
-  name: string;
-  icon: string; // FontAwesome class
+/** RP-4 */
+export interface LaborCostReport {
+  weekStart: string;
+  total: number;
+  byDepartment: { departmentId: number; name: string; total: number }[];
 }

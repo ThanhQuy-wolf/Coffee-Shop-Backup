@@ -1,79 +1,84 @@
 "use client";
 
+import { SHIFT_VIEW_STYLES } from "@/components/molecules/cards/ShiftCard";
 import { Modal, ModalHeader } from "@/components/molecules/modal";
-import { DEPARTMENTS } from "@/lib/constants";
 import { useAuth } from "@/lib/contexts/auth-context";
-import { useShift } from "@/lib/contexts/shift-context";
+import { isSeatHolder, useShift } from "@/lib/contexts/shift-context";
+import { shiftService } from "@/lib/services/shifts";
+import type { AssignmentStatus } from "@/lib/types";
+import { errorCode, errorMessage } from "@/lib/utils/errors";
 import { useState } from "react";
 
 import type { ShiftDetailModalProps } from "./ShiftSchedule.types";
 
+const ASSIGNMENT_LABEL: Record<
+  AssignmentStatus,
+  { label: string; cls: string }
+> = {
+  REGISTERED: { label: "Đã đăng ký", cls: "bg-blue-100 text-blue-800" },
+  LEAVE_REQUESTED: {
+    label: "Chờ duyệt nghỉ",
+    cls: "bg-amber-100 text-amber-800",
+  },
+  LEAVE_APPROVED: { label: "Nghỉ phép", cls: "bg-purple-100 text-purple-700" },
+  ATTENDED: { label: "Có mặt", cls: "bg-green-100 text-green-800" },
+  ABSENT: { label: "Vắng mặt", cls: "bg-red-100 text-red-700" },
+  CANCELLED: { label: "Đã huỷ", cls: "bg-gray-100 text-gray-600" },
+};
+
+const btn =
+  "cursor-pointer rounded-lg border-none px-2 py-1 text-xs font-medium transition";
+
 export default function ShiftDetailModal({
-  shift,
-  isOpen,
+  shiftId,
   onClose,
+  onEdit,
 }: ShiftDetailModalProps) {
   const { user } = useAuth();
-  const { registerShift, unregisterShift, deleteShift } = useShift();
+  const ctx = useShift();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [leaveReason, setLeaveReason] = useState("");
+  const [showLeaveForm, setShowLeaveForm] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [showCancelForm, setShowCancelForm] = useState(false);
 
-  if (!isOpen || !shift) return null;
+  const shift = shiftId === null ? undefined : ctx.getShift(shiftId);
+  if (!shift || !user) return null;
 
-  const dept = DEPARTMENTS.find((d) => d.id === shift.department);
-  const isManager = user?.role === "manager";
-  const isRegistered = user
-    ? shift.registeredStaff.some((s) => s.id === user.id)
-    : false;
-  const isFull = shift.registeredStaff.length >= shift.maxStaff;
+  const dept = ctx.departments.find((d) => d.id === shift.departmentId);
+  const isManager = user.role === "MANAGER";
+  const started =
+    new Date(`${shift.date}T${shift.startTime}:00`) <= shiftService.now();
+  const mine = shift.assignments.find(
+    (a) => a.staffId === user.id && a.status !== "LEAVE_APPROVED",
+  );
+  const style = SHIFT_VIEW_STYLES[shift.view];
 
-  const handleRegister = () => {
-    if (!user) return;
+  const act = async (
+    fn: () => Promise<void>,
+    ok: string,
+    after?: () => void,
+  ) => {
+    setBusy(true);
     setError(null);
     setSuccess(null);
-    const result = registerShift(shift.id, user.id, user.name);
-    if (result.success) {
-      setSuccess("Đăng ký ca thành công!");
-      setTimeout(onClose, 1200);
-    } else {
-      setError(result.error ?? "Có lỗi xảy ra.");
+    try {
+      await fn();
+      setSuccess(ok);
+      after?.();
+    } catch (err) {
+      setError(errorMessage(err));
+      // BR-47: too close to the start, offer the leave request instead
+      if (errorCode(err) === "BR-47") setShowLeaveForm(true);
+    } finally {
+      setBusy(false);
     }
   };
 
-  const handleUnregister = () => {
-    if (!user) return;
-    setError(null);
-    unregisterShift(shift.id, user.id);
-    setSuccess("Đã hủy đăng ký ca.");
-    setTimeout(onClose, 1200);
-  };
-
-  const handleManagerUnregister = (staffId: number) => {
-    unregisterShift(shift.id, staffId);
-    setSuccess("Đã xóa nhân viên khỏi ca.");
-  };
-
-  const handleDelete = () => {
-    deleteShift(shift.id);
-    onClose();
-  };
-
-  const statusLabel = {
-    available: "Còn trống",
-    registered: "Đã đăng ký",
-    approved_leave: "Nghỉ phép",
-    absent: "Vắng mặt",
-  };
-
-  const statusColor = {
-    available: "bg-blue-100 text-blue-700",
-    registered: "bg-blue-200 text-blue-900",
-    approved_leave: "bg-purple-100 text-purple-700",
-    absent: "bg-red-100 text-red-700",
-  };
-
   return (
-    <Modal onClose={onClose}>
+    <Modal onClose={onClose} className="max-w-lg">
       <ModalHeader
         title="Chi tiết ca làm"
         subtitle={dept?.name}
@@ -83,148 +88,304 @@ export default function ShiftDetailModal({
         onClose={onClose}
       />
 
-      {/* Body */}
-      <div className="space-y-4 px-5 py-4">
-        {/* Status badge */}
-        <div className="flex items-center gap-2">
+      <div className="max-h-[70vh] space-y-4 overflow-y-auto px-5 py-4">
+        <div className="flex flex-wrap items-center gap-2">
           <span
-            className={`rounded-full px-3 py-1 text-xs font-semibold ${statusColor[shift.status]}`}
+            className={`rounded-full px-3 py-1 text-xs font-semibold ${style.badge}`}
           >
-            {statusLabel[shift.status]}
+            {style.label}
           </span>
+          {shift.allowCrossDepartment && (
+            <span className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">
+              Cho phép làm chéo bộ phận
+            </span>
+          )}
         </div>
 
-        {/* Shift info grid */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-xl bg-gray-50 p-3">
-            <p className="text-[10px] font-semibold text-(--color-text-muted) uppercase">
-              Ngày
-            </p>
-            <p className="text-foreground mt-1 text-sm font-bold">
-              {new Date(shift.date + "T00:00:00").toLocaleDateString("vi-VN", {
+          {[
+            [
+              "Ngày",
+              new Date(shift.date + "T00:00:00").toLocaleDateString("vi-VN", {
                 weekday: "long",
                 day: "2-digit",
                 month: "2-digit",
                 year: "numeric",
-              })}
-            </p>
-          </div>
-          <div className="rounded-xl bg-gray-50 p-3">
-            <p className="text-[10px] font-semibold text-(--color-text-muted) uppercase">
-              Giờ làm
-            </p>
-            <p className="text-foreground mt-1 text-sm font-bold">
-              {shift.startTime} – {shift.endTime}
-            </p>
-          </div>
-          <div className="rounded-xl bg-gray-50 p-3">
-            <p className="text-[10px] font-semibold text-(--color-text-muted) uppercase">
-              Thời lượng
-            </p>
-            <p className="text-foreground mt-1 text-sm font-bold">
-              {shift.durationHours} giờ
-            </p>
-          </div>
-          <div className="rounded-xl bg-gray-50 p-3">
-            <p className="text-[10px] font-semibold text-(--color-text-muted) uppercase">
-              Lương ca
-            </p>
-            <p className="mt-1 text-sm font-bold text-(--color-primary)">
-              {shift.wage.toLocaleString("vi-VN")} VND
-            </p>
-          </div>
+              }),
+            ],
+            ["Giờ làm", `${shift.startTime} – ${shift.endTime}`],
+            [
+              "Số người",
+              `${shift.occupied}/${shift.maxStaff} (còn ${shift.remaining})`,
+            ],
+            ["Lương ca", `${shift.wage.toLocaleString("vi-VN")} VND`],
+          ].map(([label, value]) => (
+            <div key={label} className="rounded-xl bg-gray-50 p-3">
+              <p className="text-[10px] font-semibold text-(--color-text-muted) uppercase">
+                {label}
+              </p>
+              <p className="text-foreground mt-1 text-sm font-bold">{value}</p>
+            </div>
+          ))}
         </div>
 
-        {/* Registered staff */}
         <div>
           <p className="mb-2 text-xs font-semibold text-(--color-text-secondary)">
-            Nhân viên đã đăng ký ({shift.registeredStaff.length}/
-            {shift.maxStaff})
+            Nhân viên trong ca
           </p>
-          {shift.registeredStaff.length === 0 ? (
+          {shift.assignments.length === 0 ? (
             <p className="text-xs text-(--color-text-muted) italic">
               Chưa có ai đăng ký
             </p>
           ) : (
-            <div className="space-y-2">
-              {shift.registeredStaff.map((staff) => (
-                <div
-                  key={staff.id}
-                  className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2"
-                >
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-(--color-primary)/10">
-                      <i className="fa-solid fa-user text-[10px] text-(--color-primary)"></i>
+            <ul className="space-y-2">
+              {shift.assignments.map((a) => {
+                const tag = ASSIGNMENT_LABEL[a.status];
+                return (
+                  <li key={a.id} className="rounded-xl bg-gray-50 px-3 py-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-foreground text-sm font-medium">
+                          {a.staffName}
+                        </span>
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${tag.cls}`}
+                        >
+                          {tag.label}
+                        </span>
+                      </div>
+                      {isManager && (
+                        <div className="flex flex-wrap gap-1">
+                          {a.status === "LEAVE_REQUESTED" && !started && (
+                            <>
+                              <button
+                                type="button"
+                                disabled={busy}
+                                className={`${btn} bg-green-100 text-green-800 hover:bg-green-200`}
+                                onClick={() =>
+                                  act(
+                                    () => ctx.decideLeave(a.id, true),
+                                    "Đã duyệt nghỉ.",
+                                  )
+                                }
+                              >
+                                Duyệt
+                              </button>
+                              <button
+                                type="button"
+                                disabled={busy}
+                                className={`${btn} bg-gray-200 text-gray-700 hover:bg-gray-300`}
+                                onClick={() =>
+                                  act(
+                                    () => ctx.decideLeave(a.id, false),
+                                    "Đã từ chối yêu cầu nghỉ.",
+                                  )
+                                }
+                              >
+                                Từ chối
+                              </button>
+                            </>
+                          )}
+                          {started &&
+                            ["REGISTERED", "ATTENDED", "ABSENT"].includes(
+                              a.status,
+                            ) && (
+                              <>
+                                <button
+                                  type="button"
+                                  disabled={busy}
+                                  className={`${btn} bg-green-100 text-green-800 hover:bg-green-200`}
+                                  onClick={() =>
+                                    act(
+                                      () =>
+                                        ctx.markAttendance(a.id, "ATTENDED"),
+                                      "Đã chấm có mặt.",
+                                    )
+                                  }
+                                >
+                                  Có mặt
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={busy}
+                                  className={`${btn} bg-red-100 text-red-700 hover:bg-red-200`}
+                                  onClick={() =>
+                                    act(
+                                      () => ctx.markAttendance(a.id, "ABSENT"),
+                                      "Đã chấm vắng mặt.",
+                                    )
+                                  }
+                                >
+                                  Vắng
+                                </button>
+                              </>
+                            )}
+                          {!started && isSeatHolder(a.status) && (
+                            <button
+                              type="button"
+                              disabled={busy}
+                              className={`${btn} bg-transparent text-red-500 hover:bg-red-50`}
+                              onClick={() =>
+                                act(
+                                  () => ctx.removeAssignment(a.id),
+                                  "Đã gỡ nhân viên khỏi ca và gửi thông báo.",
+                                )
+                              }
+                            >
+                              <i className="fa-solid fa-user-minus mr-1"></i>Gỡ
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
-                    <span className="text-foreground text-sm font-medium">
-                      {staff.name}
-                    </span>
-                  </div>
-                  {isManager && (
-                    <button
-                      type="button"
-                      onClick={() => handleManagerUnregister(staff.id)}
-                      className="cursor-pointer rounded-lg border-none bg-transparent px-2 py-1 text-xs text-red-500 transition hover:bg-red-50"
-                    >
-                      <i className="fa-solid fa-user-minus mr-1"></i>
-                      Xóa
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
+                    {a.leaveReason && a.status !== "REGISTERED" && (
+                      <p className="mt-1 text-xs text-(--color-text-muted)">
+                        Lý do nghỉ: {a.leaveReason}
+                      </p>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
           )}
         </div>
 
-        {/* Feedback messages */}
+        {showLeaveForm && mine?.status === "REGISTERED" && (
+          <div className="space-y-2 rounded-xl border border-amber-200 bg-amber-50 p-3">
+            <label
+              htmlFor="leave-reason"
+              className="text-xs font-semibold text-amber-900"
+            >
+              Lý do xin nghỉ
+            </label>
+            <textarea
+              id="leave-reason"
+              rows={2}
+              value={leaveReason}
+              onChange={(e) => setLeaveReason(e.target.value)}
+              className="w-full rounded-lg border border-amber-200 bg-white px-3 py-2 text-sm outline-none"
+              placeholder="Ví dụ: thi cuối kỳ"
+            />
+            <button
+              type="button"
+              disabled={busy || !leaveReason.trim()}
+              onClick={() =>
+                act(
+                  () => ctx.requestLeave(mine.id, leaveReason),
+                  "Đã gửi yêu cầu nghỉ, chờ quản lý duyệt.",
+                  () => setShowLeaveForm(false),
+                )
+              }
+              className="w-full cursor-pointer rounded-lg border-none bg-amber-500 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
+            >
+              Gửi yêu cầu nghỉ
+            </button>
+          </div>
+        )}
+
+        {showCancelForm && (
+          <div className="space-y-2 rounded-xl border border-red-200 bg-red-50 p-3">
+            <label
+              htmlFor="cancel-reason"
+              className="text-xs font-semibold text-red-800"
+            >
+              Lý do huỷ ca (gửi tới nhân viên trong ca)
+            </label>
+            <textarea
+              id="cancel-reason"
+              rows={2}
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+              className="w-full rounded-lg border border-red-200 bg-white px-3 py-2 text-sm outline-none"
+            />
+            <button
+              type="button"
+              disabled={busy || !cancelReason.trim()}
+              onClick={() =>
+                act(
+                  () => ctx.cancelShift(shift.id, cancelReason, shift.version),
+                  "Đã huỷ ca.",
+                  onClose,
+                )
+              }
+              className="w-full cursor-pointer rounded-lg border-none bg-red-600 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
+            >
+              Xác nhận huỷ ca
+            </button>
+          </div>
+        )}
+
         {error && (
-          <div className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div
+            role="alert"
+            className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700"
+          >
             <i className="fa-solid fa-circle-exclamation mr-2"></i>
             {error}
           </div>
         )}
         {success && (
-          <div className="rounded-xl bg-green-50 px-4 py-3 text-sm text-green-700">
+          <div
+            role="status"
+            className="rounded-xl bg-green-50 px-4 py-3 text-sm text-green-700"
+          >
             <i className="fa-solid fa-circle-check mr-2"></i>
             {success}
           </div>
         )}
       </div>
 
-      {/* Footer actions */}
-      <div className="flex gap-2 border-t border-(--color-border-light) px-5 py-4">
-        {!isRegistered &&
-          !isFull &&
-          shift.status !== "approved_leave" &&
-          shift.status !== "absent" && (
-            <button
-              type="button"
-              onClick={handleRegister}
-              className="flex-1 cursor-pointer rounded-xl border-none bg-(--color-primary) px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
-            >
-              <i className="fa-solid fa-calendar-plus mr-2"></i>
-              Đăng ký ca
-            </button>
-          )}
-        {isRegistered && (
+      <div className="flex flex-wrap gap-2 border-t border-(--color-border-light) px-5 py-4">
+        {!mine && !started && shift.remaining > 0 && (
           <button
             type="button"
-            onClick={handleUnregister}
-            className="flex-1 cursor-pointer rounded-xl border border-red-200 bg-transparent px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+            disabled={busy}
+            onClick={() =>
+              act(() => ctx.register(shift.id), "Đăng ký ca thành công!")
+            }
+            className="flex-1 cursor-pointer rounded-xl border-none bg-(--color-primary) px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
           >
-            <i className="fa-solid fa-calendar-minus mr-2"></i>
-            Hủy đăng ký
+            <i className="fa-solid fa-calendar-plus mr-2"></i>Đăng ký ca
           </button>
         )}
-        {isManager && (
-          <button
-            type="button"
-            onClick={handleDelete}
-            className="cursor-pointer rounded-xl border border-red-200 bg-transparent px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50"
-          >
-            <i className="fa-solid fa-trash mr-2"></i>
-            Xóa ca
-          </button>
+        {mine?.status === "REGISTERED" && !started && (
+          <>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() =>
+                act(() => ctx.unregister(shift.id), "Đã huỷ đăng ký ca.")
+              }
+              className="flex-1 cursor-pointer rounded-xl border border-red-200 bg-transparent px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+            >
+              <i className="fa-solid fa-calendar-minus mr-2"></i>Huỷ đăng ký
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowLeaveForm((v) => !v)}
+              className="cursor-pointer rounded-xl border border-amber-200 bg-transparent px-4 py-2.5 text-sm font-semibold text-amber-700 transition hover:bg-amber-50"
+            >
+              Xin nghỉ
+            </button>
+          </>
+        )}
+        {isManager && !started && (
+          <>
+            <button
+              type="button"
+              onClick={() => onEdit(shift)}
+              className="cursor-pointer rounded-xl border border-(--color-border-light) bg-transparent px-4 py-2.5 text-sm font-semibold text-(--color-text-secondary) transition hover:bg-gray-50"
+            >
+              <i className="fa-solid fa-pen mr-2"></i>Sửa ca
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowCancelForm((v) => !v)}
+              className="cursor-pointer rounded-xl border border-red-200 bg-transparent px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+            >
+              <i className="fa-solid fa-ban mr-2"></i>Huỷ ca
+            </button>
+          </>
         )}
         <button
           type="button"

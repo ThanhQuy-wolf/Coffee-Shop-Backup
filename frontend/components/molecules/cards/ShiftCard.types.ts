@@ -1,7 +1,7 @@
-import type { ShiftSlot } from "@/lib/types";
+import type { ShiftView } from "@/lib/contexts/shift-context";
 
 export interface ShiftCardProps {
-  shift: ShiftSlot;
+  shift: ShiftView;
   compact?: boolean;
-  onClick?: (shift: ShiftSlot) => void;
+  onClick?: (shift: ShiftView) => void;
 }

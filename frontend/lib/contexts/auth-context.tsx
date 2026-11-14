@@ -1,10 +1,10 @@
 "use client";
 
-import { ReactNode, createContext, useContext, useState } from "react";
+import { ReactNode, createContext, useContext } from "react";
 
 import { useHydrated, useLocalStorage } from "../hooks/use-local-storage";
-import { loginRequest } from "../services";
-import type { User } from "../types";
+import { authService, setAccessToken } from "../services";
+import type { AuthSession, User, UserRole } from "../types";
 
 interface AuthContextType {
   user: User | null;
@@ -13,65 +13,74 @@ interface AuthContextType {
    * Guards must wait for this before deciding the user is logged out.
    */
   isReady: boolean;
-  login: (username: string, password: string) => Promise<boolean>;
+  loginCustomer: (phone: string, password: string) => Promise<User>;
+  loginStaff: (username: string, password: string) => Promise<User>;
+  /** Store a session returned by register (A-4) */
+  startSession: (session: AuthSession) => void;
   logout: () => void;
-  registerPhone: string | null;
-  setRegisterPhone: (phone: string | null) => void;
-  completeRegistration: (phone: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const STORAGE_KEY = "coffee-shop-user";
+const STORAGE_KEY = "coffee-shop-session";
 
-function parseUser(v: unknown): User | null {
-  if (v && typeof v === "object" && "id" in v && "role" in v) return v as User;
+/** FR-04: where each role lands after logging in */
+export function homePathFor(role: UserRole): string {
+  if (role === "MANAGER") return "/manager";
+  if (role === "STAFF") return "/staff/orders";
+  return "/feed";
+}
+
+function parseSession(v: unknown): AuthSession | null {
+  if (v && typeof v === "object" && "accessToken" in v && "user" in v)
+    return v as AuthSession;
   return null;
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useLocalStorage<User | null>(
+  const [session, setSession] = useLocalStorage<AuthSession | null>(
     STORAGE_KEY,
     null,
-    parseUser,
+    parseSession,
   );
   const isReady = useHydrated();
-  const [registerPhone, setRegisterPhone] = useState<string | null>(null);
 
-  const login = async (phone: string, password: string): Promise<boolean> => {
-    try {
-      setUser(await loginRequest(phone, password));
-      return true;
-    } catch (error) {
-      console.error("Đăng nhập thất bại:", error);
-      return false;
-    }
+  // Set during render, not in an effect, so children's effects already send
+  // the token on their first request.
+  setAccessToken(session?.accessToken ?? null);
+
+  const startSession = (next: AuthSession) => {
+    setAccessToken(next.accessToken);
+    setSession(next);
   };
 
-  const logout = () => setUser(null);
+  const loginCustomer = async (phone: string, password: string) => {
+    const next = await authService.loginCustomer(phone, password);
+    startSession(next);
+    return next.user;
+  };
 
-  // Registration is still local-only (no backend endpoint yet).
-  const completeRegistration = (phone: string) => {
-    setUser({
-      id: Date.now(),
-      name: "Khách hàng",
-      role: "customer",
-      avatar: null,
-      phone,
-    });
-    setRegisterPhone(null);
+  const loginStaff = async (username: string, password: string) => {
+    const next = await authService.loginStaff(username, password);
+    startSession(next);
+    return next.user;
+  };
+
+  const logout = () => {
+    void authService.logout();
+    setAccessToken(null);
+    setSession(null);
   };
 
   return (
     <AuthContext.Provider
       value={{
-        user,
+        user: session?.user ?? null,
         isReady,
-        login,
+        loginCustomer,
+        loginStaff,
+        startSession,
         logout,
-        registerPhone,
-        setRegisterPhone,
-        completeRegistration,
       }}
     >
       {children}

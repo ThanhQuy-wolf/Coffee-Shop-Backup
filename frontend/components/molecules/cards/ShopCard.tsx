@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import type { ShopCardProps } from "./Card.types";
 
-export default function ShopCard({ name, address, image }: ShopCardProps) {
+export default function ShopCard({ id, name, address, image }: ShopCardProps) {
   return (
     <div className="overflow-hidden rounded-2xl border border-(--color-border) bg-(--color-bg-card) shadow-[0_2px_12px_var(--color-shadow-sm)] transition-all duration-250 hover:-translate-y-1 hover:shadow-[0_4px_20px_var(--color-shadow-md)]">
       {/* Shop image */}
@@ -24,7 +24,7 @@ export default function ShopCard({ name, address, image }: ShopCardProps) {
             {name}
           </h3>
           <Link
-            href="/"
+            href={`/shops/${id}`}
             className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-(--color-primary) px-3.5 py-2 text-xs font-semibold text-white no-underline transition-all duration-150 hover:bg-(--color-primary-dark) active:scale-95"
           >
             <i className="fa-solid fa-book-open text-[10px]"></i>

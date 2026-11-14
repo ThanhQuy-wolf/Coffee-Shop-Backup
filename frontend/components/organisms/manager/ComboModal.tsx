@@ -1,14 +1,12 @@
 "use client";
 
 import { Modal, ModalHeader } from "@/components/molecules/modal";
-import type { Combo } from "@/lib/types";
+import type { ComboInput } from "@/lib/types";
+import { formatVND } from "@/lib/utils/currency";
 import { useState } from "react";
 
 import type { ComboModalProps } from "./Manager.types";
-
-function formatPrice(price: number) {
-  return price.toLocaleString("vi-VN") + "đ";
-}
+import { inputCls, useSaveForm } from "./useSaveForm";
 
 export default function ComboModal({
   combo,
@@ -17,14 +15,15 @@ export default function ComboModal({
   onClose,
 }: ComboModalProps) {
   const isEdit = combo !== null;
-  const [form, setForm] = useState<Omit<Combo, "id">>({
+  const [form, setForm] = useState<ComboInput>({
     name: combo?.name ?? "",
     description: combo?.description ?? "",
     price: combo?.price ?? 0,
-    image: combo?.image ?? "/imgs/products/placeholder.jpg",
+    imageUrl: combo?.imageUrl ?? "/imgs/products/placeholder.jpg",
     items: combo?.items ?? [],
-    available: combo?.available ?? true,
+    isAvailable: combo?.isAvailable ?? true,
   });
+  const { submit, error, saving } = useSaveForm(onSave, onClose);
 
   const updateItemQty = (productId: number, qty: number) => {
     if (qty <= 0) {
@@ -54,18 +53,13 @@ export default function ComboModal({
   const getQty = (productId: number) =>
     form.items.find((i) => i.productId === productId)?.quantity ?? 0;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (form.items.length === 0) return;
-    if (isEdit && combo) {
-      onSave({ ...form, id: combo.id });
-    } else {
-      onSave(form);
-    }
-  };
-
-  const inputCls =
-    "w-full rounded-xl border border-(--color-border) bg-white px-3 py-2 text-sm transition outline-none focus:border-(--color-primary) focus:ring-2 focus:ring-(--color-primary)/20";
+  // BR-13: at least 2 units in total
+  const totalQty = form.items.reduce((s, i) => s + i.quantity, 0);
+  const partsTotal = form.items.reduce(
+    (s, i) =>
+      s + (products.find((p) => p.id === i.productId)?.price ?? 0) * i.quantity,
+    0,
+  );
 
   return (
     <Modal onClose={onClose} className="flex max-h-[90vh] max-w-xl flex-col">
@@ -75,7 +69,7 @@ export default function ComboModal({
       />
 
       <form
-        onSubmit={handleSubmit}
+        onSubmit={submit(() => ({ ...form, name: form.name.trim() }))}
         className="flex flex-1 flex-col overflow-hidden"
       >
         <div className="flex-1 space-y-4 overflow-y-auto px-6 py-5">
@@ -129,9 +123,9 @@ export default function ComboModal({
           <div>
             <label className="mb-2 block text-sm font-medium text-(--color-text-secondary)">
               Món trong combo{" "}
-              {form.items.length === 0 && (
+              {totalQty < 2 && (
                 <span className="text-xs text-red-500">
-                  (Chọn ít nhất 1 món)
+                  (ít nhất 2 phần, BR-13)
                 </span>
               )}
             </label>
@@ -147,7 +141,8 @@ export default function ComboModal({
                       {p.name}
                     </span>
                     <span className="mr-3 text-xs text-(--color-text-muted)">
-                      {formatPrice(p.price)}
+                      {formatVND(p.price)}
+                      {!p.isAvailable && " · tạm ngừng"}
                     </span>
                     <div className="flex items-center gap-1">
                       <button
@@ -179,28 +174,47 @@ export default function ComboModal({
 
           <div className="bg-background flex items-center justify-between rounded-xl border border-(--color-border-light) px-4 py-3">
             <div>
-              <p className="text-foreground text-sm font-medium">Trạng thái</p>
+              <p className="text-foreground text-sm font-medium">Đang bán</p>
               <p className="text-xs text-(--color-text-muted)">
-                {form.available ? "Còn hàng" : "Tạm hết"}
+                Combo tự ẩn khi một món thành phần ngừng bán
               </p>
             </div>
             <button
               title="Chuyển đổi trạng thái"
               type="button"
-              onClick={() => setForm({ ...form, available: !form.available })}
+              aria-pressed={form.isAvailable}
+              onClick={() =>
+                setForm({ ...form, isAvailable: !form.isAvailable })
+              }
               className={`relative h-6 w-11 cursor-pointer rounded-full border-none transition-colors duration-200 ${
-                form.available ? "bg-(--color-primary)" : "bg-gray-300"
+                form.isAvailable ? "bg-(--color-primary)" : "bg-gray-300"
               }`}
             >
               <span
                 className={`absolute top-0.5 left-0 h-5 w-5 rounded-full bg-white shadow transition-transform duration-200 ${
-                  form.available ? "translate-x-5.5" : "translate-x-0.5"
+                  form.isAvailable ? "translate-x-5.5" : "translate-x-0.5"
                 }`}
               />
             </button>
           </div>
         </div>
 
+        {partsTotal > 0 && (
+          <p className="px-6 pb-2 text-xs text-(--color-text-muted)">
+            Mua lẻ: {formatVND(partsTotal)}
+            {form.price > 0 &&
+              form.price < partsTotal &&
+              ` · khách tiết kiệm ${formatVND(partsTotal - form.price)}`}
+          </p>
+        )}
+        {error && (
+          <p
+            role="alert"
+            className="mx-6 mb-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
+          >
+            {error}
+          </p>
+        )}
         <div className="flex gap-3 border-t border-(--color-border-light) px-6 py-4">
           <button
             type="button"
@@ -211,7 +225,7 @@ export default function ComboModal({
           </button>
           <button
             type="submit"
-            disabled={form.items.length === 0}
+            disabled={totalQty < 2 || saving}
             className="flex-1 cursor-pointer rounded-xl border-none bg-(--color-primary) px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-(--color-primary-dark) active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isEdit ? "Lưu thay đổi" : "Thêm combo"}

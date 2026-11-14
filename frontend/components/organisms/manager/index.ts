@@ -13,3 +13,5 @@ export type {
   DeleteConfirmProps,
   StatusBadgeProps,
 } from "./Manager.types";
+export { default as ShopInfoTab } from "./ShopInfoTab";
+export { default as ReviewsTab } from "./ReviewsTab";

@@ -1,28 +1,27 @@
-import { formatCurrency } from "@/lib/utils/analytics";
+import type { MetricComparison } from "@/lib/types";
 
 export interface SummaryCardProps {
   icon: string;
   title: string;
   value: string;
-  change: number;
-  changePercent: number;
-  isPositive: boolean;
   subtitle?: string;
+  /** Omit for metrics that are not compared with the previous period */
+  comparison?: MetricComparison;
+  formatDelta?: (n: number) => string;
 }
 
-/**
- * Summary metric card with period-over-period comparison indicator.
- * Used in the Financial Analytics dashboard header row.
- */
+/** KPI card with the period-over-period change (RP-1). */
 export function SummaryCard({
   icon,
   title,
   value,
-  change,
-  changePercent,
-  isPositive,
   subtitle,
+  comparison,
+  formatDelta = String,
 }: SummaryCardProps) {
+  const delta = comparison ? comparison.current - comparison.previous : 0;
+  const up = delta >= 0;
+
   return (
     <div className="rounded-2xl border border-(--color-border-light) bg-(--color-bg-card) p-5 shadow-sm">
       <div className="mb-3 flex items-center gap-3">
@@ -37,25 +36,29 @@ export function SummaryCard({
       {subtitle && (
         <p className="mt-0.5 text-xs text-(--color-text-muted)">{subtitle}</p>
       )}
-      <div
-        className={`mt-3 flex items-center gap-1.5 text-sm font-medium ${
-          isPositive ? "text-green-600" : "text-red-500"
-        }`}
-      >
-        <i
-          className={`fa-solid text-xs ${
-            isPositive ? "fa-arrow-trend-up" : "fa-arrow-trend-down"
-          }`}
-        ></i>
-        <span>
-          {isPositive ? "+" : ""}
-          {changePercent.toFixed(1)}%
-        </span>
-        <span className="text-xs font-normal text-(--color-text-muted)">
-          ({isPositive ? "+" : ""}
-          {formatCurrency(change)}) so với kỳ trước
-        </span>
-      </div>
+      {comparison &&
+        (comparison.changePercent === null ? (
+          // BR-53: previous period was 0, a percentage would be meaningless
+          <p className="mt-3 text-sm text-(--color-text-muted)">
+            — Kỳ trước chưa có dữ liệu
+          </p>
+        ) : (
+          <div
+            className={`mt-3 flex items-center gap-1.5 text-sm font-medium ${up ? "text-green-600" : "text-red-500"}`}
+          >
+            <i
+              className={`fa-solid text-xs ${up ? "fa-arrow-trend-up" : "fa-arrow-trend-down"}`}
+            ></i>
+            <span>
+              {up ? "+" : ""}
+              {comparison.changePercent.toFixed(1)}%
+            </span>
+            <span className="text-xs font-normal text-(--color-text-muted)">
+              ({up ? "+" : ""}
+              {formatDelta(delta)}) so với kỳ trước
+            </span>
+          </div>
+        ))}
     </div>
   );
 }

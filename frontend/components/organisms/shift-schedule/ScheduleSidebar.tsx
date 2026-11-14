@@ -7,9 +7,8 @@ import Link from "next/link";
 /** Desktop (lg+) sidebar of the shift schedule: view switch, shortcuts, budget, user. */
 export default function ScheduleSidebar() {
   const { user, logout } = useAuth();
-  const { view, setView, goToToday, getWeeklyBudget } = useShift();
-  const isManager = user?.role === "manager";
-  const weeklyBudget = getWeeklyBudget();
+  const { view, setView, goToToday, weeklyLaborCost } = useShift();
+  const isManager = user?.role === "MANAGER";
 
   return (
     <aside className="hidden w-64 shrink-0 flex-col border-r border-(--color-border-light) bg-white shadow-sm lg:flex">
@@ -87,18 +86,22 @@ export default function ScheduleSidebar() {
           </div>
         )}
 
-        {/* Weekly budget */}
-        <div className="mt-3 border-t border-(--color-border-light) pt-3">
-          <div className="rounded-xl bg-(--color-primary)/5 p-3">
-            <p className="text-[10px] font-semibold text-(--color-text-muted) uppercase">
-              Ngân sách tuần
-            </p>
-            <p className="mt-1 text-lg font-bold text-(--color-primary)">
-              {weeklyBudget.toLocaleString("vi-VN")}
-            </p>
-            <p className="text-[10px] text-(--color-text-muted)">VND</p>
+        {/* UC-24: labour cost of the visible week (BR-52) */}
+        {isManager && weeklyLaborCost !== null && (
+          <div className="mt-3 border-t border-(--color-border-light) pt-3">
+            <div className="rounded-xl bg-(--color-primary)/5 p-3">
+              <p className="text-[10px] font-semibold text-(--color-text-muted) uppercase">
+                Chi phí nhân công tuần
+              </p>
+              <p className="mt-1 text-lg font-bold text-(--color-primary)">
+                {weeklyLaborCost.toLocaleString("vi-VN")}
+              </p>
+              <p className="text-[10px] text-(--color-text-muted)">
+                VND · trước khi chấm công là chi phí dự kiến
+              </p>
+            </div>
           </div>
-        </div>
+        )}
       </nav>
 
       {/* User info */}
@@ -111,7 +114,7 @@ export default function ScheduleSidebar() {
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-foreground truncate text-sm font-semibold">
-              {user?.name ?? "Nhân viên"}
+              {user?.fullName ?? "Nhân viên"}
             </p>
             <p className="text-xs text-(--color-text-muted)">
               {isManager ? "Quản lý" : "Nhân viên"}
@@ -120,11 +123,11 @@ export default function ScheduleSidebar() {
         </div>
         <div className="mt-1 flex gap-2 px-1">
           <Link
-            href="/"
+            href="/staff/orders"
             className="hover:bg-background flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-(--color-border-light) bg-transparent py-2 text-xs font-medium text-(--color-text-secondary) no-underline transition"
           >
-            <i className="fa-solid fa-house"></i>
-            Trang chủ
+            <i className="fa-solid fa-receipt"></i>
+            Đơn hàng
           </Link>
           <button
             type="button"

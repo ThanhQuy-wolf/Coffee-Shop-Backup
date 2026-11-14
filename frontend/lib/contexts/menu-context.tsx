@@ -2,33 +2,57 @@
 
 import { createContext, useContext, useState } from "react";
 
+import { ALL_CATEGORY_ID } from "../services/catalog";
+import type { MenuCategory } from "../types";
+
 interface MenuContextType {
-  /** Currently selected category id */
-  activeCategory: string;
-  /** Update the active category */
-  setActiveCategory: (id: string) => void;
+  /** Categories of the shop being viewed, "Tất cả" first */
+  menuCategories: MenuCategory[];
+  activeCategory: number;
+  setActiveCategory: (id: number) => void;
 }
 
 const MenuContext = createContext<MenuContextType>({
-  activeCategory: "all",
+  menuCategories: [],
+  activeCategory: ALL_CATEGORY_ID,
   setActiveCategory: () => {},
 });
 
+export function allCategory(shopId: number): MenuCategory {
+  return {
+    id: ALL_CATEGORY_ID,
+    shopId,
+    name: "Tất cả",
+    icon: "fa-solid fa-border-all",
+    sortOrder: 0,
+  };
+}
+
 /**
- * Provides shared activeCategory state to both the Header (mobile scrollable menu)
- * and the Navbar sidebar (md+), so both always reflect the same selection.
+ * Shares the selected category between the desktop sidebar and the mobile
+ * tabs of one shop's menu page.
  */
-export function MenuProvider({ children }: { children: React.ReactNode }) {
-  const [activeCategory, setActiveCategory] = useState("all");
+export function MenuProvider({
+  categories,
+  children,
+}: {
+  categories: MenuCategory[];
+  children: React.ReactNode;
+}) {
+  const [activeCategory, setActiveCategory] = useState(ALL_CATEGORY_ID);
+  const menuCategories = categories.length
+    ? [allCategory(categories[0].shopId), ...categories]
+    : [];
 
   return (
-    <MenuContext.Provider value={{ activeCategory, setActiveCategory }}>
+    <MenuContext.Provider
+      value={{ menuCategories, activeCategory, setActiveCategory }}
+    >
       {children}
     </MenuContext.Provider>
   );
 }
 
-/** Consume the shared menu state anywhere inside MenuProvider */
 export function useMenu() {
   return useContext(MenuContext);
 }

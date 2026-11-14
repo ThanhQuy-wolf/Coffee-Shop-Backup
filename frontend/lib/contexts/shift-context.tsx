@@ -5,29 +5,79 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
+  useMemo,
   useState,
 } from "react";
 
-import { getShiftSlots } from "../services/shifts";
-import type { ShiftSlot, ShiftStatus } from "../types";
+import { analyticsService } from "../services/analytics";
+import { OCCUPYING_STATUSES, shiftService } from "../services/shifts";
+import type { Department, Shift, ShiftInput, User } from "../types";
 import {
   SCHEDULE_TODAY,
-  formatDateISO as formatDate,
+  formatDateISO,
+  getMonday,
   getWeekDates as getWeekDatesOf,
   timeToMinutes,
 } from "../utils/date";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
+import { errorMessage } from "../utils/errors";
 
 export type ScheduleView = "week" | "month";
 
+/** How a shift looks to the person viewing the schedule */
+export type ShiftViewStatus =
+  | "available"
+  | "full"
+  | "registered"
+  | "leave_requested"
+  | "approved_leave"
+  | "attended"
+  | "absent";
+
+export interface ShiftView extends Shift {
+  view: ShiftViewStatus;
+  durationHours: number;
+}
+
+function toView(shift: Shift, user: User | null): ShiftView {
+  const mine = shift.assignments.find((a) => a.staffId === user?.id);
+  let view: ShiftViewStatus = shift.remaining > 0 ? "available" : "full";
+  if (mine) {
+    view = (
+      {
+        REGISTERED: "registered",
+        LEAVE_REQUESTED: "leave_requested",
+        LEAVE_APPROVED: "approved_leave",
+        ATTENDED: "attended",
+        ABSENT: "absent",
+        CANCELLED: view,
+      } as const
+    )[mine.status];
+  } else if (
+    user?.role === "MANAGER" &&
+    shift.assignments.some((a) => a.status === "LEAVE_REQUESTED")
+  ) {
+    view = "leave_requested";
+  }
+  return {
+    ...shift,
+    view,
+    durationHours:
+      (timeToMinutes(shift.endTime) - timeToMinutes(shift.startTime)) / 60,
+  };
+}
+
+export const isSeatHolder = (status: Shift["assignments"][number]["status"]) =>
+  OCCUPYING_STATUSES.includes(status);
+
 interface ShiftContextType {
-  // Data
-  shifts: ShiftSlot[];
+  shifts: ShiftView[];
+  departments: Department[];
+  isLoading: boolean;
+  loadError: string | null;
   view: ScheduleView;
   setView: (view: ScheduleView) => void;
 
-  // Current date navigation
   currentDate: Date;
   goToNextWeek: () => void;
   goToPrevWeek: () => void;
@@ -35,263 +85,158 @@ interface ShiftContextType {
   goToPrevMonth: () => void;
   goToToday: () => void;
 
-  // Shift actions
-  registerShift: (
-    shiftId: string,
-    staffId: number,
-    staffName: string,
-  ) => { success: boolean; error?: string };
-  unregisterShift: (shiftId: string, staffId: number) => void;
-  createShift: (shift: Omit<ShiftSlot, "id">) => void;
-  updateShift: (shift: ShiftSlot) => void;
-  deleteShift: (shiftId: string) => void;
+  /** Each action rejects with the ApiError; the schedule is reloaded either way. */
+  register: (shiftId: number) => Promise<void>;
+  unregister: (shiftId: number) => Promise<void>;
+  requestLeave: (assignmentId: number, reason: string) => Promise<void>;
+  decideLeave: (assignmentId: number, approve: boolean) => Promise<void>;
+  markAttendance: (
+    assignmentId: number,
+    status: "ATTENDED" | "ABSENT",
+  ) => Promise<void>;
+  removeAssignment: (assignmentId: number) => Promise<void>;
+  createShift: (input: ShiftInput) => Promise<void>;
+  updateShift: (
+    id: number,
+    input: ShiftInput,
+    version: number,
+  ) => Promise<void>;
+  cancelShift: (id: number, reason: string, version: number) => Promise<void>;
 
-  // Helpers
-  getShiftsForDate: (date: string) => ShiftSlot[];
-  getShiftsForWeek: (weekStart: Date) => ShiftSlot[];
+  getShift: (id: number) => ShiftView | undefined;
+  getShiftsForDate: (date: string) => ShiftView[];
   getWeekDates: () => Date[];
-  hasConflict: (
-    date: string,
-    startTime: string,
-    endTime: string,
-    staffId: number,
-    excludeShiftId?: string,
-  ) => boolean;
-  getWeeklyBudget: () => number;
+  /** Labour cost of the visible week (BR-52), managers only */
+  weeklyLaborCost: number | null;
 }
-
-// ─── Context ──────────────────────────────────────────────────────────────────
 
 const ShiftContext = createContext<ShiftContextType | undefined>(undefined);
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function timesOverlap(
-  start1: string,
-  end1: string,
-  start2: string,
-  end2: string,
-): boolean {
-  const s1 = timeToMinutes(start1);
-  const e1 = timeToMinutes(end1);
-  const s2 = timeToMinutes(start2);
-  const e2 = timeToMinutes(end2);
-  return s1 < e2 && s2 < e1;
+/** Visible range: the whole month plus the weeks that overlap it. */
+function rangeFor(date: Date) {
+  const first = getMonday(new Date(date.getFullYear(), date.getMonth(), 1));
+  const last = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+  const lastSunday = new Date(getMonday(last));
+  lastSunday.setDate(lastSunday.getDate() + 6);
+  const weekEnd = new Date(getMonday(date));
+  weekEnd.setDate(weekEnd.getDate() + 6);
+  return {
+    from: formatDateISO(first < getMonday(date) ? first : getMonday(date)),
+    to: formatDateISO(lastSunday > weekEnd ? lastSunday : weekEnd),
+  };
 }
 
-// ─── Provider ─────────────────────────────────────────────────────────────────
-
-export function ShiftProvider({ children }: { children: ReactNode }) {
-  const [shifts, setShifts] = useState<ShiftSlot[]>(getShiftSlots);
+export function ShiftProvider({
+  user,
+  children,
+}: {
+  user: User;
+  children: ReactNode;
+}) {
+  const shopId = user.shopId!;
+  const isManager = user.role === "MANAGER";
+  const [rawShifts, setRawShifts] = useState<Shift[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [weeklyLaborCost, setWeeklyLaborCost] = useState<number | null>(null);
   const [view, setView] = useState<ScheduleView>("week");
   const [currentDate, setCurrentDate] = useState<Date>(
-    new Date(SCHEDULE_TODAY),
+    () => new Date(SCHEDULE_TODAY),
   );
 
-  // ── Navigation ──────────────────────────────────────────────────────────
+  const { from, to } = rangeFor(currentDate);
+  const weekStartIso = formatDateISO(getMonday(currentDate));
 
-  const goToNextWeek = useCallback(() => {
-    setCurrentDate((prev) => {
-      const next = new Date(prev);
-      next.setDate(next.getDate() + 7);
-      return next;
-    });
-  }, []);
-
-  const goToPrevWeek = useCallback(() => {
-    setCurrentDate((prev) => {
-      const next = new Date(prev);
-      next.setDate(next.getDate() - 7);
-      return next;
-    });
-  }, []);
-
-  const goToNextMonth = useCallback(() => {
-    setCurrentDate((prev) => {
-      const next = new Date(prev);
-      next.setMonth(next.getMonth() + 1);
-      return next;
-    });
-  }, []);
-
-  const goToPrevMonth = useCallback(() => {
-    setCurrentDate((prev) => {
-      const next = new Date(prev);
-      next.setMonth(next.getMonth() - 1);
-      return next;
-    });
-  }, []);
-
-  const goToToday = useCallback(() => {
-    setCurrentDate(new Date(SCHEDULE_TODAY));
-  }, []);
-
-  // ── Query helpers ───────────────────────────────────────────────────────
-
-  const getWeekDates = useCallback((): Date[] => {
-    return getWeekDatesOf(currentDate);
-  }, [currentDate]);
-
-  const getShiftsForDate = useCallback(
-    (date: string): ShiftSlot[] => {
-      return shifts.filter((s) => s.date === date);
-    },
-    [shifts],
-  );
-
-  const getShiftsForWeek = useCallback(
-    (weekStart: Date): ShiftSlot[] => {
-      const dates = Array.from({ length: 7 }, (_, i) => {
-        const d = new Date(weekStart);
-        d.setDate(weekStart.getDate() + i);
-        return formatDate(d);
-      });
-      return shifts.filter((s) => dates.includes(s.date));
-    },
-    [shifts],
-  );
-
-  const hasConflict = useCallback(
-    (
-      date: string,
-      startTime: string,
-      endTime: string,
-      staffId: number,
-      excludeShiftId?: string,
-    ): boolean => {
-      return shifts.some(
-        (s) =>
-          s.date === date &&
-          s.id !== excludeShiftId &&
-          s.registeredStaff.some((rs) => rs.id === staffId) &&
-          timesOverlap(startTime, endTime, s.startTime, s.endTime),
-      );
-    },
-    [shifts],
-  );
-
-  const getWeeklyBudget = useCallback((): number => {
-    const weekDates = getWeekDates().map(formatDate);
-    return shifts
-      .filter((s) => weekDates.includes(s.date) && s.registeredStaff.length > 0)
-      .reduce((sum, s) => sum + s.wage * s.registeredStaff.length, 0);
-  }, [shifts, getWeekDates]);
-
-  // ── Shift actions ───────────────────────────────────────────────────────
-
-  const registerShift = useCallback(
-    (
-      shiftId: string,
-      staffId: number,
-      staffName: string,
-    ): { success: boolean; error?: string } => {
-      const shift = shifts.find((s) => s.id === shiftId);
-      if (!shift) return { success: false, error: "Ca làm không tồn tại." };
-
-      if (shift.registeredStaff.length >= shift.maxStaff) {
-        return { success: false, error: "Ca làm đã đủ người." };
+  const reload = useCallback(async () => {
+    try {
+      const [shifts, deps] = await Promise.all([
+        shiftService.listShifts(shopId, { from, to }),
+        shiftService.listDepartments(shopId),
+      ]);
+      setRawShifts(shifts);
+      setDepartments(deps);
+      setLoadError(null);
+      if (isManager) {
+        const report = await analyticsService.getLaborCost(
+          shopId,
+          new Date(`${weekStartIso}T00:00:00`),
+        );
+        setWeeklyLaborCost(report.total);
       }
+    } catch (err) {
+      setLoadError(errorMessage(err));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [shopId, from, to, isManager, weekStartIso]);
 
-      if (shift.registeredStaff.some((rs) => rs.id === staffId)) {
-        return { success: false, error: "Bạn đã đăng ký ca này rồi." };
-      }
+  useEffect(() => {
+    void reload();
+  }, [reload]);
 
-      if (
-        hasConflict(
-          shift.date,
-          shift.startTime,
-          shift.endTime,
-          staffId,
-          shiftId,
-        )
-      ) {
-        return {
-          success: false,
-          error: "Xung đột lịch! Bạn đã có ca làm trùng giờ trong ngày này.",
-        };
-      }
+  const shift = (days: number, months = 0) =>
+    setCurrentDate((prev) => {
+      const next = new Date(prev);
+      next.setMonth(next.getMonth() + months);
+      next.setDate(next.getDate() + days);
+      return next;
+    });
 
-      setShifts((prev) =>
-        prev.map((s) =>
-          s.id === shiftId
-            ? {
-                ...s,
-                registeredStaff: [
-                  ...s.registeredStaff,
-                  { id: staffId, name: staffName },
-                ],
-                status: "registered" as ShiftStatus,
-              }
-            : s,
-        ),
-      );
-
-      return { success: true };
-    },
-    [shifts, hasConflict],
+  const shifts = useMemo(
+    () =>
+      rawShifts.filter((s) => s.status === "OPEN").map((s) => toView(s, user)),
+    [rawShifts, user],
   );
 
-  const unregisterShift = useCallback((shiftId: string, staffId: number) => {
-    setShifts((prev) =>
-      prev.map((s) => {
-        if (s.id !== shiftId) return s;
-        const updated = s.registeredStaff.filter((rs) => rs.id !== staffId);
-        return {
-          ...s,
-          registeredStaff: updated,
-          status:
-            updated.length === 0 ? ("available" as ShiftStatus) : s.status,
-        };
-      }),
-    );
-  }, []);
-
-  const createShift = useCallback((shift: Omit<ShiftSlot, "id">) => {
-    const newShift: ShiftSlot = {
-      ...shift,
-      id: `shift_${Date.now()}`,
+  const run =
+    <A extends unknown[]>(fn: (...args: A) => Promise<unknown>) =>
+    async (...args: A) => {
+      try {
+        await fn(...args);
+      } finally {
+        await reload();
+      }
     };
-    setShifts((prev) => [...prev, newShift]);
-  }, []);
 
-  const updateShift = useCallback((shift: ShiftSlot) => {
-    setShifts((prev) => prev.map((s) => (s.id === shift.id ? shift : s)));
-  }, []);
-
-  const deleteShift = useCallback((shiftId: string) => {
-    setShifts((prev) => prev.filter((s) => s.id !== shiftId));
-  }, []);
+  const value: ShiftContextType = {
+    shifts,
+    departments,
+    isLoading,
+    loadError,
+    view,
+    setView,
+    currentDate,
+    goToNextWeek: () => shift(7),
+    goToPrevWeek: () => shift(-7),
+    goToNextMonth: () => shift(0, 1),
+    goToPrevMonth: () => shift(0, -1),
+    goToToday: () => setCurrentDate(new Date(SCHEDULE_TODAY)),
+    register: run(shiftService.register),
+    unregister: run(shiftService.unregister),
+    requestLeave: run(shiftService.requestLeave),
+    decideLeave: run(shiftService.decideLeave),
+    markAttendance: run(shiftService.markAttendance),
+    removeAssignment: run(shiftService.removeAssignment),
+    createShift: run((input: ShiftInput) =>
+      shiftService.createShift(shopId, input),
+    ),
+    updateShift: run((id: number, input: ShiftInput, version: number) =>
+      shiftService.updateShift(id, { ...input, version }),
+    ),
+    cancelShift: run((id: number, reason: string, version: number) =>
+      shiftService.cancelShift(id, { reason, version }),
+    ),
+    getShift: (id) => shifts.find((s) => s.id === id),
+    getShiftsForDate: (date) => shifts.filter((s) => s.date === date),
+    getWeekDates: () => getWeekDatesOf(currentDate),
+    weeklyLaborCost,
+  };
 
   return (
-    <ShiftContext.Provider
-      value={{
-        shifts,
-        view,
-        setView,
-        currentDate,
-        goToNextWeek,
-        goToPrevWeek,
-        goToNextMonth,
-        goToPrevMonth,
-        goToToday,
-        registerShift,
-        unregisterShift,
-        createShift,
-        updateShift,
-        deleteShift,
-        getShiftsForDate,
-        getShiftsForWeek,
-        getWeekDates,
-        hasConflict,
-        getWeeklyBudget,
-      }}
-    >
-      {children}
-    </ShiftContext.Provider>
+    <ShiftContext.Provider value={value}>{children}</ShiftContext.Provider>
   );
 }
-
-// ─── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useShift() {
   const context = useContext(ShiftContext);

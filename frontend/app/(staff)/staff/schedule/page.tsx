@@ -10,92 +10,85 @@ import {
   WeeklySchedule,
 } from "@/components/organisms/shift-schedule";
 import { useAuth } from "@/lib/contexts/auth-context";
-import { useShift } from "@/lib/contexts/shift-context";
-import type { ShiftSlot } from "@/lib/types";
+import {
+  ShiftProvider,
+  type ShiftView,
+  useShift,
+} from "@/lib/contexts/shift-context";
 import { useState } from "react";
+
+type FormState = { date?: string; shift?: ShiftView } | null;
 
 export default function StaffSchedulePage() {
   const { user } = useAuth();
-  const { view } = useShift();
+  // RoleGuard in the layout guarantees a logged-in staff member here
+  return (
+    <ShiftProvider user={user!}>
+      <Schedule />
+    </ShiftProvider>
+  );
+}
 
-  const [selectedShift, setSelectedShift] = useState<ShiftSlot | null>(null);
-  const [detailOpen, setDetailOpen] = useState(false);
-  const [createOpen, setCreateOpen] = useState(false);
-  const [createDate, setCreateDate] = useState<string | undefined>();
+function Schedule() {
+  const { user } = useAuth();
+  const { view, loadError } = useShift();
 
-  const isManager = user?.role === "manager";
+  const [selectedShiftId, setSelectedShiftId] = useState<number | null>(null);
+  const [form, setForm] = useState<FormState>(null);
 
-  const handleShiftClick = (shift: ShiftSlot) => {
-    setSelectedShift(shift);
-    setDetailOpen(true);
-  };
-
-  const handleCreateShift = (date: string) => {
-    setCreateDate(date);
-    setCreateOpen(true);
-  };
-
-  const openCreateForNewShift = () => {
-    setCreateDate(undefined);
-    setCreateOpen(true);
-  };
-
-  const handleDateSelect = (date: string) => {
-    // In month view on desktop, clicking a date could open create modal for managers
-    if (isManager) {
-      setCreateDate(date);
-      setCreateOpen(true);
-    }
-  };
+  const isManager = user?.role === "MANAGER";
+  const openShift = (shift: ShiftView) => setSelectedShiftId(shift.id);
+  const openCreate = (date?: string) => setForm({ date });
 
   return (
     <div className="flex min-h-screen">
-      {/* ── Sidebar (Desktop) ── */}
       <ScheduleSidebar />
 
-      {/* ── Main content ── */}
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* Header */}
         <ScheduleHeader
-          onCreateShift={isManager ? openCreateForNewShift : undefined}
+          onCreateShift={isManager ? () => openCreate() : undefined}
         />
 
-        {/* Content */}
         <main className="flex-1 p-4 md:p-6">
-          {/* Desktop views */}
+          {loadError && (
+            <div
+              role="alert"
+              className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700"
+            >
+              {loadError}
+            </div>
+          )}
+
           <div className="hidden md:block">
             {view === "week" ? (
               <WeeklySchedule
-                onShiftClick={handleShiftClick}
-                onCreateShift={isManager ? handleCreateShift : undefined}
+                onShiftClick={openShift}
+                onCreateShift={isManager ? openCreate : undefined}
               />
             ) : (
               <MonthlyCalendar
-                onShiftClick={handleShiftClick}
-                onDateSelect={isManager ? handleDateSelect : undefined}
+                onDateSelect={isManager ? openCreate : undefined}
               />
             )}
           </div>
 
-          {/* Mobile view */}
           <div className="md:hidden">
             {view === "week" ? (
               <WeeklySchedule
-                onShiftClick={handleShiftClick}
-                onCreateShift={isManager ? handleCreateShift : undefined}
+                onShiftClick={openShift}
+                onCreateShift={isManager ? openCreate : undefined}
                 mobileCalendarHeader
               />
             ) : (
-              <MobileShiftView onShiftClick={handleShiftClick} />
+              <MobileShiftView onShiftClick={openShift} />
             )}
           </div>
 
-          {/* Mobile FAB for manager */}
           {isManager && (
             <button
               title="Tạo ca"
               type="button"
-              onClick={openCreateForNewShift}
+              onClick={() => openCreate()}
               className="fixed right-4 bottom-4 z-30 flex h-14 w-14 cursor-pointer items-center justify-center rounded-full border-none bg-(--color-primary) text-white shadow-lg transition hover:opacity-90 md:hidden"
             >
               <i className="fa-solid fa-plus text-lg"></i>
@@ -104,22 +97,24 @@ export default function StaffSchedulePage() {
         </main>
       </div>
 
-      {/* Modals */}
-      <ShiftDetailModal
-        shift={selectedShift}
-        isOpen={detailOpen}
-        onClose={() => {
-          setDetailOpen(false);
-          setSelectedShift(null);
-        }}
-      />
-      <ShiftCreateModal
-        // remount on every open so the form starts fresh with defaultDate
-        key={createOpen ? (createDate ?? "new") : "closed"}
-        isOpen={createOpen}
-        onClose={() => setCreateOpen(false)}
-        defaultDate={createDate}
-      />
+      {selectedShiftId !== null && (
+        <ShiftDetailModal
+          key={selectedShiftId}
+          shiftId={selectedShiftId}
+          onClose={() => setSelectedShiftId(null)}
+          onEdit={(shift) => {
+            setSelectedShiftId(null);
+            setForm({ shift });
+          }}
+        />
+      )}
+      {form && (
+        <ShiftCreateModal
+          onClose={() => setForm(null)}
+          defaultDate={form.date}
+          shift={form.shift}
+        />
+      )}
     </div>
   );
 }

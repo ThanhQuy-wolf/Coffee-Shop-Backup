@@ -1,7 +1,6 @@
 "use client";
 
 import ShiftCard from "@/components/molecules/cards/ShiftCard";
-import { DEPARTMENTS } from "@/lib/constants";
 import { useShift } from "@/lib/contexts/shift-context";
 import {
   MONTH_NAMES_VI,
@@ -18,7 +17,8 @@ const DAY_HEADERS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 export default function MobileShiftView({
   onShiftClick,
 }: MobileShiftViewProps) {
-  const { currentDate, shifts, goToNextMonth, goToPrevMonth } = useShift();
+  const { currentDate, shifts, goToNextMonth, goToPrevMonth, departments } =
+    useShift();
   const [selectedDate, setSelectedDate] = useState<string>(
     formatDateISO(SCHEDULE_TODAY),
   );
@@ -45,13 +45,14 @@ export default function MobileShiftView({
     const dateStr = formatDateISO(date);
     const dayShifts = shifts.filter((s) => s.date === dateStr);
     const dots: string[] = [];
-    if (dayShifts.some((s) => s.status === "available"))
+    if (dayShifts.some((s) => s.view === "available")) dots.push("bg-sky-300");
+    if (dayShifts.some((s) => s.view === "leave_requested"))
       dots.push("bg-amber-400");
-    if (dayShifts.some((s) => s.status === "registered"))
+    if (dayShifts.some((s) => s.view === "registered"))
       dots.push("bg-green-500");
-    if (dayShifts.some((s) => s.status === "approved_leave"))
+    if (dayShifts.some((s) => s.view === "approved_leave"))
       dots.push("bg-purple-400");
-    if (dayShifts.some((s) => s.status === "absent")) dots.push("bg-red-400");
+    if (dayShifts.some((s) => s.view === "absent")) dots.push("bg-red-400");
     return dots;
   };
 
@@ -187,9 +188,9 @@ export default function MobileShiftView({
           </div>
         ) : (
           <div className="space-y-3">
-            {DEPARTMENTS.map((dept) => {
+            {departments.map((dept) => {
               const deptShifts = selectedShifts.filter(
-                (s) => s.department === dept.id,
+                (s) => s.departmentId === dept.id,
               );
               if (deptShifts.length === 0) return null;
               return (

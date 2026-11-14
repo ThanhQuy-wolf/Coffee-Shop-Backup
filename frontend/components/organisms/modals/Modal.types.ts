@@ -1,14 +1,8 @@
-export interface ReviewModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
+import type { Review } from "@/lib/types";
 
-export interface ConfirmModalProps {
-  isOpen: boolean;
+export interface ReviewModalProps {
+  orderId: number;
+  orderCode: string;
   onClose: () => void;
-  onConfirm: () => void;
-  title: string;
-  message: string;
-  confirmLabel?: string;
-  cancelLabel?: string;
+  onSubmitted: (review: Review) => void;
 }

@@ -1,34 +1,18 @@
-// ─── App-wide constants (real config, not mock data) ─────────────────────────
-// Mock data used until the backend is ready lives in lib/mock-data/.
-import type { Department, ShopInfo, SocialLinks } from "./types";
+// App-wide constants (real config, not mock data). Shop-specific data comes
+// from the API (shopService).
+import type { SocialLinks } from "./types";
 
-// ===== SHOP INFORMATION =====
-export const SHOP_INFO: ShopInfo = {
-  name: "Coffee Shop",
-  tagline: "Hương vị đậm đà – Khoảnh khắc thư giãn",
+/** The platform itself; each shop has its own info on its menu page */
+export const PLATFORM_INFO = {
+  name: "Drinkool",
+  tagline: "Đặt đồ uống tại quán yêu thích, không cần xếp hàng",
   logo: "/imgs/logo.png",
-  address: "123 Đường Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh",
-  phone: "0901 234 567",
-  managerPhone: "0912 345 678",
-  email: "contact@coffeeshop.vn",
-  wifi: {
-    name: "CoffeeShop_Free",
-    password: "coffee2024",
-  },
-  openHours: "07:00 – 22:00 (Thứ 2 – Chủ nhật)",
+  email: "hotro@drinkool.vn",
+  phone: "1900 0000",
 };
 
-// ===== SOCIAL LINKS =====
-export const SOCIAL_LINKS: SocialLinks = {
-  facebook: "https://facebook.com/coffeeshop",
-  tiktok: "https://tiktok.com/@coffeeshop",
-  website: "/",
+export const SOCIAL_LINKS: Required<SocialLinks> = {
+  facebook: "https://facebook.com/drinkool",
+  tiktok: "https://tiktok.com/@drinkool",
+  website: "/feed",
 };
-
-// ===== SHIFT DEPARTMENTS =====
-export const DEPARTMENTS: Department[] = [
-  { id: "bar", name: "Bar Staff", icon: "fa-solid fa-martini-glass-citrus" },
-  { id: "kitchen", name: "Kitchen", icon: "fa-solid fa-kitchen-set" },
-  { id: "cashier", name: "Cashier", icon: "fa-solid fa-cash-register" },
-  { id: "janitor", name: "Janitor", icon: "fa-solid fa-broom" },
-];

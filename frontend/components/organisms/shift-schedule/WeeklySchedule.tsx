@@ -1,7 +1,6 @@
 "use client";
 
 import ShiftCard from "@/components/molecules/cards/ShiftCard";
-import { DEPARTMENTS } from "@/lib/constants";
 import { useShift } from "@/lib/contexts/shift-context";
 import { formatDateISO, formatDateShort, isToday } from "@/lib/utils/date";
 import { useMemo, useState } from "react";
@@ -37,6 +36,7 @@ export default function WeeklySchedule({
     getShiftsForDate,
     goToNextWeek,
     goToPrevWeek,
+    departments,
   } = useShift();
   const weekDates = getWeekDates();
 
@@ -50,14 +50,15 @@ export default function WeeklySchedule({
       const dateStr = formatDateISO(date);
       const dayShifts = getShiftsForDate(dateStr);
       const dots: string[] = [];
-      if (dayShifts.some((s) => s.status === "available"))
+      if (dayShifts.some((s) => s.view === "available"))
         dots.push("bg-sky-300");
-      if (dayShifts.some((s) => s.status === "registered"))
+      if (dayShifts.some((s) => s.view === "registered"))
         dots.push("bg-blue-600");
-      if (dayShifts.some((s) => s.status === "approved_leave"))
+      if (dayShifts.some((s) => s.view === "leave_requested"))
+        dots.push("bg-amber-400");
+      if (dayShifts.some((s) => s.view === "approved_leave"))
         dots.push("bg-purple-400");
-      if (dayShifts.some((s) => s.status === "absent"))
-        dots.push("bg-rose-400");
+      if (dayShifts.some((s) => s.view === "absent")) dots.push("bg-rose-400");
       map[dateStr] = dots.slice(0, 3);
     });
     return map;
@@ -140,9 +141,9 @@ export default function WeeklySchedule({
       </div>
 
       <div className="space-y-3">
-        {DEPARTMENTS.map((dept) => {
+        {departments.map((dept) => {
           const deptShifts = getShiftsForDate(selectedDateStr).filter(
-            (s) => s.department === dept.id,
+            (s) => s.departmentId === dept.id,
           );
           if (deptShifts.length === 0 && !onCreateShift) return null;
           return (
@@ -214,7 +215,7 @@ export default function WeeklySchedule({
           </tr>
         </thead>
         <tbody>
-          {DEPARTMENTS.map((dept) => (
+          {departments.map((dept) => (
             <tr key={dept.id}>
               <td className="border-r border-b border-(--color-border-light) bg-gray-50/50 px-3 py-3 align-top">
                 <div className="flex items-center gap-2">
@@ -229,7 +230,7 @@ export default function WeeklySchedule({
               {weekDates.map((date, i) => {
                 const dateStr = formatDateISO(date);
                 const shifts = getShiftsForDate(dateStr).filter(
-                  (s) => s.department === dept.id,
+                  (s) => s.departmentId === dept.id,
                 );
                 return (
                   <td

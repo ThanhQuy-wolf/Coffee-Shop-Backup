@@ -1,4 +1,5 @@
+import type { Shop } from "@/lib/types";
+
 export interface ShopGridProps {
-  searchName?: string;
-  searchAddress?: string;
+  shops: Shop[];
 }

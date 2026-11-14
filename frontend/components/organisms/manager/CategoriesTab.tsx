@@ -8,16 +8,16 @@ import CategoryModal from "./CategoryModal";
 import DeleteConfirm from "./DeleteConfirm";
 
 export default function CategoriesTab() {
-  const { categories, products, addCategory, updateCategory, deleteCategory } =
-    useManager();
+  const { categories, products, saveCategory, deleteCategory } = useManager();
 
   const [modalCategory, setModalCategory] = useState<
     MenuCategory | null | "new"
   >(null);
   const [deleteTarget, setDeleteTarget] = useState<MenuCategory | null>(null);
 
-  const getProductCount = (catId: string) =>
-    products.filter((p) => p.category === catId).length;
+  const getProductCount = (catId: number) =>
+    products.filter((p) => p.categoryId === catId).length;
+  const nextSortOrder = Math.max(0, ...categories.map((c) => c.sortOrder)) + 1;
 
   return (
     <div className="space-y-4">
@@ -52,7 +52,7 @@ export default function CategoriesTab() {
                 </p>
                 <p className="text-xs text-(--color-text-muted)">{count} món</p>
               </div>
-              <div className="flex flex-col gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+              <div className="flex flex-col gap-1 transition-opacity md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100">
                 <button
                   onClick={() => setModalCategory(cat)}
                   title="Chỉnh sửa"
@@ -83,14 +83,13 @@ export default function CategoriesTab() {
       {modalCategory !== null && (
         <CategoryModal
           category={modalCategory === "new" ? null : modalCategory}
-          onSave={(data) => {
-            if ("id" in data) {
-              updateCategory(data as MenuCategory);
-            } else {
-              addCategory(data);
-            }
-            setModalCategory(null);
-          }}
+          nextSortOrder={nextSortOrder}
+          onSave={(input) =>
+            saveCategory(
+              input,
+              modalCategory === "new" ? undefined : modalCategory.id,
+            )
+          }
           onClose={() => setModalCategory(null)}
         />
       )}
@@ -98,10 +97,8 @@ export default function CategoriesTab() {
       {deleteTarget !== null && (
         <DeleteConfirm
           name={deleteTarget.name}
-          onConfirm={() => {
-            deleteCategory(deleteTarget.id);
-            setDeleteTarget(null);
-          }}
+          note="Chỉ xoá được danh mục không còn món nào, kể cả món đang tắt bán (BR-11)."
+          onConfirm={() => deleteCategory(deleteTarget.id)}
           onClose={() => setDeleteTarget(null)}
         />
       )}

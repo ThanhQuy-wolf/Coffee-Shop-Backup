@@ -1,10 +1,13 @@
 "use client";
 
 import { Modal, ModalHeader } from "@/components/molecules/modal";
-import type { Product } from "@/lib/types";
+import type { ProductInput } from "@/lib/types";
 import { useState } from "react";
 
 import type { ProductModalProps } from "./Manager.types";
+import { inputCls, labelCls, useSaveForm } from "./useSaveForm";
+
+const PLACEHOLDER_IMAGE = "/imgs/products/placeholder.jpg";
 
 export default function ProductModal({
   product,
@@ -13,26 +16,21 @@ export default function ProductModal({
   onClose,
 }: ProductModalProps) {
   const isEdit = product !== null;
-  const [form, setForm] = useState<Omit<Product, "id">>({
+  const [form, setForm] = useState<ProductInput>({
     name: product?.name ?? "",
-    category: product?.category ?? categories[0]?.id ?? "",
-    price: product?.price ?? 0,
-    image: product?.image ?? "/imgs/products/placeholder.jpg",
+    categoryId: product?.categoryId ?? categories[0]?.id ?? 0,
     description: product?.description ?? "",
-    available: product?.available ?? true,
+    price: product?.price ?? 0,
+    costPrice: product?.costPrice ?? 0,
+    imageUrl: product?.imageUrl ?? PLACEHOLDER_IMAGE,
+    isAvailable: product?.isAvailable ?? true,
   });
+  const { submit, error, saving } = useSaveForm(onSave, onClose);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isEdit && product) {
-      onSave({ ...form, id: product.id });
-    } else {
-      onSave(form);
-    }
-  };
-
-  const inputCls =
-    "text-foreground w-full rounded-xl border border-(--color-border) bg-white px-3 py-2 text-sm transition outline-none focus:border-(--color-primary) focus:ring-2 focus:ring-(--color-primary)/20";
+  const margin =
+    form.price > 0 && form.costPrice > 0
+      ? Math.round(((form.price - form.costPrice) / form.price) * 100)
+      : null;
 
   return (
     <Modal onClose={onClose} className="max-w-lg">
@@ -41,14 +39,18 @@ export default function ProductModal({
         onClose={onClose}
       />
 
-      <form onSubmit={handleSubmit} className="space-y-4 px-6 py-5">
+      <form
+        onSubmit={submit(() => ({ ...form, name: form.name.trim() }))}
+        className="space-y-4 px-6 py-5"
+      >
         <div>
-          <label className="mb-1 block text-sm font-medium text-(--color-text-secondary)">
+          <label htmlFor="product-name" className={labelCls}>
             Tên món <span className="text-red-500">*</span>
           </label>
           <input
+            id="product-name"
             required
-            type="text"
+            maxLength={100}
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
             className={inputCls}
@@ -56,50 +58,89 @@ export default function ProductModal({
           />
         </div>
 
+        <div>
+          <label htmlFor="product-category" className={labelCls}>
+            Danh mục <span className="text-red-500">*</span>
+          </label>
+          <select
+            id="product-category"
+            required
+            value={form.categoryId}
+            onChange={(e) =>
+              setForm({ ...form, categoryId: Number(e.target.value) })
+            }
+            className={inputCls}
+          >
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="mb-1 block text-sm font-medium text-(--color-text-secondary)">
-              Danh mục <span className="text-red-500">*</span>
-            </label>
-            <select
-              required
-              title="Chọn danh mục"
-              value={form.category}
-              onChange={(e) => setForm({ ...form, category: e.target.value })}
-              className={inputCls}
-            >
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-(--color-text-secondary)">
-              Giá (đ) <span className="text-red-500">*</span>
+            <label htmlFor="product-price" className={labelCls}>
+              Giá bán (đ) <span className="text-red-500">*</span>
             </label>
             <input
+              id="product-price"
               required
               type="number"
-              min={0}
+              min={1000}
               step={1000}
               value={form.price}
               onChange={(e) =>
                 setForm({ ...form, price: Number(e.target.value) })
               }
               className={inputCls}
-              placeholder="25000"
+            />
+          </div>
+          <div>
+            <label htmlFor="product-cost" className={labelCls}>
+              Giá vốn (đ)
+            </label>
+            <input
+              id="product-cost"
+              type="number"
+              min={0}
+              step={500}
+              value={form.costPrice}
+              onChange={(e) =>
+                setForm({ ...form, costPrice: Number(e.target.value) })
+              }
+              className={inputCls}
             />
           </div>
         </div>
+        <p className="-mt-2 text-xs text-(--color-text-muted)">
+          {form.costPrice === 0
+            ? "Chưa khai báo giá vốn: báo cáo lợi nhuận sẽ đánh dấu món này (BR-10)."
+            : `Biên lợi nhuận khoảng ${margin}%.`}{" "}
+          Mỗi lần đổi giá đều được ghi lại (BR-15).
+        </p>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-(--color-text-secondary)">
+          <label htmlFor="product-image" className={labelCls}>
+            Ảnh (URL)
+          </label>
+          <input
+            id="product-image"
+            value={form.imageUrl}
+            onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
+            className={inputCls}
+          />
+        </div>
+
+        <div>
+          <label htmlFor="product-description" className={labelCls}>
             Mô tả
           </label>
           <textarea
+            id="product-description"
             rows={3}
+            maxLength={500}
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
             className={`${inputCls} resize-none`}
@@ -107,28 +148,33 @@ export default function ProductModal({
           />
         </div>
 
-        <div className="bg-background flex items-center justify-between rounded-xl border border-(--color-border-light) px-4 py-3">
-          <div>
-            <p className="text-foreground text-sm font-medium">Trạng thái</p>
-            <p className="text-xs text-(--color-text-muted)">
-              {form.available ? "Còn hàng" : "Tạm hết"}
-            </p>
-          </div>
-          <button
-            title="Chuyển trạng thái"
-            type="button"
-            onClick={() => setForm({ ...form, available: !form.available })}
-            className={`relative h-6 w-11 cursor-pointer rounded-full border-none transition-colors duration-200 ${
-              form.available ? "bg-(--color-primary)" : "bg-gray-300"
-            }`}
+        <label className="bg-background flex cursor-pointer items-center justify-between rounded-xl border border-(--color-border-light) px-4 py-3">
+          <span>
+            <span className="text-foreground block text-sm font-medium">
+              Đang bán
+            </span>
+            <span className="text-xs text-(--color-text-muted)">
+              Tắt khi hết nguyên liệu, món sẽ ẩn khỏi menu
+            </span>
+          </span>
+          <input
+            type="checkbox"
+            checked={form.isAvailable}
+            onChange={(e) =>
+              setForm({ ...form, isAvailable: e.target.checked })
+            }
+            className="h-5 w-5 accent-(--color-primary)"
+          />
+        </label>
+
+        {error && (
+          <p
+            role="alert"
+            className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
           >
-            <span
-              className={`absolute top-0.5 left-0 h-5 w-5 rounded-full bg-white shadow transition-transform duration-200 ${
-                form.available ? "translate-x-5.5" : "translate-x-0.5"
-              }`}
-            />
-          </button>
-        </div>
+            {error}
+          </p>
+        )}
 
         <div className="flex gap-3 pt-1">
           <button
@@ -140,7 +186,8 @@ export default function ProductModal({
           </button>
           <button
             type="submit"
-            className="flex-1 cursor-pointer rounded-xl border-none bg-(--color-primary) px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-(--color-primary-dark) active:scale-95"
+            disabled={saving}
+            className="flex-1 cursor-pointer rounded-xl border-none bg-(--color-primary) px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-(--color-primary-dark) active:scale-95 disabled:opacity-50"
           >
             {isEdit ? "Lưu thay đổi" : "Thêm món"}
           </button>

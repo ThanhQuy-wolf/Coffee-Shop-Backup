@@ -8,12 +8,14 @@ import {
   TopProductsSection,
   useAnalytics,
 } from "@/components/organisms/analytics";
+import { ALL_CATEGORY_ID } from "@/lib/services";
 import type { AnalyticsPeriod } from "@/lib/types";
 import { useState } from "react";
 
+/** UC-23: RP-1 → RP-3 */
 export default function AnalyticsPage() {
   const [period, setPeriod] = useState<AnalyticsPeriod>("month");
-  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState(ALL_CATEGORY_ID);
   const a = useAnalytics(period, categoryFilter);
 
   return (
@@ -21,24 +23,26 @@ export default function AnalyticsPage() {
       <AnalyticsHeader period={period} onPeriodChange={setPeriod} />
 
       <main className="mx-auto max-w-screen-2xl space-y-6 p-4 pb-10">
-        <SummarySection
-          period={period}
-          totalRevenue={a.totalRevenue}
-          totalOrders={a.totalOrders}
-          totalProfit={a.totalProfit}
-          avgOrderValue={a.avgOrderValue}
-          revComp={a.revComp}
-          ordComp={a.ordComp}
-          proComp={a.proComp}
-        />
+        {a.error && (
+          <p
+            role="alert"
+            className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700"
+          >
+            {a.error}
+          </p>
+        )}
+        {a.summary && <SummarySection period={period} summary={a.summary} />}
 
-        <RevenueChartSection
-          period={period}
-          revenueData={a.revenueData}
-          barCurrent={a.barCurrent}
-          barPrevious={a.barPrevious}
-          pieData={a.pieData}
-        />
+        {/* The SVG charts need at least one point to compute their scales */}
+        {a.revenueData.length > 0 && (
+          <RevenueChartSection
+            period={period}
+            revenueData={a.revenueData}
+            barCurrent={a.barCurrent}
+            barPrevious={a.barPrevious}
+            pieData={a.pieData}
+          />
+        )}
 
         <TopProductsSection
           top5={a.top5}

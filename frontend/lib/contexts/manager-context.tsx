@@ -4,7 +4,8 @@ import { ReactNode, createContext, useContext, useState } from "react";
 
 import { type CatalogContextType, useCatalog } from "./catalog-context";
 
-export type ManagerTab = "products" | "combos" | "categories";
+export type ManagerTab =
+  "products" | "combos" | "categories" | "shop" | "reviews";
 
 interface ManagerContextType extends CatalogContextType {
   activeTab: ManagerTab;
@@ -15,10 +16,7 @@ const ManagerContext = createContext<
   Pick<ManagerContextType, "activeTab" | "setActiveTab"> | undefined
 >(undefined);
 
-/**
- * Manager-only UI state (active tab). Catalog data and CRUD actions live in
- * CatalogProvider (root) so the customer menu sees the manager's changes.
- */
+/** Manager-only UI state (active tab). Catalog data lives in CatalogProvider. */
 export function ManagerProvider({ children }: { children: ReactNode }) {
   const [activeTab, setActiveTab] = useState<ManagerTab>("products");
   return (

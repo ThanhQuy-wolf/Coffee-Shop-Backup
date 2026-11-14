@@ -8,8 +8,8 @@ import { ProductTable } from "./ProductTable";
 
 export interface ProductAnalysisSectionProps {
   filteredSales: ProductSalesStats[];
-  categoryFilter: string;
-  onCategoryChange: (id: string) => void;
+  categoryFilter: number;
+  onCategoryChange: (id: number) => void;
   filteredRevenue: number;
   filteredProfit: number;
   filteredUnits: number;

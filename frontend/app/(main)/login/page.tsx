@@ -1,7 +1,7 @@
 "use client";
 
 import LoginForm from "@/components/organisms/forms/LoginForm";
-import { SHOP_INFO } from "@/lib/constants";
+import { PLATFORM_INFO } from "@/lib/constants";
 import Image from "next/image";
 
 export default function LoginPage() {
@@ -13,8 +13,8 @@ export default function LoginPage() {
         <div className="mb-8 flex flex-col items-center">
           <div className="relative mb-4 h-20 w-20">
             <Image
-              src={SHOP_INFO.logo}
-              alt={SHOP_INFO.name}
+              src={PLATFORM_INFO.logo}
+              alt={`Logo ${PLATFORM_INFO.name}`}
               fill
               className="object-contain"
               sizes="80px"
@@ -22,7 +22,7 @@ export default function LoginPage() {
             />
           </div>
           <h1 className="mb-1 text-2xl font-bold text-(--color-primary-dark)">
-            {SHOP_INFO.name}
+            {PLATFORM_INFO.name}
           </h1>
           <p className="text-sm text-(--color-text-muted)">
             Đăng nhập vào hệ thống
@@ -39,15 +39,15 @@ export default function LoginPage() {
           </p>
           <ul className="space-y-1 text-xs text-(--color-text-muted)">
             <li>
-              • Quản lý:{" "}
+              • Quản lý (tab Nhân viên quán):{" "}
               <code className="rounded bg-white px-1.5 py-0.5">
                 admin / admin
               </code>
             </li>
             <li>
-              • Nhân viên:{" "}
+              • Nhân viên (tab Nhân viên quán):{" "}
               <code className="rounded bg-white px-1.5 py-0.5">
-                Nguyễn Văn An / Nguyễn Văn An
+                an / 123456
               </code>
             </li>
             <li>

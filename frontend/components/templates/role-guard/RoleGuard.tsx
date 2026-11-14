@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@/lib/contexts/auth-context";
+import { homePathFor, useAuth } from "@/lib/contexts/auth-context";
 import type { UserRole } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useEffect } from "react";
@@ -15,7 +15,7 @@ export interface RoleGuardProps {
  * Client-side route guard.
  *   - while the saved session is loading → spinner
  *   - not logged in                       → redirect to /login
- *   - logged in with a role not allowed   → redirect to /
+ *   - logged in with a role not allowed   → that role's home page (FR-04)
  */
 export default function RoleGuard({ allow, children }: RoleGuardProps) {
   const { user, isReady } = useAuth();
@@ -25,7 +25,7 @@ export default function RoleGuard({ allow, children }: RoleGuardProps) {
 
   useEffect(() => {
     if (!isReady || allowed) return;
-    router.replace(user ? "/" : "/login");
+    router.replace(user ? homePathFor(user.role) : "/login");
   }, [isReady, allowed, user, router]);
 
   if (!allowed) {

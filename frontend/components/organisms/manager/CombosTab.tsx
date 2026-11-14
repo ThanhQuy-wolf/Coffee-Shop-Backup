@@ -2,25 +2,27 @@
 
 import { useManager } from "@/lib/contexts/manager-context";
 import type { Combo } from "@/lib/types";
+import { formatVND } from "@/lib/utils/currency";
+import { errorMessage } from "@/lib/utils/errors";
 import { useState } from "react";
 
 import ComboModal from "./ComboModal";
 import DeleteConfirm from "./DeleteConfirm";
 import StatusBadge from "./StatusBadge";
 
-function formatPrice(price: number) {
-  return price.toLocaleString("vi-VN") + "đ";
-}
-
 export default function CombosTab() {
-  const {
-    combos,
-    products,
-    addCombo,
-    updateCombo,
-    deleteCombo,
-    toggleComboAvailability,
-  } = useManager();
+  const { combos, products, saveCombo, deleteCombo, setComboAvailability } =
+    useManager();
+  const [toggleError, setToggleError] = useState<string | null>(null);
+
+  const toggle = async (c: Combo) => {
+    setToggleError(null);
+    try {
+      await setComboAvailability(c.id, !c.isAvailable);
+    } catch (err) {
+      setToggleError(errorMessage(err));
+    }
+  };
 
   const [modalCombo, setModalCombo] = useState<Combo | null | "new">(null);
   const [deleteTarget, setDeleteTarget] = useState<Combo | null>(null);
@@ -42,6 +44,15 @@ export default function CombosTab() {
           <span className="hidden sm:inline">Thêm combo</span>
         </button>
       </div>
+
+      {toggleError && (
+        <p
+          role="alert"
+          className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
+        >
+          {toggleError}
+        </p>
+      )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {combos.length === 0 ? (
@@ -67,11 +78,14 @@ export default function CombosTab() {
                   )}
                 </div>
                 <button
-                  onClick={() => toggleComboAvailability(combo.id)}
+                  onClick={() => toggle(combo)}
                   className="ml-3 shrink-0 cursor-pointer border-none bg-transparent"
                   title="Đổi trạng thái"
                 >
-                  <StatusBadge available={combo.available} />
+                  <StatusBadge
+                    available={combo.isAvailable}
+                    blocked={combo.isAvailable && !combo.sellable}
+                  />
                 </button>
               </div>
 
@@ -94,7 +108,7 @@ export default function CombosTab() {
 
               <div className="flex items-center justify-between border-t border-(--color-border-light) px-4 py-3">
                 <span className="text-base font-bold text-(--color-primary)">
-                  {formatPrice(combo.price)}
+                  {formatVND(combo.price)}
                 </span>
                 <div className="flex gap-1.5">
                   <button
@@ -122,14 +136,9 @@ export default function CombosTab() {
         <ComboModal
           combo={modalCombo === "new" ? null : modalCombo}
           products={products}
-          onSave={(data) => {
-            if ("id" in data) {
-              updateCombo(data as Combo);
-            } else {
-              addCombo(data);
-            }
-            setModalCombo(null);
-          }}
+          onSave={(input) =>
+            saveCombo(input, modalCombo === "new" ? undefined : modalCombo.id)
+          }
           onClose={() => setModalCombo(null)}
         />
       )}
@@ -137,10 +146,8 @@ export default function CombosTab() {
       {deleteTarget !== null && (
         <DeleteConfirm
           name={deleteTarget.name}
-          onConfirm={() => {
-            deleteCombo(deleteTarget.id);
-            setDeleteTarget(null);
-          }}
+          note="Combo đã từng bán sẽ được ẩn để giữ lịch sử đơn (BR-14)."
+          onConfirm={() => deleteCombo(deleteTarget.id)}
           onClose={() => setDeleteTarget(null)}
         />
       )}

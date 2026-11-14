@@ -1,7 +1,6 @@
 "use client";
 
-import { SHOP_INFO } from "@/lib/constants";
-import { useCatalog } from "@/lib/contexts/catalog-context";
+import { useMenu } from "@/lib/contexts/menu-context";
 import type { MenuCategory } from "@/lib/types";
 import type React from "react";
 
@@ -20,10 +19,9 @@ import { categoryButtonClass, categoryIconClass } from "./categoryStyles";
 export default function CategorySidebar({
   isOpen,
   onToggle,
-  activeCategory = "all",
-  onCategoryChange,
+  openHours,
 }: CategorySidebarProps) {
-  const { menuCategories } = useCatalog();
+  const { menuCategories, activeCategory, setActiveCategory } = useMenu();
 
   return (
     <aside
@@ -70,7 +68,7 @@ export default function CategorySidebar({
             return (
               <li key={cat.id}>
                 <button
-                  onClick={() => onCategoryChange?.(cat.id)}
+                  onClick={() => setActiveCategory(cat.id)}
                   title={!isOpen ? cat.name : undefined}
                   className={`flex w-full cursor-pointer items-center rounded-xl border-none text-sm font-medium transition-all duration-150 xl:justify-start xl:gap-3 xl:px-3 xl:py-2.5 ${isOpen ? "gap-3 px-3 py-2.5" : "justify-center px-0 py-2.5"} ${categoryButtonClass(isActive)}`}
                 >
@@ -101,14 +99,14 @@ export default function CategorySidebar({
           className={`items-center gap-2 text-xs text-(--color-text-muted) ${isOpen ? "flex" : "hidden"} xl:flex`}
         >
           <i className="fa-solid fa-clock shrink-0 text-(--color-accent)"></i>
-          <span>{SHOP_INFO.openHours}</span>
+          <span>{openHours}</span>
         </div>
 
         {/* Icon-only — shown when collapsed, hidden on xl+ */}
         <span className="xl:hidden">
           <i
             className={`fa-solid fa-clock text-sm text-(--color-text-muted) ${isOpen ? "hidden" : "block"}`}
-            title={SHOP_INFO.openHours}
+            title={openHours}
           ></i>
         </span>
       </div>

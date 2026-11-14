@@ -2,30 +2,46 @@
 
 import { Button, Heading, Text, Textarea } from "@/components/atoms";
 import { Modal } from "@/components/molecules/modal";
+import { reviewService } from "@/lib/services";
+import { errorMessage } from "@/lib/utils/errors";
 import { useState } from "react";
 
 import type { ReviewModalProps } from "./Modal.types";
 
-export default function ReviewModal({ isOpen, onClose }: ReviewModalProps) {
+const COMMENT_MAX = 500; // BR-31
+
+/** UC-16: one review per completed order, cannot be edited afterwards. */
+export default function ReviewModal({
+  orderId,
+  orderCode,
+  onClose,
+  onSubmitted,
+}: ReviewModalProps) {
   const [rating, setRating] = useState(0);
   const [hovered, setHovered] = useState(0);
   const [review, setReview] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
 
-  if (!isOpen) return null;
-
-  const handleSubmit = () => {
-    setSubmitted(true);
+  const handleSubmit = async () => {
+    setSending(true);
+    setError(null);
+    try {
+      const saved = await reviewService.create(orderId, {
+        rating,
+        comment: review,
+      });
+      setSubmitted(true);
+      onSubmitted(saved);
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setSending(false);
+    }
   };
 
-  const handleClose = () => {
-    // Reset state when closing
-    setRating(0);
-    setHovered(0);
-    setReview("");
-    setSubmitted(false);
-    onClose();
-  };
+  const handleClose = onClose;
 
   return (
     <Modal
@@ -59,7 +75,7 @@ export default function ReviewModal({ isOpen, onClose }: ReviewModalProps) {
             Đánh giá của bạn
           </h2>
           <p className="mb-5 text-sm text-(--color-text-muted)">
-            Hãy cho chúng tôi biết trải nghiệm của bạn hôm nay
+            Đơn {orderCode}. Đánh giá chỉ gửi được một lần.
           </p>
 
           {/* Star rating */}
@@ -112,8 +128,21 @@ export default function ReviewModal({ isOpen, onClose }: ReviewModalProps) {
               onChange={(e) => setReview(e.target.value)}
               placeholder="Chia sẻ cảm nhận của bạn về đồ uống, dịch vụ..."
               rows={4}
+              maxLength={COMMENT_MAX}
             />
+            <p className="mt-1 text-right text-xs text-(--color-text-muted)">
+              {review.length}/{COMMENT_MAX}
+            </p>
           </div>
+
+          {error && (
+            <p
+              role="alert"
+              className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
+            >
+              {error}
+            </p>
+          )}
 
           {/* Footer buttons */}
           <div className="flex gap-3">
@@ -129,7 +158,7 @@ export default function ReviewModal({ isOpen, onClose }: ReviewModalProps) {
             <Button
               type="button"
               onClick={handleSubmit}
-              disabled={rating === 0}
+              disabled={rating === 0 || sending}
               className="flex-1"
               icon="fa-check"
             >

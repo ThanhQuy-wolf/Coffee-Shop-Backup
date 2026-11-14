@@ -11,5 +11,5 @@ export type {
   MonthlyCalendarProps,
   MobileShiftViewProps,
   ShiftDetailModalProps,
-  ShiftCreateModalProps,
+  ShiftFormModalProps,
 } from "./ShiftSchedule.types";

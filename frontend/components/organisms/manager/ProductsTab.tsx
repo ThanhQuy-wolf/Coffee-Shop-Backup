@@ -2,27 +2,25 @@
 
 import { useManager } from "@/lib/contexts/manager-context";
 import type { Product } from "@/lib/types";
+import { formatVND } from "@/lib/utils/currency";
+import { errorMessage } from "@/lib/utils/errors";
 import { useState } from "react";
 
 import DeleteConfirm from "./DeleteConfirm";
 import ProductModal from "./ProductModal";
 import StatusBadge from "./StatusBadge";
 
-function formatPrice(price: number) {
-  return price.toLocaleString("vi-VN") + "đ";
-}
-
 export default function ProductsTab() {
   const {
     products,
     categories,
-    addProduct,
-    updateProduct,
+    saveProduct,
     deleteProduct,
-    toggleProductAvailability,
+    setProductAvailability,
   } = useManager();
 
-  const [filterCategory, setFilterCategory] = useState("all");
+  const [filterCategory, setFilterCategory] = useState(0);
+  const [toggleError, setToggleError] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<
     "all" | "available" | "unavailable"
   >("all");
@@ -33,9 +31,9 @@ export default function ProductsTab() {
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
 
   const filtered = products.filter((p) => {
-    if (filterCategory !== "all" && p.category !== filterCategory) return false;
-    if (filterStatus === "available" && p.available === false) return false;
-    if (filterStatus === "unavailable" && p.available !== false) return false;
+    if (filterCategory && p.categoryId !== filterCategory) return false;
+    if (filterStatus === "available" && !p.isAvailable) return false;
+    if (filterStatus === "unavailable" && p.isAvailable) return false;
     if (
       search &&
       !p.name.toLowerCase().includes(search.toLowerCase()) &&
@@ -45,8 +43,16 @@ export default function ProductsTab() {
     return true;
   });
 
-  const getCategoryName = (id: string) =>
-    categories.find((c) => c.id === id)?.name ?? id;
+  const categoryOf = (id: number) => categories.find((c) => c.id === id);
+
+  const toggle = async (p: Product) => {
+    setToggleError(null);
+    try {
+      await setProductAvailability(p.id, !p.isAvailable);
+    } catch (err) {
+      setToggleError(errorMessage(err));
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -75,11 +81,11 @@ export default function ProductsTab() {
 
         <select
           value={filterCategory}
-          onChange={(e) => setFilterCategory(e.target.value)}
+          onChange={(e) => setFilterCategory(Number(e.target.value))}
           className="text-foreground cursor-pointer rounded-xl border border-(--color-border) bg-white px-3 py-2 text-sm transition outline-none focus:border-(--color-primary)"
           title="Lọc theo danh mục"
         >
-          <option value="all">Tất cả danh mục</option>
+          <option value={0}>Tất cả danh mục</option>
           {categories.map((cat) => (
             <option key={cat.id} value={cat.id}>
               {cat.name}
@@ -98,8 +104,8 @@ export default function ProductsTab() {
           title="Lọc theo trạng thái"
         >
           <option value="all">Tất cả trạng thái</option>
-          <option value="available">Còn hàng</option>
-          <option value="unavailable">Tạm hết</option>
+          <option value="available">Đang bán</option>
+          <option value="unavailable">Tạm ngừng bán</option>
         </select>
 
         <button
@@ -116,6 +122,14 @@ export default function ProductsTab() {
         Hiển thị <strong className="text-foreground">{filtered.length}</strong>{" "}
         / {products.length} món
       </p>
+      {toggleError && (
+        <p
+          role="alert"
+          className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
+        >
+          {toggleError}
+        </p>
+      )}
 
       {/* Table */}
       <div className="overflow-x-auto rounded-2xl border border-(--color-border-light) bg-white shadow-sm">
@@ -129,7 +143,10 @@ export default function ProductsTab() {
                 Danh mục
               </th>
               <th className="px-4 py-3 text-right font-semibold text-(--color-text-secondary)">
-                Giá
+                Giá bán
+              </th>
+              <th className="px-4 py-3 text-right font-semibold text-(--color-text-secondary)">
+                Giá vốn
               </th>
               <th className="px-4 py-3 text-center font-semibold text-(--color-text-secondary)">
                 Trạng thái
@@ -143,7 +160,7 @@ export default function ProductsTab() {
             {filtered.length === 0 ? (
               <tr>
                 <td
-                  colSpan={5}
+                  colSpan={6}
                   className="py-12 text-center text-(--color-text-muted)"
                 >
                   <i className="fa-solid fa-mug-hot mb-2 block text-3xl opacity-30"></i>
@@ -169,21 +186,30 @@ export default function ProductsTab() {
                   <td className="px-4 py-3">
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-(--color-accent-light) px-2.5 py-0.5 text-xs font-medium text-(--color-primary-dark)">
                       <i
-                        className={`${categories.find((c) => c.id === p.category)?.icon ?? "fa-solid fa-tag"} text-[10px]`}
+                        className={`${categoryOf(p.categoryId)?.icon ?? "fa-solid fa-tag"} text-[10px]`}
                       ></i>
-                      {getCategoryName(p.category)}
+                      {categoryOf(p.categoryId)?.name ?? "—"}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right font-semibold text-(--color-primary)">
-                    {formatPrice(p.price)}
+                    {formatVND(p.price)}
+                  </td>
+                  <td className="px-4 py-3 text-right text-(--color-text-secondary)">
+                    {p.costPrice ? (
+                      formatVND(p.costPrice)
+                    ) : (
+                      <span className="text-xs text-amber-600">
+                        Chưa khai báo
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-center">
                     <button
-                      onClick={() => toggleProductAvailability(p.id)}
+                      onClick={() => toggle(p)}
                       title="Nhấn để đổi trạng thái"
                       className="cursor-pointer border-none bg-transparent"
                     >
-                      <StatusBadge available={p.available ?? true} />
+                      <StatusBadge available={p.isAvailable} />
                     </button>
                   </td>
                   <td className="px-4 py-3">
@@ -215,14 +241,12 @@ export default function ProductsTab() {
         <ProductModal
           product={modalProduct === "new" ? null : modalProduct}
           categories={categories}
-          onSave={(data) => {
-            if ("id" in data) {
-              updateProduct(data as Product);
-            } else {
-              addProduct(data);
-            }
-            setModalProduct(null);
-          }}
+          onSave={(input) =>
+            saveProduct(
+              input,
+              modalProduct === "new" ? undefined : modalProduct.id,
+            )
+          }
           onClose={() => setModalProduct(null)}
         />
       )}
@@ -230,10 +254,8 @@ export default function ProductsTab() {
       {deleteTarget !== null && (
         <DeleteConfirm
           name={deleteTarget.name}
-          onConfirm={() => {
-            deleteProduct(deleteTarget.id);
-            setDeleteTarget(null);
-          }}
+          note="Món đã từng bán sẽ được ẩn để giữ lịch sử đơn (BR-14). Món còn nằm trong combo phải gỡ khỏi combo trước."
+          onConfirm={() => deleteProduct(deleteTarget.id)}
           onClose={() => setDeleteTarget(null)}
         />
       )}

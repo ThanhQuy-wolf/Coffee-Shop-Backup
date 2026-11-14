@@ -1,168 +1,125 @@
 "use client";
 
-import { ReactNode, createContext, useContext, useMemo, useState } from "react";
-
 import {
-  getAllCategory,
-  getCategories,
-  getCombos,
-  getProducts,
-} from "../services/catalog";
-import type { Combo, MenuCategory, Product } from "../types";
+  ReactNode,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+import { catalogService } from "../services/catalog";
+import type {
+  CategoryInput,
+  Combo,
+  ComboInput,
+  MenuCategory,
+  Product,
+  ProductInput,
+} from "../types";
+import { errorMessage } from "../utils/errors";
 
 export interface CatalogContextType {
-  // Data
+  shopId: number;
   products: Product[];
   combos: Combo[];
-  /** Real categories (no "all"), as managed by the manager */
   categories: MenuCategory[];
-  /** "Tất cả" + categories — for customer-facing menus */
-  menuCategories: MenuCategory[];
+  isLoading: boolean;
+  loadError: string | null;
+  reload: () => Promise<void>;
 
-  // Product actions
-  addProduct: (product: Omit<Product, "id">) => void;
-  updateProduct: (product: Product) => void;
-  deleteProduct: (id: number) => void;
-  toggleProductAvailability: (id: number) => void;
-
-  // Combo actions
-  addCombo: (combo: Omit<Combo, "id">) => void;
-  updateCombo: (combo: Combo) => void;
-  deleteCombo: (id: number) => void;
-  toggleComboAvailability: (id: number) => void;
-
-  // Category actions
-  addCategory: (category: Omit<MenuCategory, "id">) => void;
-  updateCategory: (category: MenuCategory) => void;
-  deleteCategory: (id: string) => void;
+  // Each action resolves after the server accepted it and the lists were
+  // reloaded; it rejects with the ApiError otherwise.
+  saveProduct: (input: ProductInput, id?: number) => Promise<void>;
+  deleteProduct: (id: number) => Promise<void>;
+  setProductAvailability: (id: number, isAvailable: boolean) => Promise<void>;
+  saveCombo: (input: ComboInput, id?: number) => Promise<void>;
+  deleteCombo: (id: number) => Promise<void>;
+  setComboAvailability: (id: number, isAvailable: boolean) => Promise<void>;
+  saveCategory: (input: CategoryInput, id?: number) => Promise<void>;
+  deleteCategory: (id: number) => Promise<void>;
 }
-
-// ─── Context ──────────────────────────────────────────────────────────────────
 
 const CatalogContext = createContext<CatalogContextType | undefined>(undefined);
 
-// ─── Provider ─────────────────────────────────────────────────────────────────
+/** Catalog of one shop as seen by its staff (includes items not on sale). */
+export function CatalogProvider({
+  shopId,
+  children,
+}: {
+  shopId: number;
+  children: ReactNode;
+}) {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [combos, setCombos] = useState<Combo[]>([]);
+  const [categories, setCategories] = useState<MenuCategory[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-const ALL_CATEGORY = getAllCategory();
+  const reload = useCallback(async () => {
+    try {
+      const [p, c, cat] = await Promise.all([
+        catalogService.listProducts(shopId),
+        catalogService.listCombos(shopId),
+        catalogService.listCategories(shopId),
+      ]);
+      setProducts(p);
+      setCombos(c);
+      setCategories(cat);
+      setLoadError(null);
+    } catch (err) {
+      setLoadError(errorMessage(err));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [shopId]);
 
-/**
- * Menu catalog (products, combos, categories) shared by the whole app.
- * Mounted at the root so changes made in /manager show up on the customer
- * menu. Data is in-memory mock data for now — swap the initial state and
- * actions for API calls when the backend is ready.
- */
-export function CatalogProvider({ children }: { children: ReactNode }) {
-  const [products, setProducts] = useState<Product[]>(getProducts);
-  const [combos, setCombos] = useState<Combo[]>(getCombos);
-  // Filter out the "all" pseudo-category — managers manage real categories only
-  const [categories, setCategories] = useState<MenuCategory[]>(getCategories);
+  useEffect(() => {
+    void reload();
+  }, [reload]);
 
-  // ── Product actions ──────────────────────────────────────────────────────
-
-  const addProduct = (product: Omit<Product, "id">) => {
-    const newProduct: Product = {
-      ...product,
-      id: Date.now(),
+  const run =
+    <A extends unknown[]>(fn: (...args: A) => Promise<unknown>) =>
+    async (...args: A) => {
+      await fn(...args);
+      await reload();
     };
-    setProducts((prev) => [...prev, newProduct]);
+
+  const value: CatalogContextType = {
+    shopId,
+    products,
+    combos,
+    categories,
+    isLoading,
+    loadError,
+    reload,
+    saveProduct: run((input: ProductInput, id?: number) =>
+      id
+        ? catalogService.updateProduct(id, input)
+        : catalogService.createProduct(shopId, input),
+    ),
+    deleteProduct: run(catalogService.deleteProduct),
+    setProductAvailability: run(catalogService.setProductAvailability),
+    saveCombo: run((input: ComboInput, id?: number) =>
+      id
+        ? catalogService.updateCombo(id, input)
+        : catalogService.createCombo(shopId, input),
+    ),
+    deleteCombo: run(catalogService.deleteCombo),
+    setComboAvailability: run(catalogService.setComboAvailability),
+    saveCategory: run((input: CategoryInput, id?: number) =>
+      id
+        ? catalogService.updateCategory(id, input)
+        : catalogService.createCategory(shopId, input),
+    ),
+    deleteCategory: run(catalogService.deleteCategory),
   };
-
-  const updateProduct = (product: Product) => {
-    setProducts((prev) => prev.map((p) => (p.id === product.id ? product : p)));
-  };
-
-  const deleteProduct = (id: number) => {
-    setProducts((prev) => prev.filter((p) => p.id !== id));
-  };
-
-  const toggleProductAvailability = (id: number) => {
-    setProducts((prev) =>
-      prev.map((p) =>
-        p.id === id ? { ...p, available: !(p.available ?? true) } : p,
-      ),
-    );
-  };
-
-  // ── Combo actions ────────────────────────────────────────────────────────
-
-  const addCombo = (combo: Omit<Combo, "id">) => {
-    const newCombo: Combo = { ...combo, id: Date.now() };
-    setCombos((prev) => [...prev, newCombo]);
-  };
-
-  const updateCombo = (combo: Combo) => {
-    setCombos((prev) => prev.map((c) => (c.id === combo.id ? combo : c)));
-  };
-
-  const deleteCombo = (id: number) => {
-    setCombos((prev) => prev.filter((c) => c.id !== id));
-  };
-
-  const toggleComboAvailability = (id: number) => {
-    setCombos((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, available: !c.available } : c)),
-    );
-  };
-
-  // ── Category actions ─────────────────────────────────────────────────────
-
-  const addCategory = (category: Omit<MenuCategory, "id">) => {
-    const slug = category.name
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "");
-    const newCategory: MenuCategory = {
-      ...category,
-      id: `${slug}-${Date.now()}`,
-    };
-    setCategories((prev) => [...prev, newCategory]);
-  };
-
-  const updateCategory = (category: MenuCategory) => {
-    setCategories((prev) =>
-      prev.map((c) => (c.id === category.id ? category : c)),
-    );
-  };
-
-  const deleteCategory = (id: string) => {
-    setCategories((prev) => prev.filter((c) => c.id !== id));
-  };
-
-  const menuCategories = useMemo(
-    () => [ALL_CATEGORY, ...categories],
-    [categories],
-  );
 
   return (
-    <CatalogContext.Provider
-      value={{
-        products,
-        combos,
-        categories,
-        menuCategories,
-        addProduct,
-        updateProduct,
-        deleteProduct,
-        toggleProductAvailability,
-        addCombo,
-        updateCombo,
-        deleteCombo,
-        toggleComboAvailability,
-        addCategory,
-        updateCategory,
-        deleteCategory,
-      }}
-    >
-      {children}
-    </CatalogContext.Provider>
+    <CatalogContext.Provider value={value}>{children}</CatalogContext.Provider>
   );
 }
-
-// ─── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useCatalog() {
   const context = useContext(CatalogContext);

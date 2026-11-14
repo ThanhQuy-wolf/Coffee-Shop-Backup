@@ -1,40 +1,57 @@
 "use client";
 
-import type { ShiftSlot } from "@/lib/types";
+import {
+  type ShiftViewStatus,
+  isSeatHolder,
+} from "@/lib/contexts/shift-context";
 
 import type { ShiftCardProps } from "./ShiftCard.types";
 
-const STATUS_STYLES: Record<
-  ShiftSlot["status"],
-  { bg: string; text: string; label: string }
+export const SHIFT_VIEW_STYLES: Record<
+  ShiftViewStatus,
+  { card: string; badge: string; label: string }
 > = {
   available: {
-    bg: "bg-blue-50 border-blue-200",
-    text: "text-blue-700",
+    card: "bg-blue-50 border-blue-200 text-blue-700",
+    badge: "bg-blue-200 text-blue-800",
     label: "Còn trống",
   },
+  full: {
+    card: "bg-gray-50 border-gray-200 text-gray-600",
+    badge: "bg-gray-200 text-gray-700",
+    label: "Đủ người",
+  },
   registered: {
-    bg: "bg-blue-100 border-blue-400",
-    text: "text-blue-900",
+    card: "bg-blue-100 border-blue-400 text-blue-900",
+    badge: "bg-blue-300 text-blue-900",
     label: "Đã đăng ký",
   },
+  leave_requested: {
+    card: "bg-amber-50 border-amber-300 text-amber-800",
+    badge: "bg-amber-200 text-amber-900",
+    label: "Chờ duyệt nghỉ",
+  },
   approved_leave: {
-    bg: "bg-purple-50 border-purple-300",
-    text: "text-purple-700",
+    card: "bg-purple-50 border-purple-300 text-purple-700",
+    badge: "bg-purple-200 text-purple-800",
     label: "Nghỉ phép",
   },
+  attended: {
+    card: "bg-green-50 border-green-300 text-green-800",
+    badge: "bg-green-200 text-green-900",
+    label: "Có mặt",
+  },
   absent: {
-    bg: "bg-red-50 border-red-300",
-    text: "text-red-700",
+    card: "bg-red-50 border-red-300 text-red-700",
+    badge: "bg-red-200 text-red-800",
     label: "Vắng mặt",
   },
 };
 
 function formatWage(wage: number): string {
-  if (wage >= 1000) {
-    return `${(wage / 1000).toFixed(0)}k`;
-  }
-  return wage.toLocaleString("vi-VN");
+  return wage >= 1000
+    ? `${(wage / 1000).toFixed(0)}k`
+    : wage.toLocaleString("vi-VN");
 }
 
 export default function ShiftCard({
@@ -42,20 +59,21 @@ export default function ShiftCard({
   compact = false,
   onClick,
 }: ShiftCardProps) {
-  const style = STATUS_STYLES[shift.status];
+  const style = SHIFT_VIEW_STYLES[shift.view];
+  const holders = shift.assignments.filter((a) => isSeatHolder(a.status));
 
   if (compact) {
     return (
       <button
         type="button"
         onClick={() => onClick?.(shift)}
-        className={`w-full cursor-pointer rounded-lg border px-2 py-1.5 text-left text-xs transition-shadow hover:shadow-sm ${style.bg} ${style.text}`}
+        className={`w-full cursor-pointer rounded-lg border px-2 py-1.5 text-left text-xs transition-shadow hover:shadow-sm ${style.card}`}
       >
         <p className="font-semibold">
           {shift.startTime} – {shift.endTime}
         </p>
         <p className="mt-0.5 opacity-75">
-          {shift.durationHours}h · {formatWage(shift.wage)}
+          {shift.occupied}/{shift.maxStaff} · {formatWage(shift.wage)}
         </p>
       </button>
     );
@@ -65,7 +83,7 @@ export default function ShiftCard({
     <button
       type="button"
       onClick={() => onClick?.(shift)}
-      className={`w-full cursor-pointer rounded-xl border p-3 text-left transition-shadow hover:shadow-md ${style.bg} ${style.text}`}
+      className={`w-full cursor-pointer rounded-xl border p-3 text-left transition-shadow hover:shadow-md ${style.card}`}
     >
       <div className="flex items-start justify-between">
         <div>
@@ -77,39 +95,29 @@ export default function ShiftCard({
           </p>
         </div>
         <span
-          className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-            shift.status === "available"
-              ? "bg-blue-200 text-blue-800"
-              : shift.status === "registered"
-                ? "bg-blue-300 text-blue-900"
-                : shift.status === "approved_leave"
-                  ? "bg-purple-200 text-purple-800"
-                  : "bg-red-200 text-red-800"
-          }`}
+          className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${style.badge}`}
         >
           {style.label}
         </span>
       </div>
 
-      {shift.registeredStaff.length > 0 && (
+      {holders.length > 0 ? (
         <div className="mt-2 border-t border-current/10 pt-2">
           <p className="text-[10px] font-medium tracking-wide uppercase opacity-60">
-            Nhân viên ({shift.registeredStaff.length}/{shift.maxStaff})
+            Nhân viên ({shift.occupied}/{shift.maxStaff})
           </p>
           <div className="mt-1 flex flex-wrap gap-1">
-            {shift.registeredStaff.map((s) => (
+            {holders.map((a) => (
               <span
-                key={s.id}
+                key={a.id}
                 className="rounded-full bg-white/60 px-2 py-0.5 text-[10px] font-medium"
               >
-                {s.name}
+                {a.staffName}
               </span>
             ))}
           </div>
         </div>
-      )}
-
-      {shift.status === "available" && shift.registeredStaff.length === 0 && (
+      ) : (
         <p className="mt-2 text-[10px] italic opacity-50">
           {shift.maxStaff} vị trí còn trống
         </p>

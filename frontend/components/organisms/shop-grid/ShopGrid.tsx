@@ -1,25 +1,9 @@
-"use client";
-
 import { ShopCard } from "@/components/molecules/cards";
-import { getShops } from "@/lib/services/shops";
 
 import type { ShopGridProps } from "./ShopGrid.types";
 
-export default function ShopGrid({
-  searchName = "",
-  searchAddress = "",
-}: ShopGridProps) {
-  const filtered = getShops().filter((shop) => {
-    const matchesName =
-      searchName.trim() === "" ||
-      shop.name.toLowerCase().includes(searchName.toLowerCase());
-    const matchesAddress =
-      searchAddress.trim() === "" ||
-      shop.address.toLowerCase().includes(searchAddress.toLowerCase());
-    return matchesName && matchesAddress;
-  });
-
-  if (filtered.length === 0) {
+export default function ShopGrid({ shops }: ShopGridProps) {
+  if (shops.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-24 text-(--color-text-muted)">
         <i className="fa-solid fa-store text-5xl opacity-30"></i>
@@ -30,13 +14,13 @@ export default function ShopGrid({
 
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {filtered.map((shop) => (
+      {shops.map((shop) => (
         <ShopCard
           key={shop.id}
           id={shop.id}
           name={shop.name}
           address={shop.address}
-          image={shop.image}
+          image={shop.coverImageUrl}
         />
       ))}
     </div>

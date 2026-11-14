@@ -1,6 +1,5 @@
 "use client";
 
-import { useCatalog } from "@/lib/contexts/catalog-context";
 import { useMenu } from "@/lib/contexts/menu-context";
 
 import { categoryButtonClass, categoryIconClass } from "./categoryStyles";
@@ -10,8 +9,7 @@ import { categoryButtonClass, categoryIconClass } from "./categoryStyles";
  * On md+ the CategorySidebar is used instead; both read the same menu state.
  */
 export default function MobileCategoryTabs() {
-  const { menuCategories } = useCatalog();
-  const { activeCategory, setActiveCategory } = useMenu();
+  const { menuCategories, activeCategory, setActiveCategory } = useMenu();
 
   return (
     <div className="bg-background sticky top-18 z-50 -mx-4 mb-4 overflow-x-auto px-4 pt-2 md:hidden">

@@ -1,88 +1,111 @@
 "use client";
 
 import Button from "@/components/atoms/buttons/Button";
-import { SHOP_INFO } from "@/lib/constants";
+import { PLATFORM_INFO } from "@/lib/constants";
 import { useAuth } from "@/lib/contexts/auth-context";
+import { ApiError, VN_PHONE_REGEX, authService } from "@/lib/services";
+import { errorMessage } from "@/lib/utils/errors";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { SubmitEvent, useState } from "react";
+import { type SubmitEvent, useEffect, useState } from "react";
 
-// Static OTP for demo (in production, this would be sent via SMS)
-const DEMO_OTP = "123456";
+const DEMO_OTP = "123456"; // the mock always sends this code
+const MIN_PASSWORD = 6;
 
+const inputClass = (hasError: boolean) =>
+  `text-foreground w-full rounded-xl border bg-white px-4 py-3 outline-none transition-all duration-150 placeholder:text-(--color-text-muted) focus:border-(--color-primary) focus:ring-2 focus:ring-(--color-primary) ${hasError ? "border-red-400" : "border-(--color-border)"}`;
+
+function FieldError({ message }: { message?: string }) {
+  if (!message) return null;
+  return (
+    <p className="mt-1.5 flex items-center gap-1 text-xs text-red-500">
+      <i className="fa-solid fa-circle-exclamation"></i>
+      {message}
+    </p>
+  );
+}
+
+/** UC-01: A-3 gửi OTP, A-4 tạo tài khoản */
 export default function RegisterPage() {
   const router = useRouter();
-  const { completeRegistration } = useAuth();
+  const { startSession } = useAuth();
 
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
-  const [errors, setErrors] = useState({ phone: "", otp: "" });
+  const [fullName, setFullName] = useState("");
+  const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [sending, setSending] = useState(false);
+  const [resendIn, setResendIn] = useState(0);
 
-  // Validate Vietnamese phone number
-  const validatePhone = (phoneNumber: string): boolean => {
-    // Vietnamese phone format: 10 digits starting with 0
-    // Valid prefixes: 03, 05, 07, 08, 09
-    const phoneRegex = /^(0[3|5|7|8|9])[0-9]{8}$/;
-    return phoneRegex.test(phoneNumber);
+  useEffect(() => {
+    if (resendIn <= 0) return;
+    const t = setTimeout(() => setResendIn((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resendIn]);
+
+  const sendOtp = async () => {
+    setSending(true);
+    try {
+      const { resendAfter } = await authService.requestOtp(phone.trim());
+      setResendIn(resendAfter);
+      setStep("otp");
+      setErrors({});
+    } catch (err) {
+      // BR-02: too soon; the server says how long to wait
+      if (err instanceof ApiError && typeof err.details.retryAfter === "number")
+        setResendIn(err.details.retryAfter);
+      setErrors({ phone: errorMessage(err) });
+    } finally {
+      setSending(false);
+    }
   };
 
   const handlePhoneSubmit = (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    if (!phone.trim()) {
-      setErrors({ ...errors, phone: "Vui lòng nhập số điện thoại" });
+    if (!VN_PHONE_REGEX.test(phone.trim())) {
+      setErrors({ phone: "Số điện thoại không hợp lệ (VD: 0912345678)" });
       return;
     }
-
-    if (!validatePhone(phone)) {
-      setErrors({
-        ...errors,
-        phone: "Số điện thoại không hợp lệ (VD: 0987654321)",
-      });
-      return;
-    }
-
-    // Move to OTP step
-    setStep("otp");
-    setErrors({ phone: "", otp: "" });
+    sendOtp();
   };
 
-  const handleOtpSubmit = (e: SubmitEvent<HTMLFormElement>) => {
+  const handleRegister = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const next: Record<string, string> = {};
+    if (!/^\d{6}$/.test(otp)) next.otp = "Mã OTP gồm 6 chữ số";
+    if (!fullName.trim()) next.fullName = "Vui lòng nhập họ tên";
+    if (password.length < MIN_PASSWORD)
+      next.password = `Mật khẩu ít nhất ${MIN_PASSWORD} ký tự`;
+    setErrors(next);
+    if (Object.keys(next).length) return;
 
-    if (!otp.trim()) {
-      setErrors({ ...errors, otp: "Vui lòng nhập mã OTP" });
-      return;
+    setSending(true);
+    try {
+      const session = await authService.register({
+        phone: phone.trim(),
+        otp,
+        fullName: fullName.trim(),
+        password,
+      });
+      startSession(session);
+      router.push("/feed");
+    } catch (err) {
+      setErrors({ otp: errorMessage(err) });
+      setSending(false);
     }
-
-    if (otp !== DEMO_OTP) {
-      setErrors({ ...errors, otp: "Mã OTP không đúng" });
-      return;
-    }
-
-    // Complete registration
-    completeRegistration(phone);
-    router.push("/");
-  };
-
-  const handleBackToPhone = () => {
-    setStep("phone");
-    setOtp("");
-    setErrors({ phone: "", otp: "" });
   };
 
   return (
     <div className="bg-background flex min-h-screen items-center justify-center px-4 py-8">
-      {/* Register Form Card */}
       <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
-        {/* Logo & Shop Name */}
         <div className="mb-8 flex flex-col items-center">
           <div className="relative mb-4 h-20 w-20">
             <Image
-              src={SHOP_INFO.logo}
-              alt={SHOP_INFO.name}
+              src={PLATFORM_INFO.logo}
+              alt={`Logo ${PLATFORM_INFO.name}`}
               fill
               className="object-contain"
               sizes="80px"
@@ -90,42 +113,17 @@ export default function RegisterPage() {
             />
           </div>
           <h1 className="mb-1 text-2xl font-bold text-(--color-primary-dark)">
-            {SHOP_INFO.name}
+            {PLATFORM_INFO.name}
           </h1>
           <p className="text-sm text-(--color-text-muted)">
             {step === "phone"
               ? "Đăng ký tài khoản khách hàng"
-              : "Xác thực số điện thoại"}
+              : "Xác thực và đặt mật khẩu"}
           </p>
         </div>
 
-        {/* Step Indicator */}
-        <div className="mb-6 flex items-center justify-center gap-2">
-          <div
-            className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold ${
-              step === "phone"
-                ? "bg-(--color-primary) text-white"
-                : "bg-(--color-accent-light) text-(--color-primary-dark)"
-            }`}
-          >
-            1
-          </div>
-          <div className="h-0.5 w-12 bg-(--color-border)"></div>
-          <div
-            className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold ${
-              step === "otp"
-                ? "bg-(--color-primary) text-white"
-                : "bg-(--color-border-light) text-(--color-text-muted)"
-            }`}
-          >
-            2
-          </div>
-        </div>
-
-        {/* Phone Step */}
-        {step === "phone" && (
-          <form onSubmit={handlePhoneSubmit} className="space-y-5">
-            {/* Phone Input */}
+        {step === "phone" ? (
+          <form onSubmit={handlePhoneSubmit} className="space-y-5" noValidate>
             <div>
               <label
                 htmlFor="phone"
@@ -133,72 +131,45 @@ export default function RegisterPage() {
               >
                 Số điện thoại
               </label>
-              <div className="relative">
-                <i className="fa-solid fa-phone absolute top-1/2 left-4 hidden -translate-y-1/2 text-(--color-text-muted) lg:block"></i>
-                <input
-                  id="phone"
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => {
-                    setPhone(e.target.value);
-                    setErrors({ ...errors, phone: "" });
-                  }}
-                  placeholder="0987654321"
-                  className={`text-foreground focus:ring-opacity-20 w-full rounded-xl border bg-white px-10 py-3 transition-all duration-150 outline-none placeholder:text-(--color-text-muted) focus:border-(--color-primary) focus:ring-2 focus:ring-(--color-primary) lg:pl-11 ${errors.phone ? "border-red-400" : "border-(--color-border)"} `}
-                />
-              </div>
-              {errors.phone && (
-                <p className="mt-1.5 flex items-center gap-1 text-xs text-red-500">
-                  <i className="fa-solid fa-circle-exclamation"></i>
-                  {errors.phone}
-                </p>
-              )}
-              <p className="mt-2 text-xs text-(--color-text-muted)">
-                Nhập số điện thoại Việt Nam (10 số, bắt đầu bằng 0)
-              </p>
+              <input
+                id="phone"
+                type="tel"
+                value={phone}
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                  setErrors({});
+                }}
+                placeholder="0912345678"
+                className={inputClass(!!errors.phone)}
+              />
+              <FieldError message={errors.phone} />
             </div>
-
-            {/* Buttons */}
             <div className="space-y-3 pt-2">
-              {/* Submit Button */}
               <Button
                 variant="primaryNoBorder"
                 type="submit"
                 style="login"
                 size="lg"
+                disabled={sending}
               >
-                Tiếp tục
+                {sending ? "Đang gửi mã..." : "Gửi mã OTP"}
               </Button>
-
-              {/* Back to Login */}
               <Link
                 href="/login"
-                className="flex w-full items-center justify-center rounded-xl border-2 border-(--color-primary) bg-white py-3 font-semibold text-(--color-primary) no-underline transition-all duration-150 hover:bg-(--color-primary) hover:text-white active:scale-98"
+                className="flex w-full items-center justify-center rounded-xl border-2 border-(--color-primary) bg-white py-3 font-semibold text-(--color-primary) no-underline transition-all duration-150 hover:bg-(--color-primary) hover:text-white"
               >
                 Quay lại đăng nhập
               </Link>
             </div>
           </form>
-        )}
-
-        {/* OTP Step */}
-        {step === "otp" && (
-          <form onSubmit={handleOtpSubmit} className="space-y-5">
-            {/* Info Message */}
-            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
-              <p className="mb-2 text-sm text-blue-800">
-                <i className="fa-solid fa-circle-info mr-2"></i>
-                Mã OTP đã được gửi đến số <strong>{phone}</strong>
-              </p>
-              <p className="text-xs text-blue-600">
-                Demo OTP:{" "}
-                <code className="rounded bg-white px-2 py-1 font-mono">
-                  {DEMO_OTP}
-                </code>
-              </p>
+        ) : (
+          <form onSubmit={handleRegister} className="space-y-4" noValidate>
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
+              Mã OTP đã gửi tới <strong>{phone}</strong>. Mã demo:{" "}
+              <code className="rounded bg-white px-2 py-1 font-mono">
+                {DEMO_OTP}
+              </code>
             </div>
-
-            {/* OTP Input */}
             <div>
               <label
                 htmlFor="otp"
@@ -206,61 +177,75 @@ export default function RegisterPage() {
               >
                 Mã OTP
               </label>
-              <div className="relative">
-                <i className="fa-solid fa-key absolute top-1/2 left-4 hidden -translate-y-1/2 text-(--color-text-muted) lg:block"></i>
-                <input
-                  id="otp"
-                  type="text"
-                  value={otp}
-                  onChange={(e) => {
-                    setOtp(e.target.value);
-                    setErrors({ ...errors, otp: "" });
-                  }}
-                  placeholder="Nhập mã OTP"
-                  maxLength={6}
-                  className={`text-foreground focus:ring-opacity-20 w-full rounded-xl border bg-white px-4 py-3 text-center text-lg tracking-widest transition-all duration-150 outline-none placeholder:text-sm placeholder:tracking-normal placeholder:text-(--color-text-muted) focus:border-(--color-primary) focus:ring-2 focus:ring-(--color-primary) lg:pl-11 ${errors.otp ? "border-red-400" : "border-(--color-border)"} `}
-                />
-              </div>
-              {errors.otp && (
-                <p className="mt-1.5 flex items-center gap-1 text-xs text-red-500">
-                  <i className="fa-solid fa-circle-exclamation"></i>
-                  {errors.otp}
-                </p>
-              )}
+              <input
+                id="otp"
+                inputMode="numeric"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+                maxLength={6}
+                className={`${inputClass(!!errors.otp)} text-center text-lg tracking-widest`}
+              />
+              <FieldError message={errors.otp} />
             </div>
-
-            {/* Buttons */}
+            <div>
+              <label
+                htmlFor="fullName"
+                className="mb-2 block text-sm font-medium text-(--color-text-secondary)"
+              >
+                Họ tên
+              </label>
+              <input
+                id="fullName"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                maxLength={100}
+                className={inputClass(!!errors.fullName)}
+              />
+              <FieldError message={errors.fullName} />
+            </div>
+            <div>
+              <label
+                htmlFor="password"
+                className="mb-2 block text-sm font-medium text-(--color-text-secondary)"
+              >
+                Mật khẩu
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={inputClass(!!errors.password)}
+              />
+              <FieldError message={errors.password} />
+            </div>
             <div className="space-y-3 pt-2">
-              {/* Submit Button */}
               <Button
                 variant="primaryNoBorder"
                 type="submit"
                 style="login"
                 size="lg"
+                disabled={sending}
               >
-                Hoàn tất đăng ký
+                {sending ? "Đang tạo tài khoản..." : "Hoàn tất đăng ký"}
               </Button>
-
-              {/* Back Button */}
-              <Button
-                variant="bgWhite"
-                onClick={handleBackToPhone}
-                size="lg"
-                style="login"
-              >
-                Thay đổi số điện thoại
-              </Button>
-            </div>
-
-            {/* Resend OTP (disabled in demo) */}
-            <div className="text-center">
-              <button
-                type="button"
-                disabled
-                className="cursor-not-allowed text-sm text-(--color-text-muted)"
-              >
-                Gửi lại mã OTP (60s)
-              </button>
+              <div className="flex justify-between text-sm">
+                <button
+                  type="button"
+                  onClick={() => setStep("phone")}
+                  className="cursor-pointer border-none bg-transparent text-(--color-text-muted) hover:text-(--color-primary)"
+                >
+                  Đổi số điện thoại
+                </button>
+                <button
+                  type="button"
+                  onClick={sendOtp}
+                  disabled={resendIn > 0 || sending}
+                  className="cursor-pointer border-none bg-transparent text-(--color-primary) disabled:cursor-not-allowed disabled:text-(--color-text-muted)"
+                >
+                  {resendIn > 0 ? `Gửi lại mã (${resendIn}s)` : "Gửi lại mã"}
+                </button>
+              </div>
             </div>
           </form>
         )}

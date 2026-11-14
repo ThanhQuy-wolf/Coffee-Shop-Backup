@@ -1,6 +1,3 @@
-import { CartFab } from "@/components/organisms/cart";
-import Footer from "@/layouts/footer";
-import Header from "@/layouts/header";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
@@ -18,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Coffee Shop — Hệ thống đặt món",
-  description: "Đặt món cà phê, trà, nước ép và nhiều hơn nữa tại Coffee Shop.",
+  title: "Drinkool — Đặt đồ uống tại quán",
+  description: "Chọn quán, đặt món và thanh toán ngay trên điện thoại.",
   icons: {
     icon: "/favicon/favicon.ico",
     shortcut: "/favicon/favicon.ico",
