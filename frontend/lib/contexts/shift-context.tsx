@@ -279,6 +279,7 @@ export function ShiftProvider({
   }, [from, to, isManager, weekStartIso]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- state is set only after the service call resolves
     void reload();
   }, [reload]);
 

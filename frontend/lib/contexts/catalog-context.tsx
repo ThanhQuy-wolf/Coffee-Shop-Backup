@@ -127,6 +127,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- state is set only after the service call resolves
     void reload();
   }, [reload]);
 

@@ -65,6 +65,7 @@ export default function OrderPage() {
   const isFinal = !!order && FINAL.has(order.status);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- state is set only after the service call resolves
     load();
     if (isFinal) return;
     const poll = setInterval(load, POLL_MS);
