@@ -8,7 +8,10 @@ import type {
   Department,
   MenuCategory,
   NotificationType,
+  OptionGroup,
+  OptionValue,
   Order,
+  OrderItemOption,
   OrderItemType,
   Product,
   Review,
@@ -17,7 +20,12 @@ import type {
   User,
   UserRole,
 } from "../types";
-import { MENU_CATEGORIES, MOCK_COMBOS, MOCK_PRODUCTS } from "./menu";
+import {
+  MENU_CATEGORIES,
+  MOCK_COMBOS,
+  MOCK_OPTION_GROUPS,
+  MOCK_PRODUCTS,
+} from "./menu";
 import { type AssignmentRow, MOCK_SHIFT_SEED, type ShiftRow } from "./shifts";
 import {
   DEFAULT_SHOP_SETTINGS,
@@ -119,6 +127,21 @@ export interface ProductRow extends Product {
   deletedAt: string | null;
 }
 export type ComboRow = Omit<Combo, "sellable"> & { deletedAt: string | null };
+export interface OptionValueRow extends OptionValue {
+  deletedAt: string | null;
+}
+export interface OptionGroupRow extends Omit<
+  OptionGroup,
+  "values" | "productCount"
+> {
+  values: OptionValueRow[];
+  deletedAt: string | null;
+}
+
+export interface OrderItemOptionRow extends OrderItemOption {
+  optionGroupId: number;
+  costDelta: number;
+}
 
 export interface OrderItemRow {
   type: OrderItemType;
@@ -129,6 +152,7 @@ export interface OrderItemRow {
   unitCost: number;
   quantity: number;
   lineTotal: number;
+  options: OrderItemOptionRow[];
 }
 
 export interface OrderRow extends Omit<
@@ -171,6 +195,16 @@ const combos: ComboRow[] = MOCK_COMBOS.map(({ sellable: _, ...c }) => ({
   ...c,
   deletedAt: null,
 }));
+const optionGroups: OptionGroupRow[] = MOCK_OPTION_GROUPS.map(
+  ({ productCount: _, ...g }) => ({
+    ...clone(g),
+    values: g.values.map((v) => ({ ...v, deletedAt: null })),
+    deletedAt: null,
+  }),
+);
+
+/** Seed lines: [productId, quantity] or [productId, quantity, optionValueIds] */
+type SeedLine = [number, number] | [number, number, number[]];
 
 /**
  * Builds one seed order dated 10/04/2026.
@@ -178,7 +212,8 @@ const combos: ComboRow[] = MOCK_COMBOS.map(({ sellable: _, ...c }) => ({
  * @param seq Daily sequence number used in the code.
  * @param status Order status.
  * @param createdMinutesAgo How long before mock "now" it was placed.
- * @param lines `[productId, quantity]` pairs.
+ * @param lines `[productId, quantity, optionValueIds?]`; options are
+ *   snapshot into the row with their current names and deltas.
  * @param extra Fields to override.
  * @returns The stored order row.
  */
@@ -187,21 +222,35 @@ function seedOrder(
   seq: number,
   status: Order["status"],
   createdMinutesAgo: number,
-  lines: [number, number][],
+  lines: SeedLine[],
   extra: Partial<OrderRow> = {},
 ): OrderRow {
   const createdAt = minutesAgo(createdMinutesAgo);
-  const items: OrderItemRow[] = lines.map(([productId, quantity]) => {
+  const items: OrderItemRow[] = lines.map(([productId, quantity, ids = []]) => {
     const p = MOCK_PRODUCTS.find((x) => x.id === productId)!;
+    const options = optionGroups.flatMap((g) =>
+      g.values
+        .filter((v) => ids.includes(v.id))
+        .map((v) => ({
+          optionValueId: v.id,
+          optionGroupId: g.id,
+          groupName: g.name,
+          valueName: v.name,
+          priceDelta: v.priceDelta,
+          costDelta: v.costDelta,
+        })),
+    );
+    const unitPrice = options.reduce((s, o) => s + o.priceDelta, p.price);
     return {
       type: "PRODUCT",
       id: p.id,
       name: p.name,
       categoryId: p.categoryId,
-      unitPrice: p.price,
-      unitCost: p.costPrice,
+      unitPrice,
+      unitCost: options.reduce((s, o) => s + o.costDelta, p.costPrice),
       quantity,
-      lineTotal: p.price * quantity,
+      lineTotal: unitPrice * quantity,
+      options,
     };
   });
   const total = items.reduce((s, i) => s + i.lineTotal, 0);
@@ -303,7 +352,9 @@ function seedOrders(): OrderRow[] {
       ],
       { tableLabel: "A01" },
     ),
-    seedOrder(7, 7, "PREPARING", 9, [[7, 2]], { note: "Ít đá" }),
+    seedOrder(7, 7, "PREPARING", 9, [[7, 2, [2, 5, 9, 11]]], {
+      note: "Mang đi",
+    }),
     seedOrder(
       8,
       8,
@@ -357,6 +408,7 @@ export const db = {
   categories,
   products,
   combos,
+  optionGroups,
   orders: seedOrders(),
   reviews: clone(seedReviews),
   shifts: clone(MOCK_SHIFT_SEED.shifts) as ShiftRow[],

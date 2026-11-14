@@ -1,5 +1,5 @@
 // Seed menu of the shop.
-import type { Combo, MenuCategory, Product } from "../types";
+import type { Combo, MenuCategory, OptionGroup, Product } from "../types";
 
 export const MENU_CATEGORIES: MenuCategory[] = [
   {
@@ -36,7 +36,8 @@ export const MENU_CATEGORIES: MenuCategory[] = [
   },
 ];
 
-export const MOCK_PRODUCTS: Product[] = [
+// ===== MOCK PRODUCTS =====
+const BASE_PRODUCTS: Omit<Product, "optionGroupIds">[] = [
   {
     id: 1,
     name: "Cà Phê Đen",
@@ -237,6 +238,114 @@ export const MOCK_PRODUCTS: Product[] = [
   },
 ];
 
+// ===== OPTION GROUPS =====
+const SIZE = 1;
+const SUGAR = 2;
+const ICE = 3;
+const TOPPING = 4;
+
+/**
+ * Builds one seed option value, on sale and sorted by id.
+ * @param id Value id, unique across groups.
+ * @param name Name shown to customers.
+ * @param priceDelta Added to the product price (BR-17).
+ * @param costDelta Added to the product cost price.
+ * @param isDefault Picked in advance in the option picker.
+ * @returns The value.
+ */
+const value = (
+  id: number,
+  name: string,
+  priceDelta = 0,
+  costDelta = 0,
+  isDefault = false,
+) => ({
+  id,
+  name,
+  priceDelta,
+  costDelta,
+  isDefault,
+  isAvailable: true,
+  sortOrder: id,
+});
+
+export const MOCK_OPTION_GROUPS: OptionGroup[] = [
+  {
+    id: SIZE,
+    name: "Size",
+    selectionType: "SINGLE",
+    minSelect: 1,
+    maxSelect: 1,
+    sortOrder: 1,
+    values: [value(1, "Size M", 0, 0, true), value(2, "Size L", 6000, 2500)],
+  },
+  {
+    id: SUGAR,
+    name: "Mức đường",
+    selectionType: "SINGLE",
+    minSelect: 1,
+    maxSelect: 1,
+    sortOrder: 2,
+    values: [
+      value(3, "100% đường", 0, 0, true),
+      value(4, "70% đường"),
+      value(5, "50% đường"),
+      value(6, "30% đường"),
+      value(7, "Không đường"),
+    ],
+  },
+  {
+    id: ICE,
+    name: "Mức đá",
+    selectionType: "SINGLE",
+    minSelect: 1,
+    maxSelect: 1,
+    sortOrder: 3,
+    values: [
+      value(8, "Đá bình thường", 0, 0, true),
+      value(9, "Ít đá"),
+      value(10, "Không đá"),
+    ],
+  },
+  {
+    id: TOPPING,
+    name: "Topping",
+    selectionType: "MULTIPLE",
+    minSelect: 0,
+    maxSelect: 3,
+    sortOrder: 4,
+    values: [
+      value(11, "Trân châu đen", 5000, 1500),
+      value(12, "Trân châu trắng", 5000, 1500),
+      value(13, "Thạch cà phê", 5000, 1200),
+      value(14, "Kem cheese", 8000, 3000),
+    ],
+  },
+];
+
+// Food and the stand-alone toppings have no options.
+const PRODUCT_OPTION_GROUPS: Record<number, number[]> = {
+  1: [SIZE, SUGAR, ICE],
+  2: [SIZE, SUGAR, ICE],
+  3: [SIZE, SUGAR, ICE],
+  4: [SIZE],
+  5: [SIZE, SUGAR, ICE, TOPPING],
+  6: [SIZE, SUGAR, ICE, TOPPING],
+  7: [SIZE, SUGAR, ICE, TOPPING],
+  8: [ICE],
+  9: [ICE],
+  10: [SIZE, SUGAR, ICE],
+  11: [SIZE, SUGAR, ICE],
+  12: [SIZE, SUGAR, ICE, TOPPING],
+  13: [SIZE, SUGAR, ICE, TOPPING],
+};
+
+export const MOCK_PRODUCTS: Product[] = BASE_PRODUCTS.map((p) => ({
+  ...p,
+  optionGroupIds: PRODUCT_OPTION_GROUPS[p.id] ?? [],
+}));
+
+// ===== MOCK COMBOS =====
 export const MOCK_COMBOS: Combo[] = [
   {
     id: 1,

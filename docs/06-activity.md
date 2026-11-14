@@ -8,18 +8,23 @@ Mermaid chưa có loại sơ đồ activity riêng, nên các sơ đồ dưới 
 flowchart TD
     subgraph KH["Khách"]
         A0(("Bắt đầu")) --> A1["Mở trang chủ /"]
-        A1 --> A2["Xem menu, thêm món vào giỏ"]
-        A2 --> A6["Mở /checkout"]
+        A1 --> A2["Xem menu, chọn món"]
+        A2 --> A3{"Món có<br/>nhóm tuỳ chọn?"}
+        A3 -- "Có" --> A4["Chọn size, đường, đá, topping,<br/>giá cập nhật theo lựa chọn<br/>(BR-16, BR-17)"]
+        A4 --> A5["Thêm vào giỏ: cùng lựa chọn<br/>thì cộng dồn, khác thì dòng mới"]
+        A3 -- "Không" --> A5
+        A5 --> A6["Mở /checkout"]
         A6 --> A7["Chọn Tiền mặt hoặc QR,<br/>nhập số bàn, ghi chú"]
         A7 --> A8["Bấm Đặt món"]
         A15["Sửa giỏ theo thông báo"] --> A8
     end
 
     subgraph HT["Hệ thống"]
-        B1{"Mọi món và combo<br/>đang bán?<br/>(BR-21)"}
+        B1{"Mọi món, combo<br/>và tuỳ chọn đang bán?<br/>(BR-21)"}
+        B1b{"Lựa chọn đúng<br/>nhóm và số lượng?<br/>(BR-18)"}
         B2{"Giá khớp giá hiện tại?<br/>(BR-22)"}
         B3{"Số lượng hợp lệ?<br/>(BR-23)"}
-        B4["Tạo đơn PENDING_PAYMENT,<br/>chụp giá vào order_item,<br/>sinh mã đơn (BR-25),<br/>tạo payment PENDING"]
+        B4["Tạo đơn PENDING_PAYMENT,<br/>chụp giá vào order_item,<br/>chụp tuỳ chọn vào order_item_option,<br/>sinh mã đơn (BR-25),<br/>tạo payment PENDING"]
         B5{"Nhân viên xác nhận<br/>trong P-06 phút?"}
         B6["Huỷ đơn, lý do PAYMENT_TIMEOUT<br/>(BR-28), payment VOIDED"]
         B7["Đơn PAID"]
@@ -37,7 +42,9 @@ flowchart TD
 
     A8 --> B1
     B1 -- "Không" --> A15
-    B1 -- "Có" --> B2
+    B1 -- "Có" --> B1b
+    B1b -- "Không" --> A15
+    B1b -- "Có" --> B2
     B2 -- "Không: trả giá mới" --> A15
     B2 -- "Có" --> B3
     B3 -- "Không" --> A15

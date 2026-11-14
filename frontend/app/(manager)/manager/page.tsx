@@ -4,6 +4,7 @@ import { Alert } from "@/components/atoms";
 import {
   CategoriesTab,
   CombosTab,
+  OptionGroupsTab,
   ProductsTab,
   ReviewsTab,
   ShopInfoTab,
@@ -17,6 +18,7 @@ import { useRouter } from "next/navigation";
 const SUBTITLE: Record<ManagerTab, string> = {
   products: "Món, giá bán, giá vốn và tình trạng bán",
   combos: "Combo và các món thành phần",
+  options: "Size, mức đường, mức đá, topping dùng chung cho các món",
   categories: "Nhóm món hiển thị trên menu",
   shop: "Thông tin quán và tham số vận hành",
   reviews: "Đánh giá của khách về quán",
@@ -38,15 +40,22 @@ const LINKS = [
 ];
 
 /**
- * Manager dashboard with tabs for products, combos and categories
- * (UC-12 → UC-14), shop info (UC-15) and reviews (UC-17). The selected tab
- * lives in the manager context.
+ * Manager dashboard with tabs for products, combos, option groups and
+ * categories (UC-12 → UC-14, UC-25), shop info (UC-15) and reviews (UC-17).
+ * The selected tab lives in the manager context.
  */
 export default function ManagerPage() {
   const router = useRouter();
   const { user, logout } = useAuth();
-  const { activeTab, setActiveTab, products, combos, categories, loadError } =
-    useManager();
+  const {
+    activeTab,
+    setActiveTab,
+    products,
+    combos,
+    categories,
+    optionGroups,
+    loadError,
+  } = useManager();
 
   const tabs = [
     {
@@ -60,6 +69,12 @@ export default function ManagerPage() {
       label: "Combo",
       icon: "fa-solid fa-layer-group",
       count: combos.length,
+    },
+    {
+      id: "options" as const,
+      label: "Tuỳ chọn",
+      icon: "fa-solid fa-sliders",
+      count: optionGroups.length,
     },
     {
       id: "categories" as const,
@@ -235,6 +250,7 @@ export default function ManagerPage() {
           {activeTab === "products" && <ProductsTab />}
           {activeTab === "combos" && <CombosTab />}
           <Alert message={loadError} className="mb-4" />
+          {activeTab === "options" && <OptionGroupsTab />}
           {activeTab === "categories" && <CategoriesTab />}
           {activeTab === "shop" && <ShopInfoTab />}
           {activeTab === "reviews" && <ReviewsTab />}

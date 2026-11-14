@@ -26,6 +26,7 @@ Frontend hiện tại đã có giao diện cho hầu hết các phần trên. Tu
 **Trong phạm vi:**
 - Tài khoản: đăng ký khách bằng số điện thoại và OTP, đăng nhập cho khách, nhân viên và quản lý, đăng xuất.
 - Xem menu của quán (món, combo, danh mục), tìm kiếm món.
+- Tuỳ chọn món: size, mức đường, mức đá, topping. Mỗi lựa chọn có thể cộng thêm tiền. Quản lý tự định nghĩa nhóm tuỳ chọn và gắn vào từng món.
 - Giỏ hàng, đặt món, chọn phương thức thanh toán (tiền mặt hoặc QR chuyển khoản), theo dõi trạng thái đơn, lịch sử đơn của khách.
 - Nhân viên xử lý đơn: xác nhận đã thu tiền, pha chế, báo món xong, hoàn tất, huỷ.
 - Đánh giá đơn (1–5 sao và bình luận).
@@ -56,6 +57,7 @@ Mỗi giả định dưới đây, nếu sai, sẽ làm thay đổi thiết kế
 | A-7 | Không có tồn kho: món đang bật bán thì đặt được, không giới hạn số lượng | Nếu cần trừ tồn thì thêm bảng tồn kho và rule giữ chỗ |
 | A-8 | Tiền tệ duy nhất là VND, lưu bằng số nguyên (đồng), không có số lẻ | — |
 | A-9 | Lương ca là **mức cố định mỗi ca** (như frontend hiện tại), không tính theo giờ | Nếu tính theo giờ thì `wage` đổi thành đơn giá giờ và phải chấm giờ vào, giờ ra |
+| A-10 | Tuỳ chọn chỉ áp cho **món bán lẻ**. Món nằm trong combo được pha theo lựa chọn mặc định (Q-07) | Nếu cho chọn trong combo thì dòng combo phải lưu lựa chọn của từng món thành phần và cộng giá chênh vào giá combo |
 
 ## 5. Actor và phân quyền
 
@@ -74,8 +76,9 @@ Mỗi giả định dưới đây, nếu sai, sẽ làm thay đổi thiết kế
 | Xem lịch sử đơn của mình, đánh giá | – | ✓ | – | – |
 | Xem và xử lý đơn | – | – | ✓ | ✓ |
 | Tạm tắt bán một món khi hết nguyên liệu | – | – | ✓ | ✓ |
+| Tạm tắt một tuỳ chọn khi hết (ví dụ hết trân châu) | – | – | ✓ | ✓ |
 | Huỷ đơn đã thanh toán (hoàn tiền) | – | – | – | ✓ |
-| CRUD danh mục, món, combo; sửa thông tin quán | – | – | – | ✓ |
+| CRUD danh mục, món, combo, nhóm tuỳ chọn; sửa thông tin quán | – | – | – | ✓ |
 | Xem lịch ca, đăng ký ca, xin nghỉ | – | – | ✓ | ✓ |
 | Tạo, sửa, huỷ ca; duyệt nghỉ; chấm công | – | – | – | ✓ |
 | Xem báo cáo doanh thu, lợi nhuận, chi phí ca | – | – | – | ✓ |
@@ -102,6 +105,7 @@ Mỗi FR truy vết về use case trong [03-usecase.md](03-usecase.md) và về 
 | FR-08 | Quản lý thêm, sửa, xoá món (tên, danh mục, giá bán, giá vốn, ảnh, mô tả) và bật/tắt bán | UC-13 | BR-10, BR-12, BR-14 |
 | FR-09 | Quản lý thêm, sửa, xoá combo gồm ≥ 2 món kèm số lượng, có giá riêng, bật/tắt bán | UC-14 | BR-13, BR-14 |
 | FR-10 | Quản lý sửa thông tin quán: tên, khẩu hiệu, địa chỉ, giờ mở cửa, wifi, mạng xã hội | UC-15 | — |
+| FR-34 | Quản lý thêm, sửa, xoá nhóm tuỳ chọn (ví dụ Size, Mức đường, Mức đá, Topping): tên, kiểu chọn một hoặc chọn nhiều, số lựa chọn tối thiểu và tối đa, danh sách giá trị kèm giá chênh, giá vốn chênh và giá trị mặc định. Gắn một hoặc nhiều nhóm vào từng món. Nhân viên được tạm tắt một giá trị khi hết nguyên liệu | UC-25, UC-13 | BR-16, BR-17, BR-19 |
 
 FR-05 (tìm quán) đã bỏ khi hệ thống chuyển sang một quán. Mã không dùng lại.
 
@@ -110,8 +114,10 @@ FR-05 (tìm quán) đã bỏ khi hệ thống chuyển sang một quán. Mã kh�
 | ID | Yêu cầu | UC | BR |
 |---|---|---|---|
 | FR-11 | Giỏ hàng lưu trên thiết bị: thêm, bớt, đổi số lượng, xoá món | UC-05 | BR-23 |
+| FR-35 | Khi thêm một món có nhóm tuỳ chọn, khách chọn tuỳ chọn trong hộp thoại. Giá trị mặc định được chọn sẵn, giá cập nhật ngay theo lựa chọn, nút thêm vào giỏ bị khoá cho tới khi đủ nhóm bắt buộc. Cùng món nhưng khác lựa chọn là hai dòng giỏ riêng, cùng lựa chọn thì cộng dồn số lượng | UC-05 | BR-16, BR-18, BR-19 |
 | FR-12 | Đặt món: gửi giỏ hàng, phương thức thanh toán và số bàn (tuỳ chọn). Hệ thống kiểm lại giá và tình trạng bán, đóng băng giá vào đơn, rồi trả về mã đơn | UC-07 | BR-21, BR-22, BR-23, BR-24 |
 | FR-13 | Nếu chọn QR, hiện mã QR chuyển khoản kèm số tiền và nội dung là mã đơn | UC-07 | BR-25 |
+| FR-36 | Lựa chọn của từng dòng (ví dụ "Size L, 50% đường, Trân châu") được chụp vào đơn và hiện ở mọi nơi hiển thị dòng đơn: giỏ, trang thanh toán, chi tiết đơn của khách, hàng đợi của nhân viên | UC-07, UC-08, UC-10 | BR-17, BR-18 |
 | FR-14 | Khách xem trạng thái đơn của mình theo thời gian thực (polling mỗi P-07 giây) | UC-08 | — |
 | FR-15 | Khách đã đăng nhập xem lịch sử đơn | UC-09 | — |
 | FR-16 | Nhân viên xem hàng đợi đơn theo trạng thái | UC-10 | — |
@@ -154,6 +160,8 @@ FR-05 (tìm quán) đã bỏ khi hệ thống chuyển sang một quán. Mã kh�
 - Given giỏ có 2 Cà Phê Sữa giá 30.000 đ, When khách bấm "Đặt món" với phương thức QR, Then hệ thống tạo đơn trạng thái `PENDING_PAYMENT`, tổng 60.000 đ, hiển thị mã đơn và mã QR.
 - Given quản lý vừa tăng giá Cà Phê Sữa lên 32.000 đ sau khi khách đã thêm vào giỏ, When khách đặt món, Then hệ thống trả lỗi `BR-22` kèm giá mới. Giao diện cập nhật giỏ và yêu cầu khách xác nhận lại tổng tiền.
 - Given một món trong giỏ vừa bị tắt bán, When khách đặt món, Then hệ thống trả lỗi `BR-21` kèm danh sách món không còn bán. Không có đơn nào được tạo.
+- Given Trà sữa giá 35.000 đ có nhóm Size (M +0 đ, L +6.000 đ, bắt buộc) và Topping (Trân châu +5.000 đ, tối đa 3), When khách chọn Size L và Trân châu rồi đặt 2 ly, Then dòng đơn có đơn giá 46.000 đ, thành tiền 92.000 đ và ghi "Size L, Trân châu" (BR-17).
+- Given trân châu vừa bị nhân viên tạm tắt sau khi khách đã thêm vào giỏ, When khách đặt món, Then hệ thống trả lỗi `BR-21` chỉ ra dòng và tuỳ chọn không còn bán. Không có đơn nào được tạo.
 - Given mạng chập chờn khiến khách bấm "Đặt món" hai lần với cùng `Idempotency-Key`, When request thứ hai tới, Then hệ thống trả lại đúng đơn đã tạo, không tạo đơn thứ hai (BR-24).
 
 **US-10 — Là nhân viên, tôi muốn xác nhận khách đã trả tiền để bắt đầu pha chế.**
@@ -273,3 +281,4 @@ Q-05 đã bỏ cùng khái niệm nhiều quán. Mã không dùng lại.
 3. **Q-03 — Có cần tích hợp cổng thanh toán QR tự động ở giai đoạn 1 không?** Nếu có thì thêm webhook, đối soát và trạng thái `PROCESSING`. *(a) **Không, xác nhận thủ công** — (b) VietQR kèm webhook ngân hàng — (c) VNPay hoặc MoMo*
 4. **Q-04 — Lương ca tính cố định theo ca hay theo giờ?** Ảnh hưởng tới `shift.wage` và chi phí nhân công. *(a) **Cố định theo ca** — (b) Theo giờ, chấm giờ vào/ra*
 5. **Q-06 — Có cho sửa món trong đơn sau khi đã thanh toán không (đổi món vì hết nguyên liệu)?** Nếu có, cần lệnh sửa dòng đơn, tính chênh lệch và hoàn tiền một phần. *(a) **Không, huỷ đơn rồi đặt lại** — (b) Cho đổi sang món cùng giá — (c) Cho đổi tuỳ ý, xử lý chênh lệch*
+6. **Q-07 — Món trong combo có cho chọn tuỳ chọn (size, topping) không?** Ảnh hưởng tới `order_item_option` và cách tính giá combo. *(a) **Không, pha theo mặc định** — (b) Cho chọn, cộng giá chênh vào dòng combo*

@@ -5,6 +5,7 @@ import { useManager } from "@/lib/contexts/manager-context";
 import type { Product } from "@/lib/types";
 import { formatVND } from "@/lib/utils/currency";
 import { errorMessage } from "@/lib/utils/errors";
+import { groupsOf } from "@/lib/utils/options";
 import { useState } from "react";
 
 import DeleteConfirm from "./DeleteConfirm";
@@ -20,6 +21,7 @@ export default function ProductsTab() {
   const {
     products,
     categories,
+    optionGroups,
     saveProduct,
     deleteProduct,
     setProductAvailability,
@@ -177,6 +179,14 @@ export default function ProductsTab() {
                           {p.description}
                         </p>
                       )}
+                      {p.optionGroupIds.length > 0 && (
+                        <p className="mt-0.5 text-[11px] text-(--color-text-muted)">
+                          <i className="fa-solid fa-sliders mr-1"></i>
+                          {groupsOf(p, optionGroups)
+                            .map((g) => g.name)
+                            .join(", ")}
+                        </p>
+                      )}
                     </div>
                   </td>
                   <td className="px-4 py-3">
@@ -237,6 +247,7 @@ export default function ProductsTab() {
         <ProductModal
           product={modalProduct === "new" ? null : modalProduct}
           categories={categories}
+          optionGroups={optionGroups}
           onSave={(input) =>
             saveProduct(
               input,

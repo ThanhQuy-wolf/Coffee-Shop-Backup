@@ -3,6 +3,7 @@
 import { Alert } from "@/components/atoms";
 import { Modal, ModalHeader } from "@/components/molecules/modal";
 import type { ProductInput } from "@/lib/types";
+import { rangeLabel } from "@/lib/utils/options";
 import { useState } from "react";
 
 import type { ProductModalProps } from "./Manager.types";
@@ -16,12 +17,15 @@ const PLACEHOLDER_IMAGE = "/imgs/products/placeholder.jpg";
  * warns when the cost price is missing (BR-10).
  * @param props.product The product to edit, or null to add one.
  * @param props.categories Categories to choose from.
+ * @param props.optionGroups Option groups that can be attached, in the order
+ *   they are ticked (C-6, C-7).
  * @param props.onSave Saves the form; resolves once the server accepted it.
  * @param props.onClose Closes the modal.
  */
 export default function ProductModal({
   product,
   categories,
+  optionGroups,
   onSave,
   onClose,
 }: ProductModalProps) {
@@ -34,7 +38,17 @@ export default function ProductModal({
     costPrice: product?.costPrice ?? 0,
     imageUrl: product?.imageUrl ?? PLACEHOLDER_IMAGE,
     isAvailable: product?.isAvailable ?? true,
+    optionGroupIds: product?.optionGroupIds ?? [],
   });
+
+  // The tick order is the order customers see the groups in (C-6, C-7)
+  const toggleGroup = (id: number) =>
+    setForm((f) => ({
+      ...f,
+      optionGroupIds: f.optionGroupIds.includes(id)
+        ? f.optionGroupIds.filter((x) => x !== id)
+        : [...f.optionGroupIds, id],
+    }));
   const { submit, error, saving } = useSaveForm(onSave, onClose);
 
   const margin =
@@ -43,7 +57,7 @@ export default function ProductModal({
       : null;
 
   return (
-    <Modal onClose={onClose} className="max-w-lg">
+    <Modal onClose={onClose} className="flex max-h-[92vh] max-w-lg flex-col">
       <ModalHeader
         title={isEdit ? "Chỉnh sửa món" : "Thêm món mới"}
         onClose={onClose}
@@ -51,7 +65,7 @@ export default function ProductModal({
 
       <form
         onSubmit={submit(() => ({ ...form, name: form.name.trim() }))}
-        className="space-y-4 px-6 py-5"
+        className="space-y-4 overflow-y-auto px-6 py-5"
       >
         <div>
           <label htmlFor="product-name" className={labelCls}>
@@ -157,6 +171,44 @@ export default function ProductModal({
             placeholder="Mô tả ngắn về món..."
           />
         </div>
+
+        <fieldset>
+          <legend className={labelCls}>Nhóm tuỳ chọn</legend>
+          {optionGroups.length === 0 ? (
+            <p className="text-xs text-(--color-text-muted)">
+              Chưa có nhóm nào. Tạo nhóm ở tab Tuỳ chọn.
+            </p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {optionGroups.map((g) => {
+                const pos = form.optionGroupIds.indexOf(g.id);
+                return (
+                  <label
+                    key={g.id}
+                    className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-1.5 text-sm ${pos >= 0 ? "border-(--color-primary) bg-(--color-primary)/5" : "border-(--color-border-light)"}`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={pos >= 0}
+                      onChange={() => toggleGroup(g.id)}
+                      className="accent-(--color-primary)"
+                    />
+                    {pos >= 0 && (
+                      <span className="text-xs font-bold text-(--color-primary)">
+                        {pos + 1}.
+                      </span>
+                    )}
+                    {g.name}
+                    <span className="text-xs text-(--color-text-muted)">
+                      {g.minSelect > 0 ? "bắt buộc, " : ""}
+                      {rangeLabel(g).toLowerCase()}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          )}
+        </fieldset>
 
         <label className="bg-background flex cursor-pointer items-center justify-between rounded-xl border border-(--color-border-light) px-4 py-3">
           <span>

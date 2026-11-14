@@ -57,7 +57,7 @@ A-1, A-2, A-4 và A-5 cùng trả:
 | S-3 | PUT | `/shop` | M | Sửa thông tin quán | FR-10 | `shopService.update` |
 | S-4 | GET | `/shop/settings` | M | Đọc tham số của quán (P-06, P-08 đến P-12) | — | `shopService.getSettings` |
 | S-5 | PUT | `/shop/settings` | M | Sửa tham số của quán | — | `shopService.updateSettings` |
-| S-6 | GET | `/menu` | Public | Menu cho khách: danh mục, món và combo **đang bán**, có `?q=` để tìm theo tên và mô tả | FR-06, BR-13 | `catalogService.getMenu` |
+| S-6 | GET | `/menu` | Public | Menu cho khách: danh mục, món và combo **đang bán**, có `?q=` để tìm theo tên và mô tả. Mỗi món có `optionGroupIds` theo thứ tự hiển thị, và response kèm `optionGroups` (nhóm cùng giá trị). Giá trị tạm hết vẫn trả về với `isAvailable: false` để giao diện hiện "Hết". Món có nhóm bắt buộc không đủ giá trị đang bán thì không có trong menu (BR-19) | FR-06, FR-35, BR-13, BR-19 | `catalogService.getMenu` |
 
 S-1 (danh sách quán) đã bỏ khi hệ thống chuyển sang một quán. Mã S-1 không dùng lại.
 
@@ -72,8 +72,8 @@ Các endpoint `GET` ở đây trả cả món đang tắt bán, khác với S-6.
 | C-3 | PUT | `/categories/{categoryId}` | M | Sửa danh mục | FR-07 | `catalogService.updateCategory` |
 | C-4 | DELETE | `/categories/{categoryId}` | M | Xoá mềm danh mục rỗng | FR-07, BR-11 | `catalogService.deleteCategory` |
 | C-5 | GET | `/products?categoryId=` | S/M | Danh sách món | FR-08 | `catalogService.listProducts` |
-| C-6 | POST | `/products` | M | Tạo món | FR-08, BR-10, BR-12 | `catalogService.createProduct` |
-| C-7 | PUT | `/products/{productId}` | M | Sửa món. Đổi giá thì ghi `audit_log` | FR-08, BR-10, BR-12, BR-15 | `catalogService.updateProduct` |
+| C-6 | POST | `/products` | M | Tạo món. Body có `optionGroupIds` (thứ tự trong mảng là thứ tự hiển thị) | FR-08, FR-34, BR-10, BR-12 | `catalogService.createProduct` |
+| C-7 | PUT | `/products/{productId}` | M | Sửa món, kể cả `optionGroupIds`. Đổi giá thì ghi `audit_log` | FR-08, FR-34, BR-10, BR-12, BR-15 | `catalogService.updateProduct` |
 | C-8 | PATCH | `/products/{productId}/availability` | S/M | Bật/tắt bán `{ isAvailable }`. Nhân viên được tắt khi hết nguyên liệu | FR-08, BR-13 | `catalogService.setProductAvailability` |
 | C-9 | DELETE | `/products/{productId}` | M | Xoá món (mềm nếu đã bán) | FR-08, BR-14 | `catalogService.deleteProduct` |
 | C-10 | GET | `/combos` | S/M | Danh sách combo, kèm cờ `sellable` tính từ món thành phần | FR-09, BR-13 | `catalogService.listCombos` |
@@ -81,12 +81,33 @@ Các endpoint `GET` ở đây trả cả món đang tắt bán, khác với S-6.
 | C-12 | PUT | `/combos/{comboId}` | M | Sửa combo | FR-09, BR-13, BR-15 | `catalogService.updateCombo` |
 | C-13 | PATCH | `/combos/{comboId}/availability` | M | Bật/tắt bán combo | FR-09 | `catalogService.setComboAvailability` |
 | C-14 | DELETE | `/combos/{comboId}` | M | Xoá combo (mềm nếu đã bán) | FR-09, BR-14 | `catalogService.deleteCombo` |
+| C-15 | GET | `/option-groups` | S/M | Danh sách nhóm tuỳ chọn kèm giá trị và `productCount` (số món đang gắn) | FR-34 | `catalogService.listOptionGroups` |
+| C-16 | POST | `/option-groups` | M | Tạo nhóm kèm giá trị, xem body bên dưới | FR-34, BR-16, BR-17 | `catalogService.createOptionGroup` |
+| C-17 | PUT | `/option-groups/{groupId}` | M | Sửa nhóm và cả danh sách giá trị. Giá trị có `id` thì sửa, không có thì thêm, thiếu thì xoá (mềm nếu đã bán). Đổi giá chênh thì ghi `audit_log` | FR-34, BR-16, BR-17, BR-19 | `catalogService.updateOptionGroup` |
+| C-18 | DELETE | `/option-groups/{groupId}` | M | Xoá nhóm (mềm nếu đã bán). Nhóm còn gắn vào món thì trả 422 `BR-19` | FR-34, BR-19 | `catalogService.deleteOptionGroup` |
+| C-19 | PATCH | `/option-values/{valueId}/availability` | S/M | Bật/tắt một giá trị `{ isAvailable }`. Nhân viên được tắt khi hết nguyên liệu | FR-34, BR-19 | `catalogService.setOptionValueAvailability` |
+
+**C-16 — request**
+
+```json
+{
+  "name": "Size",
+  "selectionType": "SINGLE",
+  "minSelect": 1,
+  "maxSelect": 1,
+  "sortOrder": 0,
+  "values": [
+    { "name": "M", "priceDelta": 0, "costDelta": 0, "isDefault": true },
+    { "name": "L", "priceDelta": 6000, "costDelta": 2500, "isDefault": false }
+  ]
+}
+```
 
 ### 2.4 Đơn hàng và thanh toán
 
 | # | Method | Đường dẫn | Quyền | Mô tả | FR / BR | Hàm frontend |
 |---|---|---|---|---|---|---|
-| O-1 | POST | `/orders` | Public, C | Tạo đơn. Header `Idempotency-Key` | FR-12, FR-13, BR-21 → BR-25 | `orderService.create` |
+| O-1 | POST | `/orders` | Public, C | Tạo đơn. Header `Idempotency-Key` | FR-12, FR-13, FR-36, BR-18, BR-21 → BR-25 | `orderService.create` |
 | O-2 | GET | `/orders/{orderId}` | Guest, C, S/M | Chi tiết đơn, kèm thanh toán và đánh giá (nếu có). Màn hình khách gọi lại mỗi P-07 giây | FR-14 | `orderService.get` |
 | O-3 | GET | `/me/orders` | C | Lịch sử đơn của khách, mới nhất trước | FR-15 | `orderService.listMine` |
 | O-4 | GET | `/orders?status=&q=&date=` | S/M | Hàng đợi đơn của quán. `q` tìm theo mã đơn. Số điện thoại khách chỉ trả 3 số cuối (NFR-07) | FR-16 | `orderService.listQueue` |
@@ -120,13 +141,14 @@ Authorization: Bearer eyJ...      (không bắt buộc)
   "tableLabel": "B05",
   "note": "Ít đá",
   "items": [
-    { "type": "PRODUCT", "id": 101, "quantity": 2, "unitPrice": 35000 },
+    { "type": "PRODUCT", "id": 101, "quantity": 2, "unitPrice": 35000, "optionValueIds": [] },
+    { "type": "PRODUCT", "id": 104, "quantity": 1, "unitPrice": 46000, "optionValueIds": [2, 7, 11] },
     { "type": "COMBO", "id": 7, "quantity": 1, "unitPrice": 79000 }
   ]
 }
 ```
 
-`unitPrice` là giá khách đang thấy. Backend dùng nó để kiểm BR-22, không dùng để tính tiền.
+`unitPrice` là giá khách đang thấy, đã cộng giá chênh của các tuỳ chọn. Backend dùng nó để kiểm BR-22, không dùng để tính tiền. `optionValueIds` chỉ có ở dòng `PRODUCT` (BR-18).
 
 **O-1 — response 201**
 
@@ -135,13 +157,21 @@ Authorization: Bearer eyJ...      (không bắt buộc)
   "id": 5521,
   "code": "DH-260410-0042",
   "status": "PENDING_PAYMENT",
-  "total": 149000,
+  "total": 195000,
   "version": 1,
   "guestToken": "gt_9QhX...",
   "paymentDeadline": "2026-04-10T09:30:00+07:00",
-  "payment": { "method": "QR", "status": "PENDING", "amount": 149000, "transferContent": "DH-260410-0042" },
+  "payment": { "method": "QR", "status": "PENDING", "amount": 195000, "transferContent": "DH-260410-0042" },
   "items": [
-    { "type": "PRODUCT", "id": 101, "name": "Bạc xỉu", "unitPrice": 35000, "quantity": 2, "lineTotal": 70000 },
+    { "type": "PRODUCT", "id": 101, "name": "Bạc xỉu", "unitPrice": 35000, "quantity": 2, "lineTotal": 70000, "options": [] },
+    {
+      "type": "PRODUCT", "id": 104, "name": "Trà sữa", "unitPrice": 46000, "quantity": 1, "lineTotal": 46000,
+      "options": [
+        { "optionValueId": 2, "groupName": "Size", "valueName": "Size L", "priceDelta": 6000 },
+        { "optionValueId": 7, "groupName": "Mức đường", "valueName": "50% đường", "priceDelta": 0 },
+        { "optionValueId": 11, "groupName": "Topping", "valueName": "Trân châu đen", "priceDelta": 5000 }
+      ]
+    },
     { "type": "COMBO", "id": 7, "name": "Combo sáng", "unitPrice": 79000, "quantity": 1, "lineTotal": 79000 }
   ],
   "createdAt": "2026-04-10T09:15:00+07:00"
@@ -220,12 +250,15 @@ Mọi lỗi trả `Content-Type: application/problem+json` (RFC 9457, NFR-04):
   "title": "Có món không còn bán",
   "status": 422,
   "rule": "BR-21",
-  "detail": "2 món trong giỏ đã ngừng bán",
+  "detail": "2 dòng trong giỏ có món hoặc tuỳ chọn đã ngừng bán",
   "errors": [
-    { "itemType": "PRODUCT", "id": 101, "reason": "UNAVAILABLE" }
+    { "line": 0, "itemType": "PRODUCT", "id": 101, "reason": "UNAVAILABLE" },
+    { "line": 1, "itemType": "PRODUCT", "id": 104, "optionValueId": 11, "reason": "OPTION_UNAVAILABLE" }
   ]
 }
 ```
+
+Với lỗi của O-1 (`BR-18`, `BR-21`, `BR-22`), mỗi phần tử trong `errors[]` có `line` là vị trí dòng trong `items` của request. Một món có thể nằm ở nhiều dòng với tuỳ chọn khác nhau, nên `itemType` và `id` không đủ để chỉ ra dòng nào. Lỗi `BR-18` có thêm `groupId` (0 nếu không thuộc nhóm nào) và `message`.
 
 Frontend chọn thông báo theo `rule` (hoặc `code` khi không gắn với BR), không theo `title`.
 
@@ -244,7 +277,8 @@ Frontend chọn thông báo theo `rule` (hoặc `code` khi không gắn với BR
 | 409 | `BR-44` | Đã có phân ca hiệu lực trong ca này |
 | 409 | `BR-26` | Xác nhận thanh toán cho đơn không còn `PENDING_PAYMENT` (đã huỷ hoặc đã có người xác nhận) |
 | 409 | `BR-12` | Trùng tên món |
-| 422 | `BR-xx` khác | Vi phạm rule nghiệp vụ còn lại (BR-01, 02, 10, 11, 13, 21, 23, 24, 26 khi số tiền lệch, 30, 31, 40–42, 45–49) |
+| 409 | `BR-16` | Trùng tên nhóm tuỳ chọn, hoặc trùng tên giá trị trong một nhóm |
+| 422 | `BR-xx` khác | Vi phạm rule nghiệp vụ còn lại (BR-01, 02, 10, 11, 13, 16 → 19, 21, 23, 24, 26 khi số tiền lệch, 30, 31, 40–42, 45–49) |
 | 429 | `BR-02` | Yêu cầu OTP quá sớm. Header `Retry-After` |
 | 500 | `INTERNAL` | Lỗi hệ thống. Body có `traceId`, không lộ chi tiết |
 

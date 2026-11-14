@@ -6,7 +6,7 @@ import { type CatalogContextType, useCatalog } from "./catalog-context";
 
 /** Tabs of the /manager page. */
 export type ManagerTab =
-  "products" | "combos" | "categories" | "shop" | "reviews";
+  "products" | "combos" | "options" | "categories" | "shop" | "reviews";
 
 interface ManagerContextType extends CatalogContextType {
   /** Tab shown on /manager. */

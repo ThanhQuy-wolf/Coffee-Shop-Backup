@@ -3,6 +3,8 @@ import type {
   Combo,
   ComboInput,
   MenuCategory,
+  OptionGroup,
+  OptionGroupInput,
   Product,
   ProductInput,
 } from "@/lib/types";
@@ -14,6 +16,7 @@ export interface ProductModalProps {
   /** The product to edit, or null to add one. */
   product: Product | null;
   categories: MenuCategory[];
+  optionGroups: OptionGroup[];
   onSave: (input: ProductInput) => Promise<void>;
   onClose: () => void;
 }
@@ -29,6 +32,13 @@ export interface ComboModalProps {
   combo: Combo | null;
   products: Product[];
   onSave: (input: ComboInput) => Promise<void>;
+  onClose: () => void;
+}
+
+export interface OptionGroupModalProps {
+  group: OptionGroup | null; // null = add mode
+  nextSortOrder: number;
+  onSave: (input: OptionGroupInput) => Promise<void>;
   onClose: () => void;
 }
 

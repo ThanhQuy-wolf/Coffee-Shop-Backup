@@ -15,6 +15,8 @@ import type {
   Combo,
   ComboInput,
   MenuCategory,
+  OptionGroup,
+  OptionGroupInput,
   Product,
   ProductInput,
 } from "../types";
@@ -32,6 +34,8 @@ export interface CatalogContextType {
   combos: Combo[];
   /** Categories with their product count (C-1). */
   categories: MenuCategory[];
+  /** Option groups with their values (C-15). */
+  optionGroups: OptionGroup[];
   /** `true` until the first load finished. */
   isLoading: boolean;
   /** Error text of the last load, `null` when it succeeded. */
@@ -91,6 +95,12 @@ export interface CatalogContextType {
    * @param id - category id
    */
   deleteCategory: (id: number) => Promise<void>;
+  saveOptionGroup: (input: OptionGroupInput, id?: number) => Promise<void>;
+  deleteOptionGroup: (id: number) => Promise<void>;
+  setOptionValueAvailability: (
+    valueId: number,
+    isAvailable: boolean,
+  ) => Promise<void>;
 }
 
 const CatalogContext = createContext<CatalogContextType | undefined>(undefined);
@@ -105,19 +115,22 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
   const [products, setProducts] = useState<Product[]>([]);
   const [combos, setCombos] = useState<Combo[]>([]);
   const [categories, setCategories] = useState<MenuCategory[]>([]);
+  const [optionGroups, setOptionGroups] = useState<OptionGroup[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
     try {
-      const [p, c, cat] = await Promise.all([
+      const [p, c, cat, og] = await Promise.all([
         catalogService.listProducts(),
         catalogService.listCombos(),
         catalogService.listCategories(),
+        catalogService.listOptionGroups(),
       ]);
       setProducts(p);
       setCombos(c);
       setCategories(cat);
+      setOptionGroups(og);
       setLoadError(null);
     } catch (err) {
       setLoadError(errorMessage(err));
@@ -142,6 +155,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
     products,
     combos,
     categories,
+    optionGroups,
     isLoading,
     loadError,
     reload,
@@ -165,6 +179,13 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
         : catalogService.createCategory(input),
     ),
     deleteCategory: run(catalogService.deleteCategory),
+    saveOptionGroup: run((input: OptionGroupInput, id?: number) =>
+      id
+        ? catalogService.updateOptionGroup(id, input)
+        : catalogService.createOptionGroup(input),
+    ),
+    deleteOptionGroup: run(catalogService.deleteOptionGroup),
+    setOptionValueAvailability: run(catalogService.setOptionValueAvailability),
   };
 
   return (

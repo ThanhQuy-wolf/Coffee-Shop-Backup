@@ -25,12 +25,15 @@ sequenceDiagram
     FE->>API: POST /orders<br/>Idempotency-Key: k1
     API->>DB: Tìm đơn theo idempotency_key = k1
     DB-->>API: Không có
-    API->>DB: Đọc món, combo trong giỏ
-    DB-->>API: Trạng thái bán, giá hiện tại
+    API->>DB: Đọc món, combo, tuỳ chọn trong giỏ<br/>và nhóm tuỳ chọn gắn với từng món
+    DB-->>API: Trạng thái bán, giá hiện tại, giá chênh
 
-    alt Có món ngừng bán (BR-21)
+    alt Có món hoặc tuỳ chọn ngừng bán (BR-21)
         API-->>FE: 422 rule BR-21, errors[]
         FE-->>K: Đánh dấu các dòng không còn bán
+    else Lựa chọn sai nhóm hoặc sai số lượng (BR-18)
+        API-->>FE: 422 rule BR-18, errors[]
+        FE-->>K: Mở lại hộp chọn tuỳ chọn của dòng đó
     else Giá đã đổi (BR-22)
         API-->>FE: 409 rule BR-22, currentPrice
         FE-->>K: Cập nhật giá trong giỏ, yêu cầu xác nhận lại
@@ -39,7 +42,8 @@ sequenceDiagram
         API->>DB: INSERT … ON CONFLICT order_daily_counter<br/>RETURNING last_seq
         DB-->>API: 42
         API->>DB: INSERT customer_order (code DH-260410-0042)
-        API->>DB: INSERT order_item (chụp tên, giá, giá vốn)
+        API->>DB: INSERT order_item (chụp tên, giá, giá vốn đã cộng phần chênh)
+        API->>DB: INSERT order_item_option (chụp tên nhóm, tên giá trị, giá chênh)
         API->>DB: INSERT payment (PENDING)
         API->>DB: COMMIT
         API--xFE: 201 bị mất do rớt mạng

@@ -8,6 +8,11 @@ erDiagram
     category ||--o{ product : "chứa"
     combo ||--|{ combo_item : "gồm"
     product ||--o{ combo_item : "nằm trong"
+    option_group ||--|{ option_value : "gồm"
+    product ||--o{ product_option_group : "có nhóm"
+    option_group ||--o{ product_option_group : "gắn vào"
+    order_item ||--o{ order_item_option : "chọn"
+    option_value |o--o{ order_item_option : "được chọn"
     app_user |o--o{ customer_order : "đặt (khách)"
     customer_order ||--|{ order_item : "gồm"
     product |o--o{ order_item : "được bán"
@@ -115,6 +120,32 @@ erDiagram
         bigint product_id PK, FK
         int quantity
     }
+    option_group {
+        bigint id PK
+        varchar name
+        varchar selection_type "SINGLE | MULTIPLE"
+        int min_select
+        int max_select
+        int sort_order
+        timestamptz deleted_at
+        timestamptz created_at
+    }
+    option_value {
+        bigint id PK
+        bigint option_group_id FK
+        varchar name
+        bigint price_delta
+        bigint cost_delta
+        boolean is_default
+        boolean is_available
+        int sort_order
+        timestamptz deleted_at
+    }
+    product_option_group {
+        bigint product_id PK, FK
+        bigint option_group_id PK, FK
+        int sort_order
+    }
     customer_order {
         bigint id PK
         varchar code UK
@@ -145,6 +176,16 @@ erDiagram
         bigint unit_cost
         int quantity
         bigint line_total
+    }
+    order_item_option {
+        bigint id PK
+        bigint order_item_id FK
+        bigint option_group_id FK
+        bigint option_value_id FK
+        varchar group_name_snapshot
+        varchar value_name_snapshot
+        bigint price_delta
+        bigint cost_delta
     }
     payment {
         bigint id PK
@@ -216,6 +257,8 @@ erDiagram
 ## 2. Lý do thiết kế
 
 - **`order_item` chụp lại tên, giá bán, giá vốn và danh mục** (`name_snapshot`, `unit_price`, `unit_cost`, `category_id_snapshot`). Đơn cũ phải giữ đúng như lúc bán, kể cả khi món bị đổi tên, đổi giá hay xoá mềm (BR-14). Báo cáo lợi nhuận dùng `unit_cost` đã chụp (BR-51), và tỷ trọng theo danh mục dùng `category_id_snapshot`. Dòng combo có `category_id_snapshot` để trống và `unit_cost` bằng tổng giá vốn của các món thành phần lúc bán.
+- **Tuỳ chọn là nhóm dùng chung, gắn vào món qua `product_option_group`.** Nhóm "Size" hay "Topping" thường giống nhau cho cả chục món, nên định nghĩa một lần rồi gắn nhiều nơi. Sửa giá trân châu một chỗ là đúng cho mọi món. Nếu sau này cần giá size khác nhau theo món (Size L của cà phê +5.000 đ, của trà +8.000 đ), tách thành hai nhóm riêng thay vì thêm cột ghi đè giá ở bảng nối.
+- **`order_item_option` chụp tên nhóm, tên giá trị và giá chênh** giống cách `order_item` chụp giá món (BR-17). `order_item.unit_price` và `unit_cost` đã gồm phần chênh, nên báo cáo doanh thu và lợi nhuận không phải join bảng này. Hai dòng cùng món khác lựa chọn là hai `order_item` riêng (BR-23).
 - **`payment` tách khỏi `customer_order`.** Vòng đời thanh toán (hoàn tiền, huỷ trước khi trả) khác vòng đời đơn. Khi tích hợp cổng thanh toán (Q-03), chỉ cần thêm cột hoặc bảng giao dịch cổng mà không phải sửa bảng đơn. MVP là 1–1 (`order_id` unique).
 - **Trạng thái nghỉ phép và vắng mặt nằm ở `shift_assignment`**, không nằm ở `shift`. Mỗi người trong cùng một ca có thể ở trạng thái khác nhau. "Đã đủ người" được tính từ số phân ca đang chiếm chỗ, không lưu.
 - **`app_user` dùng chung cho mọi role.** Khách đăng nhập bằng `phone`, nhân viên bằng `username`. Ràng buộc kiểm tra bảo đảm Staff và Manager luôn có `username`, còn Customer luôn có `phone`.
@@ -344,6 +387,41 @@ CREATE TABLE combo_item (
     PRIMARY KEY (combo_id, product_id)
 );
 
+CREATE TABLE option_group (
+    id             bigserial PRIMARY KEY,
+    name           varchar(60) NOT NULL,
+    selection_type varchar(8)  NOT NULL CHECK (selection_type IN ('SINGLE','MULTIPLE')),
+    min_select     int         NOT NULL DEFAULT 0,
+    max_select     int         NOT NULL DEFAULT 1,
+    sort_order     int         NOT NULL DEFAULT 0,
+    deleted_at     timestamptz,
+    created_at     timestamptz NOT NULL DEFAULT now(),
+    -- BR-16
+    CHECK (min_select >= 0 AND max_select >= 1 AND min_select <= max_select),
+    CHECK (selection_type = 'MULTIPLE' OR max_select = 1)
+);
+CREATE UNIQUE INDEX uq_option_group_name ON option_group (lower(name)) WHERE deleted_at IS NULL;
+
+CREATE TABLE option_value (
+    id              bigserial PRIMARY KEY,
+    option_group_id bigint      NOT NULL REFERENCES option_group(id),
+    name            varchar(60) NOT NULL,
+    price_delta     bigint      NOT NULL DEFAULT 0 CHECK (price_delta >= 0),  -- BR-17
+    cost_delta      bigint      NOT NULL DEFAULT 0 CHECK (cost_delta >= 0),
+    is_default      boolean     NOT NULL DEFAULT false,
+    is_available    boolean     NOT NULL DEFAULT true,
+    sort_order      int         NOT NULL DEFAULT 0,
+    deleted_at      timestamptz
+);
+CREATE UNIQUE INDEX uq_option_value_name ON option_value (option_group_id, lower(name)) WHERE deleted_at IS NULL;
+
+CREATE TABLE product_option_group (
+    product_id      bigint NOT NULL REFERENCES product(id) ON DELETE CASCADE,
+    option_group_id bigint NOT NULL REFERENCES option_group(id),
+    sort_order      int    NOT NULL DEFAULT 0,
+    PRIMARY KEY (product_id, option_group_id)
+);
+
 CREATE TABLE customer_order (
     id              bigserial PRIMARY KEY,
     code            varchar(24) NOT NULL UNIQUE,
@@ -386,6 +464,19 @@ CREATE TABLE order_item (
     CHECK (line_total = unit_price * quantity)
 );
 CREATE INDEX idx_order_item_order ON order_item (order_id);
+
+CREATE TABLE order_item_option (
+    id                  bigserial PRIMARY KEY,
+    order_item_id       bigint      NOT NULL REFERENCES order_item(id),
+    option_group_id     bigint      NOT NULL REFERENCES option_group(id),
+    option_value_id     bigint      NOT NULL REFERENCES option_value(id),
+    group_name_snapshot varchar(60) NOT NULL,
+    value_name_snapshot varchar(60) NOT NULL,
+    price_delta         bigint      NOT NULL CHECK (price_delta >= 0),
+    cost_delta          bigint      NOT NULL CHECK (cost_delta >= 0),
+    UNIQUE (order_item_id, option_value_id)
+);
+CREATE INDEX idx_order_item_option_item ON order_item_option (order_item_id);
 
 CREATE TABLE payment (
     id           bigserial PRIMARY KEY,
@@ -481,7 +572,10 @@ Những rule sau phải kiểm ở tầng service, trong cùng transaction với
 | BR-14 | Xoá cứng `product` chỉ khi không có `order_item` nào trỏ tới. Món còn nằm trong combo chưa xoá thì phải gỡ khỏi combo trước (422 `BR-13`) |
 | BR-25 | Ngày trong mã đơn là ngày theo `Asia/Ho_Chi_Minh`: `(now() AT TIME ZONE 'Asia/Ho_Chi_Minh')::date`, không phải ngày UTC |
 | BR-13 | Combo phải có tổng số lượng thành phần ≥ 2, và mọi món thành phần phải chưa bị xoá |
-| BR-21 | Khi tạo đơn, món và combo phải `is_available = true` và `deleted_at IS NULL` |
+| BR-21 | Khi tạo đơn, món, combo và giá trị tuỳ chọn phải `is_available = true` và `deleted_at IS NULL` |
+| BR-16 | Nhóm `SINGLE` có tối đa 1 `option_value` mặc định chưa xoá, nhóm `SINGLE` bắt buộc có đúng 1. Nhóm `MULTIPLE` không có mặc định. Nhóm có ít nhất 1 giá trị chưa xoá. Kiểm khi lưu cả nhóm cùng các giá trị |
+| BR-18 | Với mỗi dòng món: mọi `option_value_id` gửi lên thuộc một `option_group` có trong `product_option_group` của món, đếm theo nhóm phải nằm trong `[min_select, max_select]`. Dòng combo không được gửi lựa chọn. `order_item_option` chỉ trỏ tới `order_item` có `item_type = 'PRODUCT'` |
+| BR-19 | Xoá cứng `option_value`/`option_group` chỉ khi không có `order_item_option` nào trỏ tới. Nhóm còn gắn vào món chưa xoá thì phải gỡ trước. Menu tính món "tạm hết" khi một nhóm bắt buộc có ít hơn `min_select` giá trị đang bán |
 | BR-43 | `SELECT … FROM shift WHERE id = ? FOR UPDATE`, rồi đếm phân ca đang chiếm chỗ trước khi chèn |
 | BR-45 | Truy vấn phân ca chiếm chỗ của nhân viên trong cùng `shift_date` có `start_time < :end AND end_time > :start` |
 
@@ -496,7 +590,9 @@ Frontend dùng camelCase. Tiền vẫn là `number` (đồng); an toàn vì giá
 | `category` | `MenuCategory` |
 | `product` | `Product` |
 | `combo`, `combo_item` | `Combo`, `ComboItem` |
-| `customer_order`, `order_item`, `payment` | `Order`, `OrderItem`, `Payment` |
+| `option_group`, `option_value` | `OptionGroup`, `OptionValue` |
+| `product_option_group` | `Product.optionGroupIds` |
+| `customer_order`, `order_item`, `order_item_option`, `payment` | `Order`, `OrderItem`, `OrderItemOption`, `Payment` |
 | `review` | `Review` |
 | `department` | `Department` |
 | `shift` | `Shift` (kèm `assignments`) |

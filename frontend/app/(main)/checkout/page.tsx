@@ -4,23 +4,24 @@ import { Alert } from "@/components/atoms";
 import { type CartLine, useCart } from "@/lib/contexts/cart-context";
 import { useGuestOrders } from "@/lib/hooks/use-guest-orders";
 import { ApiError, orderService } from "@/lib/services";
-import type { OrderItemType, PaymentMethod } from "@/lib/types";
+import type { PaymentMethod } from "@/lib/types";
 import { formatVND } from "@/lib/utils/currency";
 import { errorCode, errorMessage } from "@/lib/utils/errors";
+import { describeOptions } from "@/lib/utils/options";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const MAX_QTY = 20; // P-08 default; the server checks the configured value
 
-type ItemError = { itemType: OrderItemType; id: number; currentPrice?: number };
-
-/**
- * Key of a cart line in the error map.
- * @param type Product or combo.
- * @param id Item id.
- */
-const lineKey = (type: OrderItemType, id: number) => `${type}-${id}`;
+/** `line` is the index in the request, which follows cart.lines */
+type ItemError = {
+  line: number;
+  reason?: string;
+  optionValueId?: number;
+  message?: string;
+  currentPrice?: number;
+};
 
 /**
  * Checkout page (UC-07): review and edit the cart, choose cash or QR, add a
@@ -45,7 +46,8 @@ export default function CheckoutPage() {
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [unavailable, setUnavailable] = useState<Set<string>>(new Set());
+  // Lines to fix before ordering again, by cart line key → reason shown
+  const [flagged, setFlagged] = useState<Map<string, string>>(new Map());
 
   if (!cart) {
     return (
@@ -77,18 +79,39 @@ export default function CheckoutPage() {
         err instanceof ApiError
           ? ((err.details.errors as ItemError[]) ?? [])
           : [];
+      const keyOf = (i: ItemError) => cart.lines[i.line]?.key;
       if (errorCode(err) === "BR-21") {
-        setUnavailable(new Set(items.map((i) => lineKey(i.itemType, i.id))));
+        setFlagged(
+          new Map(
+            items.map((i) => {
+              const opt = cart.lines[i.line]?.options.find(
+                (o) => o.optionValueId === i.optionValueId,
+              );
+              return [
+                keyOf(i),
+                opt ? `${opt.valueName} đã hết` : "Món này đã ngừng bán",
+              ];
+            }),
+          ),
+        );
         setError(
-          "Một số món vừa ngừng bán. Hãy xoá các món được đánh dấu rồi đặt lại.",
+          "Một số món hoặc tuỳ chọn vừa ngừng bán. Hãy xoá các dòng được đánh dấu rồi chọn lại.",
+        );
+      } else if (errorCode(err) === "BR-18") {
+        setFlagged(
+          new Map(
+            items.map((i) => [
+              keyOf(i),
+              i.message ?? "Tuỳ chọn không còn hợp lệ",
+            ]),
+          ),
+        );
+        setError(
+          "Tuỳ chọn của một số món đã thay đổi. Hãy xoá các dòng được đánh dấu rồi thêm lại từ menu.",
         );
       } else if (errorCode(err) === "BR-22") {
         applyPrices(
-          items.map((i) => ({
-            type: i.itemType,
-            id: i.id,
-            price: i.currentPrice!,
-          })),
+          items.map((i) => ({ key: keyOf(i), price: i.currentPrice! })),
         );
         setError(
           "Giá một số món đã thay đổi. Giỏ hàng đã cập nhật giá mới, vui lòng kiểm tra rồi đặt lại.",
@@ -123,10 +146,10 @@ export default function CheckoutPage() {
             </div>
             <ul className="divide-y divide-(--color-border-light)">
               {cart.lines.map((line: CartLine) => {
-                const bad = unavailable.has(lineKey(line.type, line.id));
+                const bad = flagged.get(line.key);
                 return (
                   <li
-                    key={lineKey(line.type, line.id)}
+                    key={line.key}
                     className={`flex flex-wrap items-center gap-3 px-4 py-3 ${bad ? "bg-red-50" : ""}`}
                   >
                     <div className="min-w-40 flex-1">
@@ -138,12 +161,17 @@ export default function CheckoutPage() {
                         )}
                         {line.name}
                       </p>
+                      {line.options.length > 0 && (
+                        <p className="text-xs text-(--color-text-muted)">
+                          {describeOptions(line.options)}
+                        </p>
+                      )}
                       <p className="text-sm text-(--color-primary)">
                         {formatVND(line.unitPrice)}
                       </p>
                       {bad && (
                         <p className="text-xs font-semibold text-red-600">
-                          Món này đã ngừng bán
+                          {bad}
                         </p>
                       )}
                     </div>
@@ -152,9 +180,7 @@ export default function CheckoutPage() {
                         type="button"
                         className={qtyButton}
                         aria-label={`Giảm ${line.name}`}
-                        onClick={() =>
-                          setQuantity(line.type, line.id, line.quantity - 1)
-                        }
+                        onClick={() => setQuantity(line.key, line.quantity - 1)}
                       >
                         -
                       </button>
@@ -165,8 +191,7 @@ export default function CheckoutPage() {
                         value={line.quantity}
                         onChange={(e) =>
                           setQuantity(
-                            line.type,
-                            line.id,
+                            line.key,
                             Math.min(MAX_QTY, Number(e.target.value)),
                           )
                         }
@@ -178,9 +203,7 @@ export default function CheckoutPage() {
                         className={qtyButton}
                         aria-label={`Tăng ${line.name}`}
                         disabled={line.quantity >= MAX_QTY}
-                        onClick={() =>
-                          setQuantity(line.type, line.id, line.quantity + 1)
-                        }
+                        onClick={() => setQuantity(line.key, line.quantity + 1)}
                       >
                         +
                       </button>
@@ -190,7 +213,14 @@ export default function CheckoutPage() {
                     </p>
                     <button
                       type="button"
-                      onClick={() => removeLine(line.type, line.id)}
+                      onClick={() => {
+                        removeLine(line.key);
+                        setFlagged((prev) => {
+                          const next = new Map(prev);
+                          next.delete(line.key);
+                          return next;
+                        });
+                      }}
                       className="cursor-pointer border-none bg-transparent text-(--color-text-muted) hover:text-red-500"
                       aria-label={`Xoá ${line.name}`}
                     >
@@ -278,7 +308,7 @@ export default function CheckoutPage() {
             <button
               type="button"
               onClick={placeOrder}
-              disabled={submitting || unavailable.size > 0}
+              disabled={submitting || flagged.size > 0}
               className="w-full cursor-pointer rounded-xl border-none bg-(--color-primary) py-3 font-semibold text-white transition hover:bg-(--color-primary-dark) disabled:cursor-not-allowed disabled:opacity-50"
             >
               {submitting ? "Đang đặt món..." : "Đặt món"}

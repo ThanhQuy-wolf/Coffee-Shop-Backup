@@ -1,6 +1,8 @@
-// S-6, C-1 → C-14 in docs/05-api.md
+// S-6, C-1 → C-19 in docs/05-api.md
 import {
   type ComboRow,
+  type OptionGroupRow,
+  type ProductRow,
   clone,
   db,
   delay,
@@ -16,9 +18,13 @@ import type {
   ComboInput,
   Menu,
   MenuCategory,
+  OptionGroup,
+  OptionGroupInput,
+  OptionValue,
   Product,
   ProductInput,
 } from "../types";
+import { groupsOf, optionsSellable } from "../utils/options";
 
 /** Id of the "Tất cả" pseudo-category used by the menu filters. */
 export const ALL_CATEGORY_ID = 0;
@@ -27,6 +33,11 @@ export const ALL_CATEGORY_ID = 0;
 const liveProducts = () => db.products.filter((p) => !p.deletedAt);
 /** Combos that are not soft-deleted. */
 const liveCombos = () => db.combos.filter((c) => !c.deletedAt);
+/** Option groups that are not soft-deleted, by `sortOrder`. */
+const liveGroups = () =>
+  db.optionGroups
+    .filter((g) => !g.deletedAt)
+    .sort((a, b) => a.sortOrder - b.sortOrder);
 /** Categories that are not soft-deleted, by `sortOrder`. */
 const liveCategories = () =>
   db.categories
@@ -45,6 +56,36 @@ function stripDeleted<T extends { deletedAt: string | null }>(row: T) {
 }
 
 /**
+ * Converts an option group row to the API shape, without deleted values.
+ *
+ * @param row - option group row
+ * @returns the group with its values by `sortOrder`
+ */
+function toGroup(row: OptionGroupRow): OptionGroup {
+  const { deletedAt: _, values, ...rest } = row;
+  return clone({
+    ...rest,
+    values: values
+      .filter((v) => !v.deletedAt)
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map(({ deletedAt: _d, ...v }) => v),
+  });
+}
+
+/**
+ * Tells whether a product can be ordered: not deleted, switched on, and every
+ * required option group still has enough values on sale (BR-19). Combos and
+ * O-1 use it too, so a sold-out required option hides them as well.
+ *
+ * @param p - product row, or `undefined` when it was not found
+ * @returns `true` when the product is on sale
+ */
+export function productSellable(p: ProductRow | undefined): boolean {
+  if (!p || p.deletedAt || !p.isAvailable) return false;
+  return optionsSellable(groupsOf(p, liveGroups().map(toGroup)));
+}
+
+/**
  * Converts a combo row and computes `sellable`: a combo is on sale only when
  * it is switched on and every product in it is on sale (BR-13).
  *
@@ -54,10 +95,9 @@ function stripDeleted<T extends { deletedAt: string | null }>(row: T) {
 function toCombo(row: ComboRow): Combo {
   const sellable =
     row.isAvailable &&
-    row.items.every((i) => {
-      const p = db.products.find((x) => x.id === i.productId);
-      return !!p && !p.deletedAt && p.isAvailable;
-    });
+    row.items.every((i) =>
+      productSellable(db.products.find((x) => x.id === i.productId)),
+    );
   return { ...stripDeleted(row), sellable };
 }
 
@@ -74,6 +114,17 @@ function wasSold(type: "PRODUCT" | "COMBO", id: number) {
   );
 }
 
+/**
+ * Tells whether an order already used an option value, which decides between
+ * soft and hard delete (BR-19).
+ *
+ * @param valueId - option value id
+ */
+function valueWasSold(valueId: number) {
+  return db.orders.some((o) =>
+    o.items.some((i) => i.options.some((x) => x.optionValueId === valueId)),
+  );
+}
 /**
  * Finds a category that is not deleted.
  *
@@ -96,6 +147,17 @@ function findProduct(id: number) {
   const p = db.products.find((x) => x.id === id && !x.deletedAt);
   if (!p) fail(404, "NOT_FOUND", "Không tìm thấy món");
   return p;
+}
+/**
+ * Finds an option group that is not deleted.
+ *
+ * @param id - option group id
+ * @throws {ApiError} 404 `NOT_FOUND`
+ */
+function findOptionGroup(id: number) {
+  const g = db.optionGroups.find((x) => x.id === id && !x.deletedAt);
+  if (!g) fail(404, "NOT_FOUND", "Không tìm thấy nhóm tuỳ chọn");
+  return g;
 }
 
 /**
@@ -127,11 +189,74 @@ function validateProduct(input: ProductInput, selfId?: number) {
   if (!Number.isInteger(input.costPrice) || input.costPrice < 0)
     fail(422, "BR-10", "Giá vốn phải là số nguyên không âm");
   findCategory(input.categoryId);
+  if (new Set(input.optionGroupIds).size !== input.optionGroupIds.length)
+    fail(400, "VALIDATION", "Một nhóm tuỳ chọn bị gắn hai lần");
+  input.optionGroupIds.forEach(findOptionGroup);
   const name = input.name.trim().toLowerCase();
   if (
     liveProducts().some((p) => p.id !== selfId && p.name.toLowerCase() === name)
   )
     fail(409, "BR-12", "Tên món đã tồn tại");
+}
+
+/**
+ * Checks an option group before saving: unique names, a valid
+ * `[minSelect, maxSelect]` range and defaults (BR-16), non-negative deltas
+ * (BR-17).
+ *
+ * @param input - group fields with its values
+ * @param selfId - id of the group being edited, so its own name is allowed
+ * @throws {ApiError} 400 `VALIDATION`, 409 `BR-16` (duplicate name),
+ *   422 `BR-16` / `BR-17`
+ */
+function validateOptionGroup(input: OptionGroupInput, selfId?: number) {
+  const name = input.name.trim();
+  if (!name) fail(400, "VALIDATION", "Tên nhóm không được để trống");
+  if (
+    liveGroups().some(
+      (g) => g.id !== selfId && g.name.toLowerCase() === name.toLowerCase(),
+    )
+  )
+    fail(409, "BR-16", "Tên nhóm tuỳ chọn đã tồn tại");
+  const { selectionType: type, minSelect: min, maxSelect: max, values } = input;
+  if (values.length === 0) fail(422, "BR-16", "Nhóm phải có ít nhất 1 giá trị");
+  if (values.some((v) => !v.name.trim()))
+    fail(400, "VALIDATION", "Tên giá trị không được để trống");
+  const names = values.map((v) => v.name.trim().toLowerCase());
+  if (new Set(names).size !== names.length)
+    fail(409, "BR-16", "Hai giá trị trong nhóm trùng tên");
+  if (![min, max].every(Number.isInteger) || min < 0 || max < 1 || min > max)
+    fail(
+      422,
+      "BR-16",
+      "Số lựa chọn tối thiểu phải từ 0 và không lớn hơn tối đa",
+    );
+  if (type === "SINGLE" && max !== 1)
+    fail(422, "BR-16", "Nhóm chọn một chỉ cho chọn tối đa 1");
+  if (max > values.length)
+    fail(422, "BR-16", "Số lựa chọn tối đa vượt số giá trị của nhóm");
+  const defaults = values.filter((v) => v.isDefault).length;
+  if (type === "MULTIPLE" && defaults > 0)
+    fail(422, "BR-16", "Nhóm chọn nhiều không có giá trị mặc định");
+  if (type === "SINGLE" && defaults > 1)
+    fail(422, "BR-16", "Nhóm chọn một chỉ có tối đa 1 giá trị mặc định");
+  if (type === "SINGLE" && min === 1 && defaults !== 1)
+    fail(
+      422,
+      "BR-16",
+      "Nhóm bắt buộc chọn một phải có đúng 1 giá trị mặc định",
+    );
+  for (const v of values)
+    if (
+      ![v.priceDelta, v.costDelta].every(Number.isInteger) ||
+      v.priceDelta < 0 ||
+      v.costDelta < 0
+    )
+      fail(
+        422,
+        "BR-17",
+        "Giá chênh và giá vốn chênh phải là số nguyên không âm",
+      );
 }
 
 /**
@@ -154,10 +279,11 @@ function validateCombo(input: ComboInput) {
 export const catalogService = {
   /**
    * S-6: the menu customers see, with only the products and combos on sale
-   * (BR-13).
+   * (BR-13, BR-19).
    *
    * @param q - optional search text, matched against name and description
-   * @returns categories, products and combos
+   * @returns categories, products, combos and the option groups; sold-out
+   *   values stay in the groups with `isAvailable: false`
    */
   async getMenu(q?: string): Promise<Menu> {
     await delay();
@@ -169,11 +295,12 @@ export const catalogService = {
     return {
       categories: liveCategories().map(stripDeleted),
       products: liveProducts()
-        .filter((p) => p.isAvailable && match(p))
+        .filter((p) => productSellable(p) && match(p))
         .map(stripDeleted),
       combos: liveCombos()
         .map(toCombo)
         .filter((c) => c.sellable && match(c)),
+      optionGroups: liveGroups().map(toGroup),
     };
   },
 
@@ -397,6 +524,149 @@ export const catalogService = {
     requireActor(["MANAGER"]);
     c.isAvailable = isAvailable;
     return toCombo(c);
+  },
+
+  /**
+   * C-15: option groups with their values and how many products use each.
+   * Staff and managers.
+   *
+   * @returns the groups by `sortOrder`
+   */
+  async listOptionGroups(): Promise<OptionGroup[]> {
+    await delay();
+    requireActor(["STAFF", "MANAGER"]);
+    return liveGroups().map((g) => ({
+      ...toGroup(g),
+      productCount: liveProducts().filter((p) =>
+        p.optionGroupIds.includes(g.id),
+      ).length,
+    }));
+  },
+
+  /**
+   * C-16: creates an option group with its values. Managers only.
+   *
+   * @param input - group fields and values
+   * @returns the saved group
+   * @throws {ApiError} 400 `VALIDATION`, 409 `BR-16`, 422 `BR-16` / `BR-17`
+   */
+  async createOptionGroup(input: OptionGroupInput): Promise<OptionGroup> {
+    await delay();
+    requireActor(["MANAGER"]);
+    validateOptionGroup(input);
+    const row: OptionGroupRow = {
+      ...clone(input),
+      name: input.name.trim(),
+      id: nextId(),
+      deletedAt: null,
+      values: input.values.map((v, i) => ({
+        ...v,
+        name: v.name.trim(),
+        id: nextId(),
+        sortOrder: i,
+        isAvailable: true,
+        deletedAt: null,
+      })),
+    };
+    db.optionGroups.push(row);
+    return toGroup(row);
+  },
+
+  /**
+   * C-17: updates a group and its values. Values with an id are edited, new
+   * ones added, missing ones removed: soft delete when an order already used
+   * them (BR-19). Delta changes go to audit_log on the backend (BR-17).
+   * Managers only.
+   *
+   * @param id - option group id
+   * @param input - group fields and the full list of values
+   * @returns the saved group
+   * @throws {ApiError} 404 `NOT_FOUND`, 400 `VALIDATION`, 409 `BR-16`,
+   *   422 `BR-16` / `BR-17`
+   */
+  async updateOptionGroup(
+    id: number,
+    input: OptionGroupInput,
+  ): Promise<OptionGroup> {
+    await delay();
+    const g = findOptionGroup(id);
+    requireActor(["MANAGER"]);
+    validateOptionGroup(input, id);
+    const now = iso(mockNow());
+    const kept = new Set(input.values.map((v) => v.id).filter(Boolean));
+    const values = g.values.filter((v) => {
+      if (v.deletedAt || kept.has(v.id)) return true;
+      if (!valueWasSold(v.id)) return false;
+      v.deletedAt = now;
+      return true;
+    });
+    input.values.forEach((v, i) => {
+      const existing = v.id && values.find((x) => x.id === v.id);
+      const fields = { ...v, name: v.name.trim(), sortOrder: i };
+      if (existing) Object.assign(existing, fields);
+      else
+        values.push({
+          ...fields,
+          id: nextId(),
+          isAvailable: true,
+          deletedAt: null,
+        });
+    });
+    Object.assign(g, {
+      name: input.name.trim(),
+      selectionType: input.selectionType,
+      minSelect: input.minSelect,
+      maxSelect: input.maxSelect,
+      sortOrder: input.sortOrder,
+      values,
+    });
+    return toGroup(g);
+  },
+
+  /**
+   * C-18: deletes an option group; soft delete when one of its values was
+   * sold (BR-19). Managers only.
+   *
+   * @param id - option group id
+   * @throws {ApiError} 404 `NOT_FOUND`, 422 `BR-19` while a product uses it
+   */
+  async deleteOptionGroup(id: number): Promise<void> {
+    await delay();
+    const g = findOptionGroup(id);
+    requireActor(["MANAGER"]);
+    const used = liveProducts().filter((p) => p.optionGroupIds.includes(id));
+    if (used.length)
+      fail(
+        422,
+        "BR-19",
+        `Nhóm đang gắn vào ${used.length} món, hãy gỡ khỏi món trước`,
+      );
+    if (g.values.some((v) => valueWasSold(v.id))) g.deletedAt = iso(mockNow());
+    else db.optionGroups.splice(db.optionGroups.indexOf(g), 1);
+  },
+
+  /**
+   * C-19: switches one option value on or off sale. Staff may switch off a
+   * value that ran out; the product stays on sale (BR-19).
+   *
+   * @param valueId - option value id
+   * @param isAvailable - `true` to sell it
+   * @returns the saved value
+   * @throws {ApiError} 404 `NOT_FOUND`
+   */
+  async setOptionValueAvailability(
+    valueId: number,
+    isAvailable: boolean,
+  ): Promise<OptionValue> {
+    await delay();
+    requireActor(["STAFF", "MANAGER"]);
+    const v = liveGroups()
+      .flatMap((g) => g.values)
+      .find((x) => x.id === valueId && !x.deletedAt);
+    if (!v) fail(404, "NOT_FOUND", "Không tìm thấy tuỳ chọn");
+    v.isAvailable = isAvailable;
+    const { deletedAt: _, ...rest } = v;
+    return clone(rest);
   },
 
   /**

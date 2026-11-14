@@ -23,6 +23,8 @@ import type {
   Review,
   ReviewList,
 } from "../types";
+import { checkSelection, groupsOf } from "../utils/options";
+import { productSellable } from "./catalog";
 
 const REVIEW_COMMENT_MAX = 500; // BR-31
 
@@ -63,7 +65,10 @@ function toOrder(
       ? (customer?.phone ?? null)
       : maskPhone(customer?.phone ?? null),
     ...(withGuestToken && guestToken ? { guestToken } : {}),
-    items: items.map(({ categoryId: _c, unitCost: _u, ...i }) => i),
+    items: items.map(({ categoryId: _c, unitCost: _u, options, ...i }) => ({
+      ...i,
+      options: options.map(({ optionGroupId: _g, costDelta: _d, ...o }) => o),
+    })),
     review: db.reviews.find((r) => r.orderId === row.id) ?? null,
   });
 }
@@ -158,7 +163,10 @@ export const orderService = {
    * @throws {ApiError} 403 `FORBIDDEN` when a staff account tries to order.
    * @throws {ApiError} 422 `BR-24` when the key was used for a different cart.
    * @throws {ApiError} 422 `BR-23` for an empty cart or a quantity out of range.
-   * @throws {ApiError} 422 `BR-21` with `errors[]` for items no longer on sale.
+   * @throws {ApiError} 422 `BR-21` with `errors[]` for items no longer on sale,
+   *   or reason `OPTION_UNAVAILABLE` when a chosen option is sold out (BR-19).
+   * @throws {ApiError} 422 `BR-18` with `errors[].line` when the options break
+   *   a group's rules, belong to another product or are sent for a combo.
    * @throws {ApiError} 409 `BR-22` with `errors[].currentPrice` when prices changed.
    */
   async create(
@@ -186,15 +194,31 @@ export const orderService = {
     const settings = db.settings;
     if (req.items.length === 0) fail(422, "BR-23", "Giỏ hàng đang trống");
 
-    const unavailable: { itemType: string; id: number; reason: string }[] = [];
+    // `line` is the index in req.items: one product can sit on several lines
+    // with different options, so (itemType, id) alone does not say which.
+    const unavailable: {
+      line: number;
+      itemType: string;
+      id: number;
+      optionValueId?: number;
+      reason: string;
+    }[] = [];
+    const invalid: {
+      line: number;
+      itemType: string;
+      id: number;
+      groupId: number;
+      message: string;
+    }[] = [];
     const priceChanged: {
+      line: number;
       itemType: string;
       id: number;
       currentPrice: number;
     }[] = [];
     const lines: OrderItemRow[] = [];
 
-    for (const item of req.items) {
+    for (const [line, item] of req.items.entries()) {
       if (
         !Number.isInteger(item.quantity) ||
         item.quantity < 1 ||
@@ -210,39 +234,89 @@ export const orderService = {
         const p = db.products.find((x) => x.id === item.id && !x.deletedAt);
         if (!p || !p.isAvailable) {
           unavailable.push({
+            line,
             itemType: "PRODUCT",
             id: item.id,
             reason: "UNAVAILABLE",
           });
           continue;
         }
-        if (p.price !== item.unitPrice)
+        const ids = item.optionValueIds ?? [];
+        // Deleted values stay in the rows so an old cart gets BR-21, not BR-18.
+        const groups = groupsOf(
+          p,
+          db.optionGroups.filter((g) => !g.deletedAt),
+        );
+        const chosen = groups.flatMap((g) =>
+          g.values.filter((v) => ids.includes(v.id)).map((v) => ({ g, v })),
+        );
+        const soldOut = chosen.filter(({ v }) => v.deletedAt || !v.isAvailable);
+        if (soldOut.length) {
+          for (const { v } of soldOut)
+            unavailable.push({
+              line,
+              itemType: "PRODUCT",
+              id: p.id,
+              optionValueId: v.id,
+              reason: "OPTION_UNAVAILABLE",
+            });
+          continue;
+        }
+        const problems = checkSelection(groups, ids);
+        if (problems.length) {
+          for (const pr of problems)
+            invalid.push({ line, itemType: "PRODUCT", id: p.id, ...pr });
+          continue;
+        }
+        const options = chosen.map(({ g, v }) => ({
+          optionValueId: v.id,
+          optionGroupId: g.id,
+          groupName: g.name,
+          valueName: v.name,
+          priceDelta: v.priceDelta,
+          costDelta: v.costDelta,
+        }));
+        // BR-17: deltas are part of the price the customer saw (BR-22)
+        const unitPrice = options.reduce((s, o) => s + o.priceDelta, p.price);
+        if (unitPrice !== item.unitPrice)
           priceChanged.push({
+            line,
             itemType: "PRODUCT",
             id: p.id,
-            currentPrice: p.price,
+            currentPrice: unitPrice,
           });
         lines.push({
           type: "PRODUCT",
           id: p.id,
           name: p.name,
           categoryId: p.categoryId,
-          unitPrice: p.price,
-          unitCost: p.costPrice,
+          unitPrice,
+          unitCost: options.reduce((s, o) => s + o.costDelta, p.costPrice),
           quantity: item.quantity,
-          lineTotal: p.price * item.quantity,
+          lineTotal: unitPrice * item.quantity,
+          options,
         });
       } else {
         const c = db.combos.find((x) => x.id === item.id && !x.deletedAt);
-        const parts = c?.items.map((i) =>
-          db.products.find((p) => p.id === i.productId),
-        );
         const sellable =
           !!c &&
           c.isAvailable &&
-          !!parts?.every((p) => p && !p.deletedAt && p.isAvailable);
+          c.items.every((i) =>
+            productSellable(db.products.find((p) => p.id === i.productId)),
+          );
+        if (item.optionValueIds?.length) {
+          invalid.push({
+            line,
+            itemType: "COMBO",
+            id: item.id,
+            groupId: 0,
+            message: "Combo không chọn tuỳ chọn riêng",
+          });
+          continue;
+        }
         if (!c || !sellable) {
           unavailable.push({
+            line,
             itemType: "COMBO",
             id: item.id,
             reason: "UNAVAILABLE",
@@ -251,6 +325,7 @@ export const orderService = {
         }
         if (c.price !== item.unitPrice)
           priceChanged.push({
+            line,
             itemType: "COMBO",
             id: c.id,
             currentPrice: c.price,
@@ -272,13 +347,21 @@ export const orderService = {
           unitCost,
           quantity: item.quantity,
           lineTotal: c.price * item.quantity,
+          options: [],
         });
       }
     }
 
     if (unavailable.length)
-      fail(422, "BR-21", `${unavailable.length} món trong giỏ đã ngừng bán`, {
-        errors: unavailable,
+      fail(
+        422,
+        "BR-21",
+        `${new Set(unavailable.map((u) => u.line)).size} dòng trong giỏ có món hoặc tuỳ chọn đã ngừng bán`,
+        { errors: unavailable },
+      );
+    if (invalid.length)
+      fail(422, "BR-18", "Tuỳ chọn của một số món không hợp lệ", {
+        errors: invalid,
       });
     if (priceChanged.length)
       fail(409, "BR-22", "Giá một số món đã thay đổi", {

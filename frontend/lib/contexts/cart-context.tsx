@@ -3,17 +3,30 @@
 import { createContext, useContext, useMemo } from "react";
 
 import { useLocalStorage } from "../hooks/use-local-storage";
-import type { CreateOrderRequest, OrderItemType } from "../types";
+import type {
+  CreateOrderRequest,
+  OrderItemOption,
+  OrderItemType,
+} from "../types";
 
-/** One product or combo in the cart. A line is identified by `type` + `id`. */
+/** A chosen option on a cart line, same shape as on the order (BR-17). */
+export type CartLineOption = OrderItemOption;
+
+/** One product or combo in the cart, with the options chosen for it. */
 export interface CartLine {
+  /** Same product with other options is another line (BR-23) */
+  key: string;
   type: OrderItemType;
   id: number;
   name: string;
-  /** Price when added; the server re-checks it (BR-22) */
+  /** Price when added, options included; the server re-checks it (BR-22) */
   unitPrice: number;
   quantity: number;
+  options: CartLineOption[];
 }
+
+/** A line before it gets its key and quantity. */
+export type NewCartLine = Omit<CartLine, "key" | "quantity">;
 
 /** FR-11: the cart lives on the device until the order is placed */
 export interface Cart {
@@ -30,67 +43,87 @@ interface CartContextValue {
   /** Sum of `unitPrice × quantity`, in đồng. */
   totalPrice: number;
   /**
-   * Adds one unit of an item. A new item gets its own line, an item already
-   * in the cart gets its quantity increased.
+   * Adds units of an item. The same item with the same options adds to the
+   * existing line; other options make a new line (BR-23).
    *
-   * @param line - the item without quantity
+   * @param line - the item and its chosen options
+   * @param quantity - units to add, 1 by default
    */
-  addToCart: (line: Omit<CartLine, "quantity">) => void;
+  addToCart: (line: NewCartLine, quantity?: number) => void;
   /**
    * Replaces the whole cart, e.g. to reorder after an order expired
    * (UC-11, BR-28). A new Idempotency-Key is created.
    *
-   * @param cart - lines to put in the cart; empty lines clear it
+   * @param lines - lines with their quantity; an empty list clears the cart
    */
-  loadCart: (cart: Omit<Cart, "idempotencyKey">) => void;
+  loadCart: (lines: (NewCartLine & { quantity: number })[]) => void;
   /**
    * Sets the quantity of a line. 0 or less removes the line.
    *
-   * @param type - `PRODUCT` or `COMBO`
-   * @param id - product or combo id
+   * @param key - the line's `key`
    * @param quantity - new quantity, rounded down
    */
-  setQuantity: (type: OrderItemType, id: number, quantity: number) => void;
+  setQuantity: (key: string, quantity: number) => void;
   /**
    * Removes a line.
    *
-   * @param type - `PRODUCT` or `COMBO`
-   * @param id - product or combo id
+   * @param key - the line's `key`
    */
-  removeLine: (type: OrderItemType, id: number) => void;
+  removeLine: (key: string) => void;
   /**
    * Takes the current prices sent by the server after a `BR-22` error.
    *
-   * @param prices - new unit price per item
+   * @param prices - new unit price, options included, per line key
    */
-  applyPrices: (
-    prices: { type: OrderItemType; id: number; price: number }[],
-  ) => void;
+  applyPrices: (prices: { key: string; price: number }[]) => void;
   /** Empties the cart, e.g. after the order was placed. */
   clearCart: () => void;
   /**
-   * Builds the `items` of the O-1 request body from the cart.
+   * Builds the `items` of the O-1 request body from the cart, in line order,
+   * so the `line` index in the server's errors points back to a cart line.
    *
-   * @returns one entry per line, with the price the customer saw
+   * @returns one entry per line, with the price the customer saw and, for
+   *   products, the chosen `optionValueIds`
    */
   toOrderItems: () => CreateOrderRequest["items"];
 }
 
-// v3: carts without shopId (single shop), so older carts are dropped.
-const STORAGE_KEY = "coffee-shop-cart-v3";
+// v4: lines carry options and a key. Older carts are dropped.
+const STORAGE_KEY = "coffee-shop-cart-v4";
 const CartContext = createContext<CartContextValue | null>(null);
+
+/**
+ * Key of a cart line: the item plus its sorted option value ids.
+ *
+ * @param type - `PRODUCT` or `COMBO`
+ * @param id - product or combo id
+ * @param options - chosen options
+ * @returns e.g. `PRODUCT-5-2.5.11`
+ */
+export function lineKey(
+  type: OrderItemType,
+  id: number,
+  options: { optionValueId: number }[],
+) {
+  const ids = options.map((o) => o.optionValueId).sort((a, b) => a - b);
+  return `${type}-${id}-${ids.join(".")}`;
+}
 
 /**
  * Validates the cart read from localStorage.
  *
  * @param v - parsed JSON
- * @returns the cart without empty lines, or `null` when the shape is wrong
+ * @returns the cart without empty or keyless lines, or `null` when nothing
+ *   usable is left
  */
 function parseCart(v: unknown): Cart | null {
   if (!v || typeof v !== "object") return null;
   const c = v as Cart;
   if (!Array.isArray(c.lines)) return null;
-  return { ...c, lines: c.lines.filter((l) => l && l.quantity > 0) };
+  const lines = c.lines.filter(
+    (l) => l && l.quantity > 0 && typeof l.key === "string",
+  );
+  return lines.length ? { ...c, lines } : null;
 }
 
 /**
@@ -103,14 +136,16 @@ function newKey() {
 }
 
 /**
- * Tells whether a cart line is the given item.
+ * Turns a new line into a cart line.
  *
- * @param l - cart line
- * @param type - `PRODUCT` or `COMBO`
- * @param id - product or combo id
+ * @param line - item and options
+ * @param quantity - units
  */
-const same = (l: CartLine, type: OrderItemType, id: number) =>
-  l.type === type && l.id === id;
+const withKey = (line: NewCartLine, quantity: number): CartLine => ({
+  ...line,
+  key: lineKey(line.type, line.id, line.options),
+  quantity,
+});
 
 /**
  * Holds the cart for the whole app and saves it in localStorage (FR-11).
@@ -133,38 +168,37 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       return lines.length ? { ...prev, lines, idempotencyKey: newKey() } : null;
     });
 
-  const addToCart = (line: Omit<CartLine, "quantity">) => {
+  const addToCart = (line: NewCartLine, quantity = 1) => {
+    const added = withKey(line, quantity);
     if (!cart) {
-      setCart({ lines: [{ ...line, quantity: 1 }], idempotencyKey: newKey() });
+      setCart({ lines: [added], idempotencyKey: newKey() });
       return;
     }
     update((lines) =>
-      lines.some((l) => same(l, line.type, line.id))
+      lines.some((l) => l.key === added.key)
         ? lines.map((l) =>
-            same(l, line.type, line.id)
-              ? { ...l, quantity: l.quantity + 1 }
-              : l,
+            l.key === added.key ? { ...l, quantity: l.quantity + quantity } : l,
           )
-        : [...lines, { ...line, quantity: 1 }],
+        : [...lines, added],
     );
   };
 
-  const setQuantity = (type: OrderItemType, id: number, quantity: number) => {
+  const setQuantity = (key: string, quantity: number) => {
     const safe = Number.isFinite(quantity)
       ? Math.max(0, Math.floor(quantity))
       : 0;
     update((lines) =>
-      lines.map((l) => (same(l, type, id) ? { ...l, quantity: safe } : l)),
+      lines.map((l) => (l.key === key ? { ...l, quantity: safe } : l)),
     );
   };
 
-  const removeLine = (type: OrderItemType, id: number) =>
-    update((lines) => lines.filter((l) => !same(l, type, id)));
+  const removeLine = (key: string) =>
+    update((lines) => lines.filter((l) => l.key !== key));
 
   const applyPrices: CartContextValue["applyPrices"] = (prices) =>
     update((lines) =>
       lines.map((l) => {
-        const p = prices.find((x) => same(l, x.type, x.id));
+        const p = prices.find((x) => x.key === l.key);
         return p ? { ...l, unitPrice: p.price } : l;
       }),
     );
@@ -181,8 +215,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     cart,
     ...totals,
     addToCart,
-    loadCart: (c) =>
-      setCart(c.lines.length ? { ...c, idempotencyKey: newKey() } : null),
+    loadCart: (lines) =>
+      setCart(
+        lines.length
+          ? {
+              lines: lines.map(({ quantity, ...l }) => withKey(l, quantity)),
+              idempotencyKey: newKey(),
+            }
+          : null,
+      ),
     setQuantity,
     removeLine,
     applyPrices,
@@ -193,6 +234,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         id: l.id,
         quantity: l.quantity,
         unitPrice: l.unitPrice,
+        ...(l.type === "PRODUCT"
+          ? { optionValueIds: l.options.map((o) => o.optionValueId) }
+          : {}),
       })),
   };
 

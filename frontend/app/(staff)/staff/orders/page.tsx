@@ -1,13 +1,20 @@
 "use client";
 
-import { Alert } from "@/components/atoms";
-import { Modal } from "@/components/molecules/modal";
+import { Alert, Spinner } from "@/components/atoms";
+import { Modal, ModalHeader } from "@/components/molecules/modal";
 import Header from "@/layouts/header";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { ApiError, orderService } from "@/lib/services";
-import type { Order, OrderStatus, PaymentMethod } from "@/lib/types";
+import { catalogService } from "@/lib/services/catalog";
+import type {
+  OptionGroup,
+  Order,
+  OrderStatus,
+  PaymentMethod,
+} from "@/lib/types";
 import { formatVND } from "@/lib/utils/currency";
 import { errorMessage } from "@/lib/utils/errors";
+import { describeOptions } from "@/lib/utils/options";
 import { ORDER_STATUS, formatDateTime } from "@/lib/utils/order";
 import { useCallback, useEffect, useState } from "react";
 
@@ -40,6 +47,7 @@ export default function StaffOrdersPage() {
   } | null>(null);
   const [busyId, setBusyId] = useState<number | null>(null);
   const [cancelling, setCancelling] = useState<Order | null>(null);
+  const [stockOpen, setStockOpen] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -121,6 +129,13 @@ export default function StaffOrdersPage() {
             >
               {showDone ? "Đơn đang xử lý" : "Đơn đã xong / huỷ"}
             </button>
+            <button
+              type="button"
+              onClick={() => setStockOpen(true)}
+              className="cursor-pointer rounded-xl border border-(--color-border) bg-transparent px-3 py-2 text-sm font-semibold"
+            >
+              <i className="fa-solid fa-sliders mr-1.5"></i>Tuỳ chọn đang hết
+            </button>
           </div>
         </div>
 
@@ -164,6 +179,8 @@ export default function StaffOrdersPage() {
           })}
         </div>
       </main>
+
+      {stockOpen && <OptionStockDialog onClose={() => setStockOpen(false)} />}
 
       {cancelling && (
         <CancelDialog
@@ -222,9 +239,14 @@ function OrderCard({
         {order.customerPhone && ` · ${order.customerPhone}`}
       </p>
       <ul className="mb-2">
-        {order.items.map((i) => (
-          <li key={`${i.type}-${i.id}`}>
+        {order.items.map((i, idx) => (
+          <li key={idx}>
             {i.quantity} × {i.name}
+            {i.options.length > 0 && (
+              <span className="block pl-4 text-xs text-(--color-text-muted)">
+                {describeOptions(i.options)}
+              </span>
+            )}
           </li>
         ))}
       </ul>
@@ -373,6 +395,89 @@ function CancelDialog({
         >
           Huỷ đơn
         </button>
+      </div>
+    </Modal>
+  );
+}
+
+/**
+ * Lets staff switch off an option value that ran out, e.g. a topping
+ * (UC-25 flow 1a, C-19). Only that value is hidden (BR-19).
+ * @param props.onClose Closes the dialog.
+ */
+function OptionStockDialog({ onClose }: { onClose: () => void }) {
+  const [groups, setGroups] = useState<OptionGroup[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(
+    () =>
+      catalogService
+        .listOptionGroups()
+        .then(setGroups)
+        .catch((err) => setError(errorMessage(err))),
+    [],
+  );
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  // Ticks flip at once; the reload afterwards undoes it if the server refused.
+  const toggle = async (valueId: number, isAvailable: boolean) => {
+    setError(null);
+    setGroups(
+      (prev) =>
+        prev?.map((g) => ({
+          ...g,
+          values: g.values.map((v) =>
+            v.id === valueId ? { ...v, isAvailable } : v,
+          ),
+        })) ?? null,
+    );
+    try {
+      await catalogService.setOptionValueAvailability(valueId, isAvailable);
+    } catch (err) {
+      setError(errorMessage(err));
+    }
+    await load();
+  };
+
+  return (
+    <Modal
+      onClose={onClose}
+      labelledBy="option-stock-title"
+      className="flex max-h-[90vh] max-w-md flex-col"
+    >
+      <ModalHeader
+        title="Tuỳ chọn đang hết"
+        subtitle="Bỏ tick khi hết nguyên liệu. Món vẫn bán, chỉ ẩn tuỳ chọn đó."
+        titleId="option-stock-title"
+        onClose={onClose}
+      />
+      <div className="space-y-4 overflow-y-auto px-6 py-4 text-sm">
+        <Alert message={error} />
+        {!groups && !error && <Spinner size="sm" label="Đang tải..." />}
+        {groups?.map((g) => (
+          <fieldset key={g.id}>
+            <legend className="mb-1.5 font-semibold">{g.name}</legend>
+            <div className="grid grid-cols-2 gap-2">
+              {g.values.map((v) => (
+                <label
+                  key={v.id}
+                  className={`flex cursor-pointer items-center gap-2 rounded-lg border px-2.5 py-1.5 ${v.isAvailable ? "border-(--color-border-light)" : "border-red-200 bg-red-50 text-red-700"}`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={v.isAvailable}
+                    onChange={(e) => toggle(v.id, e.target.checked)}
+                    className="accent-(--color-primary)"
+                  />
+                  {v.name}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        ))}
       </div>
     </Modal>
   );

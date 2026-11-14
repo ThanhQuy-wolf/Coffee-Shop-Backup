@@ -9,6 +9,7 @@ import { orderService } from "@/lib/services";
 import type { Order } from "@/lib/types";
 import { formatVND } from "@/lib/utils/currency";
 import { errorCode, errorMessage } from "@/lib/utils/errors";
+import { describeOptions } from "@/lib/utils/options";
 import { ORDER_STATUS, formatDateTime, secondsUntil } from "@/lib/utils/order";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -124,15 +125,16 @@ export default function OrderPage() {
   };
 
   const reorder = () => {
-    loadCart({
-      lines: order.items.map(({ type, id, name, unitPrice, quantity }) => ({
+    loadCart(
+      order.items.map(({ type, id, name, unitPrice, quantity, options }) => ({
         type,
         id,
         name,
         unitPrice,
         quantity,
+        options,
       })),
-    });
+    );
     router.push("/checkout");
   };
 
@@ -258,13 +260,18 @@ export default function OrderPage() {
 
       <div className="bg-card rounded-2xl border border-(--color-border-light)">
         <ul className="divide-y divide-(--color-border-light)">
-          {order.items.map((item) => (
+          {order.items.map((item, i) => (
             <li
-              key={`${item.type}-${item.id}`}
+              key={i}
               className="flex justify-between gap-3 px-5 py-3 text-sm"
             >
               <span>
                 {item.quantity} × {item.name}
+                {item.options.length > 0 && (
+                  <span className="block text-xs text-(--color-text-muted)">
+                    {describeOptions(item.options)}
+                  </span>
+                )}
               </span>
               <span className="font-medium">{formatVND(item.lineTotal)}</span>
             </li>

@@ -35,6 +35,8 @@ Tất cả sơ đồ đều viết bằng [Mermaid](https://mermaid.js.org/), n�
 | Khách vãng lai | Người chưa đăng nhập. Được xem menu và đặt món, nhưng không xem được lịch sử đơn và không đánh giá được |
 | Món (product) | Một đồ uống hoặc đồ ăn bán lẻ, thuộc đúng một danh mục |
 | Combo | Gói nhiều món, có giá riêng |
+| Nhóm tuỳ chọn (option group) | Một nhóm lựa chọn dùng chung cho nhiều món, ví dụ Size, Mức đường, Mức đá, Topping. Chọn một hoặc chọn nhiều, có thể bắt buộc |
+| Giá trị tuỳ chọn (option value) | Một lựa chọn trong nhóm, ví dụ Size L, 50% đường, Trân châu. Có thể cộng thêm tiền (giá chênh) |
 | Đơn (order) | Một lần đặt món tại quán. Giá được "đóng băng" vào đơn tại thời điểm đặt |
 | Ca (shift) | Một khung giờ làm việc của một bộ phận trong một ngày, có số người tối đa và mức lương mỗi ca |
 | Phân ca (shift assignment) | Việc một nhân viên đăng ký vào một ca. Trạng thái nghỉ phép và vắng mặt nằm ở đây, không nằm ở ca |

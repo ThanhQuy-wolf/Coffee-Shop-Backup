@@ -4,7 +4,8 @@ import { Spinner } from "@/components/atoms";
 import { SearchBar } from "@/components/molecules/search-bar";
 import { CategorySidebar } from "@/components/organisms/navigation";
 import { ProductGrid } from "@/components/organisms/product-grid";
-import { useCart } from "@/lib/contexts/cart-context";
+import { ProductOptionsModal } from "@/components/organisms/product-options";
+import { type NewCartLine, useCart } from "@/lib/contexts/cart-context";
 import { MenuProvider, useMenu } from "@/lib/contexts/menu-context";
 import { shopService } from "@/lib/services";
 import { ALL_CATEGORY_ID, catalogService } from "@/lib/services/catalog";
@@ -16,6 +17,7 @@ import type {
   ShopInfo,
 } from "@/lib/types";
 import { errorMessage } from "@/lib/utils/errors";
+import { groupsOf } from "@/lib/utils/options";
 import { useEffect, useState } from "react";
 
 /** Home page: shop info and menu (UC-04, UC-05, UC-06). Loads both once. */
@@ -64,6 +66,7 @@ function ShopMenu({ shop, menu }: { shop: ShopInfo; menu: Menu }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [toast, setToast] = useState<string | null>(null);
+  const [picking, setPicking] = useState<Product | null>(null);
 
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 1024px)");
@@ -80,9 +83,27 @@ function ShopMenu({ shop, menu }: { shop: ShopInfo; menu: Menu }) {
     return () => clearTimeout(t);
   }, [toast]);
 
+  const add = (line: NewCartLine, quantity = 1) => {
+    addToCart(line, quantity);
+    setToast(`Đã thêm ${quantity > 1 ? `${quantity} × ` : ""}${line.name}`);
+  };
+
+  // FR-35: products with option groups open the picker first
   const handleAdd = (type: OrderItemType, item: Product | Combo) => {
-    addToCart({ type, id: item.id, name: item.name, unitPrice: item.price });
-    setToast(`Đã thêm ${item.name}`);
+    if (
+      type === "PRODUCT" &&
+      groupsOf(item as Product, menu.optionGroups).length
+    ) {
+      setPicking(item as Product);
+      return;
+    }
+    add({
+      type,
+      id: item.id,
+      name: item.name,
+      unitPrice: item.price,
+      options: [],
+    });
   };
 
   const activeLabel =
@@ -144,6 +165,18 @@ function ShopMenu({ shop, menu }: { shop: ShopInfo; menu: Menu }) {
           onAdd={handleAdd}
         />
       </main>
+
+      {picking && (
+        <ProductOptionsModal
+          product={picking}
+          groups={groupsOf(picking, menu.optionGroups)}
+          onAdd={(line, quantity) => {
+            add(line, quantity);
+            setPicking(null);
+          }}
+          onClose={() => setPicking(null)}
+        />
+      )}
 
       {toast && (
         <div

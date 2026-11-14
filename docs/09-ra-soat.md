@@ -1,6 +1,6 @@
 # 09 — Biên bản rà soát đặc tả
 
-Rà soát toàn bộ tài liệu 01 → 08 sau khi viết xong, trước khi sửa frontend. Lần 2 (mục 3) rà soát sau khi chuyển sang một quán. Mục tiêu: các mã tham chiếu khớp nhau, dữ liệu đủ để thực thi từng rule, có đủ luồng ngoại lệ, và mọi sơ đồ Mermaid hiển thị được.
+Rà soát toàn bộ tài liệu 01 → 08 sau khi viết xong, trước khi sửa frontend. Lần 2 (mục 3) rà soát sau khi chuyển sang một quán. Lần 3 (mục 4) rà soát sau khi thêm tuỳ chọn món. Mục tiêu: các mã tham chiếu khớp nhau, dữ liệu đủ để thực thi từng rule, có đủ luồng ngoại lệ, và mọi sơ đồ Mermaid hiển thị được.
 
 ## 1. Cách rà soát
 
@@ -60,11 +60,39 @@ Hệ thống đổi từ nhiều quán sang **một quán duy nhất** (A-5). Sa
 | R-19 | 01 | Bỏ FR-05 và Q-05 nhưng không ghi chú, người đọc sẽ tưởng đánh số bị thiếu | Thêm ghi chú "đã bỏ, không dùng lại" |
 | R-20 | 09 (R-05) | Khoá idempotency trước đây duy nhất trong quán | Nay duy nhất toàn hệ thống: `UNIQUE (idempotency_key)` |
 
-## 4. Điểm còn mở
+## 4. Rà soát lần 3: tuỳ chọn món (2026-11-14)
+
+Thêm tính năng tuỳ chọn món (size, mức đường, mức đá, topping). Rà soát lại 01 → 08 theo cùng cách ở mục 1.
+
+| Hạng mục | Kết quả |
+|---|---|
+| Mã tham chiếu | 35 FR, 7 NFR, 38 BR, 12 P, 24 UC, 6 Q. Mã mới: FR-34 → FR-36, BR-16 → BR-19, UC-25, Q-07, A-10, API C-15 → C-19. Không mã nào bị trỏ tới mà chưa định nghĩa, ngoài các mã đã bỏ trong ghi chú |
+| Cú pháp Mermaid | 20/20 khối render được bằng `mermaid` 11.4.1 |
+| Độ phủ | FR-34 → FR-36 đều có UC, API và màn hình trong [08-truy-vet.md](08-truy-vet.md) |
+
+**Thay đổi chính**
+
+- ERD: thêm `option_group`, `option_value`, `product_option_group` (nhóm dùng chung, gắn vào món) và `order_item_option` (chụp lựa chọn vào đơn).
+- Rule: BR-16 (cấu trúc nhóm), BR-17 (giá chênh), BR-18 (lựa chọn hợp lệ khi đặt), BR-19 (tắt, xoá giá trị). Mở rộng BR-21 → BR-24 cho tuỳ chọn.
+- API: C-15 → C-19 cho nhóm tuỳ chọn, `optionGroupIds` trong C-6/C-7, `optionGroups` trong S-6, `optionValueIds` và `options` trong O-1.
+- Màn hình: hộp chọn tuỳ chọn ở `/`, tab Tuỳ chọn ở `/manager`, ô Tuỳ chọn đang hết ở `/staff/orders`, dòng tuỳ chọn dưới mỗi món ở giỏ, `/checkout`, `/orders/[orderId]`, `/staff/orders`.
+
+**Lỗi phát hiện và đã sửa**
+
+| # | Tài liệu | Vấn đề | Đã sửa |
+|---|---|---|---|
+| R-21 | 02 | BR-22 so giá trong giỏ với giá món. Với món có tuỳ chọn, giá khách thấy đã cộng phần chênh nên luôn lệch, đơn nào cũng bị từ chối | BR-22 so với đơn giá đã cộng giá chênh (BR-17) |
+| R-22 | 02, 05 | BR-24 so "nội dung giỏ" khi gửi lại cùng khoá, nhưng không nói lựa chọn có tính là nội dung không. Đổi topping rồi gửi lại cùng khoá sẽ nhận đơn cũ sai lựa chọn | Ghi rõ khác lựa chọn cũng là khác nội dung |
+| R-23 | 02, 04 | Tắt giá trị cuối cùng còn bán của một nhóm bắt buộc làm món không đặt được, nhưng menu vẫn hiện món là đang bán | BR-19: món coi như tạm hết, kéo theo combo chứa món (BR-13) |
+| R-24 | 01, 02 | Combo chứa món có nhóm bắt buộc (ví dụ Size) nhưng combo không có chỗ lưu lựa chọn | Giả định A-10: món trong combo pha theo mặc định. Mở Q-07 cho business chốt. BR-18 cấm gửi lựa chọn ở dòng combo |
+| R-25 | 04 | Lợi nhuận (BR-51) dùng `unit_cost` của dòng, nhưng size L tốn nguyên liệu hơn size M | Thêm `cost_delta` cho giá trị và cộng vào `unit_cost` khi chụp (BR-17) |
+| R-26 | 05 | Lỗi `BR-21`, `BR-22` của O-1 chỉ ra mục bằng `itemType` và `id`. Khi cùng một món nằm ở hai dòng khác tuỳ chọn, frontend không biết dòng nào bị lỗi | Thêm `line` (vị trí trong `items` của request) vào mọi phần tử `errors[]` của O-1 |
+
+## 5. Điểm còn mở
 
 Những điểm sau không phải lỗi của đặc tả mà là quyết định nghiệp vụ. Thiết kế hiện dùng phương án mặc định, xem [01-dac-ta.md](01-dac-ta.md#10-câu-hỏi-mở):
 
-- Q-01 → Q-04 và Q-06 chưa được business chốt.
+- Q-01 → Q-04, Q-06 và Q-07 chưa được business chốt.
 - Mọi tham số P-01 → P-12 là **gợi ý**.
 - Thông báo (BR-42) chỉ hiện trong ứng dụng. Nếu nhân viên ít khi mở ứng dụng, cần cân nhắc gửi SMS hoặc Zalo cho trường hợp huỷ ca sát giờ.
 - Backend cũ đang trả thẳng `user` cho `POST /api/customer/login`. Frontend chấp nhận cả hai dạng response trong giai đoạn chuyển tiếp ([05-api.md](05-api.md#21-xác-thực-và-tài-khoản)).

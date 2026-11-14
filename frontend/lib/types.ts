@@ -97,6 +97,8 @@ export interface Product {
   costPrice: number;
   imageUrl: string;
   isAvailable: boolean;
+  /** product_option_group, in display order */
+  optionGroupIds: number[];
 }
 
 export type ProductInput = Omit<Product, "id">;
@@ -120,11 +122,48 @@ export interface Combo {
 
 export type ComboInput = Omit<Combo, "id" | "sellable">;
 
+// ===== OPTIONS (option_group, option_value) =====
+export type OptionSelectionType = "SINGLE" | "MULTIPLE";
+
+export interface OptionValue {
+  id: number;
+  name: string;
+  priceDelta: number;
+  costDelta: number;
+  isDefault: boolean;
+  isAvailable: boolean;
+  sortOrder: number;
+}
+
+/** Shared across products, e.g. Size, Mức đường, Topping (BR-16) */
+export interface OptionGroup {
+  id: number;
+  name: string;
+  selectionType: OptionSelectionType;
+  /** ≥ 1 means the group is required */
+  minSelect: number;
+  maxSelect: number;
+  sortOrder: number;
+  values: OptionValue[];
+  /** C-15 only: products using this group */
+  productCount?: number;
+}
+
+export interface OptionGroupInput extends Omit<
+  OptionGroup,
+  "id" | "values" | "productCount"
+> {
+  /** A value without id is new; a missing one is deleted (C-17) */
+  values: (Omit<OptionValue, "id" | "isAvailable"> & { id?: number })[];
+}
+
 /** GET /menu — only what is on sale */
 export interface Menu {
   categories: MenuCategory[];
   products: Product[];
   combos: Combo[];
+  /** Groups used by the products above; values that ran out have isAvailable false */
+  optionGroups: OptionGroup[];
 }
 
 // Order (customer_order, order_item, payment)
@@ -140,13 +179,23 @@ export type PaymentMethod = "CASH" | "QR";
 export type PaymentStatus = "PENDING" | "CONFIRMED" | "VOIDED" | "REFUNDED";
 export type OrderItemType = "PRODUCT" | "COMBO";
 
+/** order_item_option: names and price copied at order time (BR-17) */
+export interface OrderItemOption {
+  optionValueId: number;
+  groupName: string;
+  valueName: string;
+  priceDelta: number;
+}
+
 export interface OrderItem {
   type: OrderItemType;
   id: number;
   name: string;
+  /** Already includes the option price deltas */
   unitPrice: number;
   quantity: number;
   lineTotal: number;
+  options: OrderItemOption[];
 }
 
 export interface Payment {
@@ -192,6 +241,8 @@ export interface CreateOrderRequest {
     quantity: number;
     /** Price the customer saw, checked against the current price (BR-22) */
     unitPrice: number;
+    /** PRODUCT lines only (BR-18) */
+    optionValueIds?: number[];
   }[];
 }
 
