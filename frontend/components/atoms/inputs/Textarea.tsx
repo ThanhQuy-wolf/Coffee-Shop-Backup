@@ -2,6 +2,13 @@
 
 import type { TextareaProps } from "./Input.types";
 
+/**
+ * Multi-line text field with an optional label and error line. Other
+ * `<textarea>` attributes are passed through.
+ * @param props.label Label above the field.
+ * @param props.error Error shown below the field; turns the border red.
+ * @param props.className Extra classes for the textarea.
+ */
 export default function Textarea({
   label,
   error,

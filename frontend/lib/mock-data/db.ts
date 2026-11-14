@@ -26,30 +26,53 @@ import {
 } from "./shops";
 import { MOCK_ACCOUNTS, type MockAccount } from "./users";
 
-// ─── Clock ──────────────────────────────────────────────────────────────────
 // The seed data sits around 10/04/2026, so mock time starts there at 09:00 and
 // then moves forward in real time (payment timeouts still expire normally).
 const MOCK_START = new Date(2026, 3, 10, 9, 0, 0).getTime();
 const loadedAt = Date.now();
 
+/**
+ * Current time on the mock clock, which starts at 10/04/2026 09:00 when the
+ * page loads.
+ * @returns The mock "now".
+ */
 export function mockNow(): Date {
   return new Date(MOCK_START + (Date.now() - loadedAt));
 }
 
+/**
+ * Formats a date the way the API sends timestamps.
+ * @param d The date.
+ * @returns ISO 8601 string in UTC.
+ */
 export function iso(d: Date): string {
   return d.toISOString();
 }
 
-export function minutesAgo(min: number): Date {
+/**
+ * A point in mock time before now, for seed data.
+ * @param min How many minutes before now.
+ */
+function minutesAgo(min: number): Date {
   return new Date(mockNow().getTime() - min * 60_000);
 }
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
-
+/**
+ * Waits like a network round trip would, so loading states show.
+ * @param ms Delay in milliseconds.
+ */
 export function delay(ms = 120) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/**
+ * Throws the error the real API would return.
+ * @param status HTTP status.
+ * @param code Error code, usually a BR-xx rule or a generic code like `NOT_FOUND`.
+ * @param message Vietnamese message for the user.
+ * @param details Extra fields, such as `errors[]` or `currentVersion`.
+ * @throws {ApiError} Always.
+ */
 export function fail(
   status: number,
   code: string,
@@ -59,20 +82,35 @@ export function fail(
   throw new ApiError(status, code, message, details);
 }
 
+/**
+ * Deep-copies a value so callers cannot mutate the mock state through it.
+ * @param value Any structured-cloneable value.
+ * @returns The copy.
+ */
 export function clone<T>(value: T): T {
   return structuredClone(value);
 }
 
 let nextIdValue = 10_000;
+/**
+ * Issues a new id, above every seed id.
+ * @returns The id.
+ */
 export function nextId() {
   return ++nextIdValue;
 }
 
+/**
+ * Creates an unguessable token, such as a guest order token.
+ * @param prefix Short label put in front, e.g. `gt`.
+ * @returns `<prefix>_<random>`.
+ */
 export function randomToken(prefix: string) {
   return `${prefix}_${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}`;
 }
 
-// ─── Rows that differ from the API shape ────────────────────────────────────
+// Rows below differ from the API shape: they keep soft-delete stamps, costs
+// and idempotency data that the services strip before returning.
 
 export interface CategoryRow extends MenuCategory {
   deletedAt: string | null;
@@ -121,8 +159,6 @@ export interface OtpRow {
   consumed: boolean;
 }
 
-// ─── Seed ───────────────────────────────────────────────────────────────────
-
 const categories: CategoryRow[] = MENU_CATEGORIES.map((c) => ({
   ...c,
   deletedAt: null,
@@ -136,6 +172,16 @@ const combos: ComboRow[] = MOCK_COMBOS.map(({ sellable: _, ...c }) => ({
   deletedAt: null,
 }));
 
+/**
+ * Builds one seed order dated 10/04/2026.
+ * @param id Order id.
+ * @param seq Daily sequence number used in the code.
+ * @param status Order status.
+ * @param createdMinutesAgo How long before mock "now" it was placed.
+ * @param lines `[productId, quantity]` pairs.
+ * @param extra Fields to override.
+ * @returns The stored order row.
+ */
 function seedOrder(
   id: number,
   seq: number,
@@ -194,8 +240,10 @@ function seedOrder(
   };
 }
 
+/** Minutes in a day. */
 const DAY = 24 * 60;
 
+/** Seed orders of 10/04/2026, covering every status except CANCELLED. */
 function seedOrders(): OrderRow[] {
   return [
     seedOrder(
@@ -300,8 +348,7 @@ const seedReviews: Review[] = [
   },
 ];
 
-// ─── State ──────────────────────────────────────────────────────────────────
-
+/** The whole mock database. Services mutate it directly. */
 export const db = {
   shop: clone(MOCK_SHOP_INFO) as ShopInfo,
   settings: { ...DEFAULT_SHOP_SETTINGS } as ShopSettings,
@@ -320,9 +367,11 @@ export const db = {
   failedLogins: new Map<number, { count: number; lockedUntil: number }>(),
 };
 
-// ─── Auth helpers ───────────────────────────────────────────────────────────
-
-/** Mock access tokens look like "mock.<userId>". */
+/**
+ * The account behind the current access token. Mock tokens look like
+ * `mock.<userId>`.
+ * @returns The account, or null for a guest.
+ */
 export function currentActor(): MockAccount | null {
   const token = getAccessToken();
   const match = token?.match(/^mock\.(\d+)$/);
@@ -330,6 +379,13 @@ export function currentActor(): MockAccount | null {
   return db.accounts.find((a) => a.id === Number(match[1])) ?? null;
 }
 
+/**
+ * Ensures the caller is signed in and, if roles are given, has one of them.
+ * @param roles Allowed roles; any signed-in role when omitted.
+ * @returns The caller's account.
+ * @throws {ApiError} 401 `UNAUTHENTICATED` when nobody is signed in.
+ * @throws {ApiError} 403 `FORBIDDEN` when the role is not allowed.
+ */
 export function requireActor(roles?: UserRole[]): MockAccount {
   const actor = currentActor();
   if (!actor) fail(401, "UNAUTHENTICATED", "Vui lòng đăng nhập");
@@ -338,11 +394,22 @@ export function requireActor(roles?: UserRole[]): MockAccount {
   return actor;
 }
 
+/**
+ * Strips the password from an account.
+ * @param a The account.
+ * @returns The public user profile.
+ */
 export function toUser(a: MockAccount): User {
   const { password: _, ...user } = a;
   return user;
 }
 
+/**
+ * Adds an unread notification for a user.
+ * @param userId Who receives it.
+ * @param type Notification type.
+ * @param message Text shown to the user.
+ */
 export function notify(
   userId: number,
   type: NotificationType,
@@ -358,15 +425,20 @@ export function notify(
   });
 }
 
-/** Start of a shift in mock time. */
+/**
+ * Start of a shift as a Date.
+ * @param s The shift's date and start time.
+ */
 export function shiftStart(s: Pick<ShiftRow, "date" | "startTime">): Date {
   return new Date(`${s.date}T${s.startTime}:00`);
 }
 
-// ─── Background jobs ────────────────────────────────────────────────────────
-// The backend runs these every minute. The mock runs them before each call,
-// which gives the same result because both jobs are idempotent.
-
+/**
+ * Runs the backend's scheduled jobs: cancels orders not paid in time (BR-28)
+ * and expires leave requests nobody decided on (BR-48). The backend runs them
+ * every minute; the mock runs them before each call, which gives the same
+ * result because both jobs are idempotent.
+ */
 export function runJobs() {
   const now = mockNow().getTime();
 

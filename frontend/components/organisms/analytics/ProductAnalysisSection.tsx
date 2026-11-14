@@ -1,7 +1,7 @@
 "use client";
 
 import type { ProductSalesStats } from "@/lib/types";
-import { formatCurrencyFull } from "@/lib/utils/analytics";
+import { formatNumber, formatVND } from "@/lib/utils/currency";
 
 import { CategorySelect } from "./CategorySelect";
 import { ProductTable } from "./ProductTable";
@@ -16,7 +16,16 @@ export interface ProductAnalysisSectionProps {
   avgMargin: number;
 }
 
-/** Sortable product table + totals row. */
+/**
+ * Product analysis card: category filter, totals row and sortable table.
+ * @param props.filteredSales Product rows after the category filter.
+ * @param props.categoryFilter Selected category id.
+ * @param props.onCategoryChange Called with a new category id.
+ * @param props.filteredRevenue Revenue of the filtered rows.
+ * @param props.filteredProfit Profit of the filtered rows.
+ * @param props.filteredUnits Units sold in the filtered rows.
+ * @param props.avgMargin Average margin in percent.
+ */
 export function ProductAnalysisSection({
   filteredSales,
   categoryFilter,
@@ -45,24 +54,23 @@ export function ProductAnalysisSection({
       </p>
       <ProductTable data={filteredSales} />
 
-      {/* Summary row */}
       <div className="bg-background mt-4 flex flex-wrap gap-4 rounded-xl p-4 text-sm">
         <div>
           <span className="text-(--color-text-muted)">Tổng doanh thu: </span>
           <span className="font-semibold text-(--color-primary)">
-            {formatCurrencyFull(filteredRevenue)}
+            {formatVND(filteredRevenue)}
           </span>
         </div>
         <div>
           <span className="text-(--color-text-muted)">Tổng lợi nhuận: </span>
           <span className="font-semibold text-green-600">
-            {formatCurrencyFull(filteredProfit)}
+            {formatVND(filteredProfit)}
           </span>
         </div>
         <div>
           <span className="text-(--color-text-muted)">Tổng sản lượng: </span>
           <span className="text-foreground font-semibold">
-            {filteredUnits.toLocaleString()} ly
+            {formatNumber(filteredUnits)} ly
           </span>
         </div>
         <div>

@@ -5,6 +5,7 @@ export interface MockAccount extends User {
   password: string;
 }
 
+/** Demo staff and manager accounts. Customers come from the real login API. */
 export const MOCK_ACCOUNTS: MockAccount[] = [
   {
     id: 1,

@@ -11,7 +11,8 @@ import type {
 // the error itself when it rejects, and stays open.
 
 export interface ProductModalProps {
-  product: Product | null; // null = add mode
+  /** The product to edit, or null to add one. */
+  product: Product | null;
   categories: MenuCategory[];
   onSave: (input: ProductInput) => Promise<void>;
   onClose: () => void;
@@ -33,7 +34,7 @@ export interface ComboModalProps {
 
 export interface DeleteConfirmProps {
   name: string;
-  /** What happens to the data, e.g. soft delete (BR-11, BR-14) */
+  /** What happens to the data, e.g. soft delete (BR-11, BR-14). */
   note?: string;
   onConfirm: () => Promise<void>;
   onClose: () => void;
@@ -41,6 +42,6 @@ export interface DeleteConfirmProps {
 
 export interface StatusBadgeProps {
   available: boolean;
-  /** Combo: on but a component product is off (BR-13) */
+  /** Combo that is on but contains a product that is off (BR-13). */
   blocked?: boolean;
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { Alert } from "@/components/atoms";
 import { useManager } from "@/lib/contexts/manager-context";
 import type { Product } from "@/lib/types";
 import { formatVND } from "@/lib/utils/currency";
@@ -10,6 +11,11 @@ import DeleteConfirm from "./DeleteConfirm";
 import ProductModal from "./ProductModal";
 import StatusBadge from "./StatusBadge";
 
+/**
+ * Manager tab with the product table, filtered by search text, category and
+ * sale status. The manager can switch a product on or off, add, edit and
+ * delete it (C-5 → C-9).
+ */
 export default function ProductsTab() {
   const {
     products,
@@ -56,9 +62,7 @@ export default function ProductsTab() {
 
   return (
     <div className="space-y-4">
-      {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-3">
-        {/* Search */}
         <div className="relative min-w-2/5 flex-1">
           <i className="fa-solid fa-magnifying-glass pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-(--color-text-muted)"></i>
           <input
@@ -122,16 +126,8 @@ export default function ProductsTab() {
         Hiển thị <strong className="text-foreground">{filtered.length}</strong>{" "}
         / {products.length} món
       </p>
-      {toggleError && (
-        <p
-          role="alert"
-          className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
-        >
-          {toggleError}
-        </p>
-      )}
+      <Alert message={toggleError} />
 
-      {/* Table */}
       <div className="overflow-x-auto rounded-2xl border border-(--color-border-light) bg-white shadow-sm">
         <table className="min-w-full divide-y divide-(--color-border-light) text-sm">
           <thead className="bg-background">

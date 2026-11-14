@@ -1,7 +1,7 @@
 "use client";
 
 import type { ProductSalesStats } from "@/lib/types";
-import { formatCurrency } from "@/lib/utils/analytics";
+import { formatVNDShort } from "@/lib/utils/currency";
 
 import { CategorySelect } from "./CategorySelect";
 
@@ -11,7 +11,12 @@ export interface TopProductsSectionProps {
   onCategoryChange: (id: number) => void;
 }
 
-/** Top-5 best sellers with revenue bars. */
+/**
+ * The five best sellers by revenue, each with a bar relative to the first.
+ * @param props.top5 Up to five rows, best first.
+ * @param props.categoryFilter Selected category id.
+ * @param props.onCategoryChange Called with a new category id.
+ */
 export function TopProductsSection({
   top5,
   categoryFilter,
@@ -50,7 +55,7 @@ export function TopProductsSection({
                     {p.unitsSold} ly
                   </span>
                   <span className="font-semibold text-(--color-primary) tabular-nums">
-                    {formatCurrency(p.revenue)}
+                    {formatVNDShort(p.revenue)}
                   </span>
                 </div>
               </div>

@@ -1,6 +1,10 @@
 import { MainLayout } from "@/components/templates/main-layout";
 
-export default function RootLayout({
+/**
+ * Layout of the customer route group.
+ * @param props.children Page content.
+ */
+export default function CustomerLayout({
   children,
 }: {
   children: React.ReactNode;

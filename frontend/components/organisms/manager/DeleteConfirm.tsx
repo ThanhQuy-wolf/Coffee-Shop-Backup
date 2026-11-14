@@ -1,11 +1,20 @@
 "use client";
 
+import { Alert } from "@/components/atoms";
 import { Modal } from "@/components/molecules/modal";
 import { errorMessage } from "@/lib/utils/errors";
 import { useState } from "react";
 
 import type { DeleteConfirmProps } from "./Manager.types";
 
+/**
+ * Confirmation dialog for deleting a category, product or combo. Closes on
+ * success and shows the server error otherwise.
+ * @param props.name Name of the item, shown in the question.
+ * @param props.note What happens to the data, e.g. soft delete (BR-14).
+ * @param props.onConfirm Performs the delete.
+ * @param props.onClose Closes the dialog.
+ */
 export default function DeleteConfirm({
   name,
   note,
@@ -47,14 +56,7 @@ export default function DeleteConfirm({
           {note ?? "Hành động này không thể hoàn tác."}
         </p>
       </div>
-      {error && (
-        <p
-          role="alert"
-          className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
-        >
-          {error}
-        </p>
-      )}
+      <Alert message={error} className="mb-4" />
       <div className="flex gap-3">
         <button
           type="button"

@@ -2,6 +2,11 @@ import type React from "react";
 
 import type { HeadingProps } from "./Typography.types";
 
+/**
+ * Heading that renders `<h1>`–`<h6>` with the matching app font size.
+ * @param props.level Heading level, 2 by default.
+ * @param props.className Extra classes.
+ */
 export default function Heading({
   level = 2,
   children,

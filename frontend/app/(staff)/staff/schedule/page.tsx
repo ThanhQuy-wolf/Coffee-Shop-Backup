@@ -1,5 +1,6 @@
 "use client";
 
+import { Alert } from "@/components/atoms";
 import {
   MobileShiftView,
   MonthlyCalendar,
@@ -19,6 +20,7 @@ import { useState } from "react";
 
 type FormState = { date?: string; shift?: ShiftView } | null;
 
+/** Shift schedule page for staff and the manager. */
 export default function StaffSchedulePage() {
   const { user } = useAuth();
   // RoleGuard in the layout guarantees a logged-in staff member here
@@ -29,6 +31,10 @@ export default function StaffSchedulePage() {
   );
 }
 
+/**
+ * Schedule body: sidebar, header, the week, month or phone view, and the
+ * shift detail and form modals.
+ */
 function Schedule() {
   const { user } = useAuth();
   const { view, loadError } = useShift();
@@ -50,14 +56,7 @@ function Schedule() {
         />
 
         <main className="flex-1 p-4 md:p-6">
-          {loadError && (
-            <div
-              role="alert"
-              className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700"
-            >
-              {loadError}
-            </div>
-          )}
+          <Alert message={loadError} className="mb-4" />
 
           <div className="hidden md:block">
             {view === "week" ? (

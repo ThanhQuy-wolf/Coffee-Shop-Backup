@@ -8,22 +8,22 @@ React 19, TypeScript và Tailwind CSS v4.
 ## Mô Tả Dự Án
 
 Frontend của Drinkool, hệ thống đặt đồ uống cho **một quán duy nhất** (không có
-`shopId`, mọi nhân viên và quản lý thuộc quán này). Đặc tả nghiệp vụ, ERD,
-bảng API và sơ đồ nằm ở `../docs/`. Frontend bám theo đặc tả đó:
+`shopId`, mọi nhân viên và quản lý thuộc quán này). Đặc tả nghiệp vụ, ERD, bảng
+API và sơ đồ nằm ở `../docs/`. Frontend bám theo đặc tả đó:
 
 - `lib/types.ts` khớp ERD (`docs/04-erd.md`).
 - Mỗi API trong `docs/05-api.md` có một hàm trong `lib/services/`.
-- Mỗi màn hình ứng với các use case trong `docs/03-usecase.md`
-  (bảng truy vết: `docs/08-truy-vet.md`, bảng route: `app/APP.md`).
+- Mỗi màn hình ứng với các use case trong `docs/03-usecase.md` (bảng truy vết:
+  `docs/08-truy-vet.md`, bảng route: `app/APP.md`).
 
 ### Tính Năng
 
-| Vai trò | Màn hình | Chức năng |
-|---|---|---|
-| Khách (không cần tài khoản) | `/`, `/checkout`, `/orders/[id]` | Xem thông tin quán và menu ở trang chủ, giỏ hàng, đặt món tiền mặt hoặc QR, theo dõi đơn, huỷ đơn chưa thanh toán, đặt lại khi đơn hết hạn |
-| Khách có tài khoản | thêm `/register`, `/orders` | Đăng ký bằng OTP, lịch sử đơn, đánh giá đơn đã hoàn tất |
-| Nhân viên | `/staff/orders`, `/staff/schedule` | Xác nhận thanh toán, pha chế, giao món, huỷ đơn chưa thanh toán; đăng ký ca, huỷ ca, xin nghỉ |
-| Quản lý | thêm `/manager`, `/manager/analytics` | CRUD món, combo, danh mục; thông tin quán và tham số; xem đánh giá; tạo, sửa, huỷ ca, duyệt nghỉ, chấm công; huỷ đơn đã thanh toán; thống kê doanh thu, lợi nhuận |
+| Vai trò                     | Màn hình                              | Chức năng                                                                                                                                                         |
+| --------------------------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Khách (không cần tài khoản) | `/`, `/checkout`, `/orders/[id]`      | Xem thông tin quán và menu ở trang chủ, giỏ hàng, đặt món tiền mặt hoặc QR, theo dõi đơn, huỷ đơn chưa thanh toán, đặt lại khi đơn hết hạn                        |
+| Khách có tài khoản          | thêm `/register`, `/orders`           | Đăng ký bằng OTP, lịch sử đơn, đánh giá đơn đã hoàn tất                                                                                                           |
+| Nhân viên                   | `/staff/orders`, `/staff/schedule`    | Xác nhận thanh toán, pha chế, giao món, huỷ đơn chưa thanh toán; đăng ký ca, huỷ ca, xin nghỉ                                                                     |
+| Quản lý                     | thêm `/manager`, `/manager/analytics` | CRUD món, combo, danh mục; thông tin quán và tham số; xem đánh giá; tạo, sửa, huỷ ca, duyệt nghỉ, chấm công; huỷ đơn đã thanh toán; thống kê doanh thu, lợi nhuận |
 
 Backend mới có `POST /api/customer/login`. Các API khác trả lời từ backend giả
 trong `lib/mock-data/` (xem `lib/LIB.md`), có kiểm tra đủ các business rule
@@ -73,8 +73,8 @@ docker build -t drinkool-frontend .
 docker run -p 3000:3000 drinkool-frontend
 ```
 
-Image dùng bản build `standalone` của Next.js (xem `dockerfile`).
-Khi chạy `pnpm dev`, `/api/*` được chuyển tiếp tới backend ở
+Image dùng bản build `standalone` của Next.js (xem `dockerfile`). Khi chạy
+`pnpm dev`, `/api/*` được chuyển tiếp tới backend ở
 `http://host.docker.internal:32080`; đặt biến `API_PROXY_URL` để đổi địa chỉ.
 
 ### Release
@@ -124,12 +124,12 @@ frontend/
 
 ### Tài Khoản Demo
 
-| Loại tài khoản | Tab đăng nhập | Tài khoản | Mật khẩu |
-| --- | --- | --- | --- |
-| Quản lý | Nhân viên quán | admin | admin |
-| Nhân viên | Nhân viên quán | an, binh, cuong | 123456 |
-| Khách hàng | Khách hàng | 0987654321 | user1 (qua backend thật) |
-| Mã OTP khi đăng ký | | | 123456 |
+| Loại tài khoản     | Tab đăng nhập  | Tài khoản       | Mật khẩu                 |
+| ------------------ | -------------- | --------------- | ------------------------ |
+| Quản lý            | Nhân viên quán | admin           | admin                    |
+| Nhân viên          | Nhân viên quán | an, binh, cuong | 123456                   |
+| Khách hàng         | Khách hàng     | 0987654321      | user1 (qua backend thật) |
+| Mã OTP khi đăng ký |                |                 | 123456                   |
 
 ### Design & Styling
 
@@ -140,29 +140,35 @@ frontend/
 
 ### Kiến Trúc Component (Atomic Design)
 
-Dự án tuân theo **Atomic Design** pattern — chi tiết tại `Atomic.md`:
+Dự án tuân theo **Atomic Design**:
 
-- **Atoms** - Nguyên tố cơ bản: Button, Input, Badge, Text, Heading, Divider
-- **Molecules** - Nhóm atoms: ProductCard, ShiftCard, SearchBar,
-  Modal, NotificationBell
+- **Atoms** - Nguyên tố cơ bản: Button, Alert, Spinner, LoginInput, Textarea,
+  Heading, Text, Caption
+- **Molecules** - Nhóm atoms: ProductCard, ShiftCard, SearchBar, Modal,
+  NotificationBell
 - **Organisms** - Phần UI phức tạp: CategorySidebar, CartFab, ProductGrid,
-  ReviewModal, analytics charts, manager tabs/modals
-- **Templates** - Bố cục trang: MainLayout, AuthLayout,
-  ManagerLayout
+  ReviewModal, analytics charts, manager tabs/modals, lịch ca
+- **Templates** - Bố cục trang: MainLayout, StaffLayout, ManagerLayout,
+  RoleGuard
+
+Quy ước import, danh sách component theo từng tầng: `components/COMPONENTS.md`.
+Mỗi hàm và component có JSDoc, rê chuột vào tên trong editor để xem mô tả và
+tham số.
 
 ### Data & Integration
 
-- Component chỉ lấy dữ liệu qua `lib/services` hoặc context, không import `lib/mock-data`.
-- Lỗi API là `ApiError` với `code` (`BR-xx`, `NOT_FOUND`...). Chọn câu thông báo theo `code` bằng `lib/utils/errors.ts`.
-- Khi backend có endpoint, chỉ thay thân hàm service tương ứng bằng `apiRequest(...)`.
+- Component chỉ lấy dữ liệu qua `lib/services` hoặc context, không import
+  `lib/mock-data`.
+- Lỗi API là `ApiError` với `code` (`BR-xx`, `NOT_FOUND`...). Chọn câu thông báo
+  theo `code` bằng `lib/utils/errors.ts`.
+- Khi backend có endpoint, chỉ thay thân hàm service tương ứng bằng
+  `apiRequest(...)`.
 
 ### Tài Liệu Chi Tiết
 
-- **WORKFLOW.md** - Kiến trúc tổng thể, data flow, quy trình phát triển
-- **Atomic.md** - Cấu trúc Atomic Design và quy ước component
-- **APP.md** - Chi tiết các routes, layouts, pages
-- **COMPONENTS.md** - Tài liệu từng component (Atomic Design)
-- **LAYOUTS.md** - Header, Footer, responsive behavior
-- **LIB.md** - Types, services, mock backend, contexts
+- **app/APP.md** - Routes, layouts, pages
+- **components/COMPONENTS.md** - Các tầng component và quy ước import
+- **components/atoms/ATOMS.md** - Cách dùng từng atom
+- **layouts/LAYOUTS.md** - Header, Footer, responsive
+- **lib/LIB.md** - Types, services, mock backend, contexts
 - **../docs/** - Đặc tả, business rules, use case, ERD, API, activity, sequence
-- **AGENTS.md** - Hướng dẫn cho AI agents làm việc với codebase

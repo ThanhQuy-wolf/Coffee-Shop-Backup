@@ -1,5 +1,6 @@
 import type { OrderStatus } from "../types";
 
+/** Label, badge colours and FontAwesome icon for each order status. */
 export const ORDER_STATUS: Record<
   OrderStatus,
   { label: string; className: string; icon: string }
@@ -36,6 +37,12 @@ export const ORDER_STATUS: Record<
   },
 };
 
+/**
+ * Formats a timestamp from the API for display.
+ *
+ * @param isoString - ISO-8601 time, e.g. `"2026-04-10T09:15:00+07:00"`
+ * @returns local time as `"HH:mm DD/MM/YYYY"` (vi-VN order)
+ */
 export function formatDateTime(isoString: string): string {
   return new Date(isoString).toLocaleString("vi-VN", {
     hour: "2-digit",
@@ -46,7 +53,13 @@ export function formatDateTime(isoString: string): string {
   });
 }
 
-/** Whole seconds left until `deadline`, never negative. */
+/**
+ * Counts down to a deadline, e.g. the payment deadline of an order (BR-28).
+ *
+ * @param deadline - ISO-8601 time
+ * @param now - current time; pass the server clock (`orderService.now()`)
+ * @returns whole seconds left, `0` once the deadline has passed
+ */
 export function secondsUntil(deadline: string, now: Date): number {
   return Math.max(
     0,

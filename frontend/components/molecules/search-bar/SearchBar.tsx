@@ -2,6 +2,15 @@
 
 import type { SearchBarProps } from "./Search.types";
 
+/**
+ * Search field with a magnifier icon and a clear button that shows once
+ * something is typed.
+ * @param props.value Current text (controlled).
+ * @param props.onChange Called with the new text.
+ * @param props.onClear Called by the clear button.
+ * @param props.placeholder Placeholder text.
+ * @param props.className Extra classes for the wrapper.
+ */
 export default function SearchBar({
   value,
   onChange,

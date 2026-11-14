@@ -3,13 +3,23 @@ import { clone, db, delay, fail, requireActor } from "../mock-data/db";
 import type { ShopInfo, ShopSettings } from "../types";
 
 export const shopService = {
-  /** S-2 */
+  /**
+   * S-2: reads the shop's public info (name, address, hours, WiFi...).
+   *
+   * @returns the `shop_info` row
+   */
   async get(): Promise<ShopInfo> {
     await delay();
     return clone(db.shop);
   },
 
-  /** S-3 */
+  /**
+   * S-3: updates the shop's info. Managers only.
+   *
+   * @param data - all info fields
+   * @returns the saved info
+   * @throws {ApiError} 400 `VALIDATION` for an empty name, 403 for other roles
+   */
   async update(data: ShopInfo): Promise<ShopInfo> {
     await delay();
     requireActor(["MANAGER"]);
@@ -19,14 +29,25 @@ export const shopService = {
     return clone(db.shop);
   },
 
-  /** S-4 */
+  /**
+   * S-4: reads the business parameters P-06, P-08 → P-12. Managers only.
+   *
+   * @returns current parameters
+   */
   async getSettings(): Promise<ShopSettings> {
     await delay();
     requireActor(["MANAGER"]);
     return { ...db.settings };
   },
 
-  /** S-5 */
+  /**
+   * S-5: updates the business parameters. New values apply to orders and
+   * shifts created afterwards. Managers only.
+   *
+   * @param data - all parameters, non-negative integers
+   * @returns the saved parameters
+   * @throws {ApiError} 400 `VALIDATION` for invalid numbers
+   */
   async updateSettings(data: ShopSettings): Promise<ShopSettings> {
     await delay();
     requireActor(["MANAGER"]);

@@ -2,9 +2,11 @@ export interface ProductCardProps {
   image: string;
   imageAlt?: string;
   productName: string;
+  /** A number is formatted as VND; a string is shown as is. */
   price: number | string;
   description: string;
-  /** e.g. "Combo" */
+  /** Small tag before the name, e.g. "Combo". */
   badge?: string;
+  /** Called when "Mua" is pressed. */
   onBuy?: () => void;
 }

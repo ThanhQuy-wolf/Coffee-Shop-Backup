@@ -20,22 +20,37 @@ import type {
   ProductInput,
 } from "../types";
 
-/** "Tất cả" pseudo-category used by the menu filters */
+/** Id of the "Tất cả" pseudo-category used by the menu filters. */
 export const ALL_CATEGORY_ID = 0;
 
+/** Products that are not soft-deleted. */
 const liveProducts = () => db.products.filter((p) => !p.deletedAt);
+/** Combos that are not soft-deleted. */
 const liveCombos = () => db.combos.filter((c) => !c.deletedAt);
+/** Categories that are not soft-deleted, by `sortOrder`. */
 const liveCategories = () =>
   db.categories
     .filter((c) => !c.deletedAt)
     .sort((a, b) => a.sortOrder - b.sortOrder);
 
+/**
+ * Turns a mock row into the API shape.
+ *
+ * @param row - row with `deletedAt`
+ * @returns a deep copy without `deletedAt`
+ */
 function stripDeleted<T extends { deletedAt: string | null }>(row: T) {
   const { deletedAt: _, ...rest } = row;
   return clone(rest);
 }
 
-/** BR-13: a combo is on sale only when every component product is. */
+/**
+ * Converts a combo row and computes `sellable`: a combo is on sale only when
+ * it is switched on and every product in it is on sale (BR-13).
+ *
+ * @param row - combo row
+ * @returns the combo in API shape
+ */
 function toCombo(row: ComboRow): Combo {
   const sellable =
     row.isAvailable &&
@@ -46,29 +61,64 @@ function toCombo(row: ComboRow): Combo {
   return { ...stripDeleted(row), sellable };
 }
 
+/**
+ * Tells whether an item appears in any order, which decides between soft and
+ * hard delete (BR-14).
+ *
+ * @param type - `PRODUCT` or `COMBO`
+ * @param id - product or combo id
+ */
 function wasSold(type: "PRODUCT" | "COMBO", id: number) {
   return db.orders.some((o) =>
     o.items.some((i) => i.type === type && i.id === id),
   );
 }
 
+/**
+ * Finds a category that is not deleted.
+ *
+ * @param id - category id
+ * @throws {ApiError} 404 `NOT_FOUND`
+ */
 function findCategory(id: number) {
   const c = db.categories.find((x) => x.id === id && !x.deletedAt);
   if (!c) fail(404, "NOT_FOUND", "Không tìm thấy danh mục");
   return c;
 }
+
+/**
+ * Finds a product that is not deleted.
+ *
+ * @param id - product id
+ * @throws {ApiError} 404 `NOT_FOUND`
+ */
 function findProduct(id: number) {
   const p = db.products.find((x) => x.id === id && !x.deletedAt);
   if (!p) fail(404, "NOT_FOUND", "Không tìm thấy món");
   return p;
 }
+
+/**
+ * Finds a combo that is not deleted.
+ *
+ * @param id - combo id
+ * @throws {ApiError} 404 `NOT_FOUND`
+ */
 function findCombo(id: number) {
   const c = db.combos.find((x) => x.id === id && !x.deletedAt);
   if (!c) fail(404, "NOT_FOUND", "Không tìm thấy combo");
   return c;
 }
 
-/** BR-10, BR-12 */
+/**
+ * Checks a product before saving: name, prices (BR-10), category and unique
+ * name, case-insensitive (BR-12).
+ *
+ * @param input - product fields
+ * @param selfId - id of the product being updated, so it does not clash
+ *   with its own name
+ * @throws {ApiError} 400 `VALIDATION`, 422 `BR-10`, 404, 409 `BR-12`
+ */
 function validateProduct(input: ProductInput, selfId?: number) {
   if (!input.name.trim())
     fail(400, "VALIDATION", "Tên món không được để trống");
@@ -84,7 +134,13 @@ function validateProduct(input: ProductInput, selfId?: number) {
     fail(409, "BR-12", "Tên món đã tồn tại");
 }
 
-/** BR-13 */
+/**
+ * Checks a combo before saving: name, price (BR-10), at least two units in
+ * total and existing products (BR-13).
+ *
+ * @param input - combo fields
+ * @throws {ApiError} 400 `VALIDATION`, 422 `BR-10` / `BR-13`, 404
+ */
 function validateCombo(input: ComboInput) {
   if (!input.name.trim())
     fail(400, "VALIDATION", "Tên combo không được để trống");
@@ -96,7 +152,13 @@ function validateCombo(input: ComboInput) {
 }
 
 export const catalogService = {
-  /** S-6 — what customers see: only items on sale (BR-13) */
+  /**
+   * S-6: the menu customers see, with only the products and combos on sale
+   * (BR-13).
+   *
+   * @param q - optional search text, matched against name and description
+   * @returns categories, products and combos
+   */
   async getMenu(q?: string): Promise<Menu> {
     await delay();
     const query = q?.trim().toLowerCase() ?? "";
@@ -115,7 +177,11 @@ export const catalogService = {
     };
   },
 
-  /** C-1 */
+  /**
+   * C-1: lists categories with their product count. Staff and managers.
+   *
+   * @returns categories by `sortOrder`
+   */
   async listCategories(): Promise<MenuCategory[]> {
     await delay();
     requireActor(["STAFF", "MANAGER"]);
@@ -125,7 +191,13 @@ export const catalogService = {
     }));
   },
 
-  /** C-2 */
+  /**
+   * C-2: creates a category. Managers only.
+   *
+   * @param input - name, icon and sort order
+   * @returns the new category
+   * @throws {ApiError} 400 `VALIDATION` for an empty name
+   */
   async createCategory(input: CategoryInput): Promise<MenuCategory> {
     await delay();
     requireActor(["MANAGER"]);
@@ -136,7 +208,13 @@ export const catalogService = {
     return { ...stripDeleted(row), productCount: 0 };
   },
 
-  /** C-3 */
+  /**
+   * C-3: updates a category. Managers only.
+   *
+   * @param id - category id
+   * @param input - new name, icon and sort order
+   * @returns the saved category
+   */
   async updateCategory(
     id: number,
     input: CategoryInput,
@@ -148,7 +226,13 @@ export const catalogService = {
     return stripDeleted(c);
   },
 
-  /** C-4 — soft delete, only when empty (BR-11) */
+  /**
+   * C-4: soft-deletes a category that has no product left (BR-11).
+   * Managers only.
+   *
+   * @param id - category id
+   * @throws {ApiError} 422 `BR-11` while products remain
+   */
   async deleteCategory(id: number): Promise<void> {
     await delay();
     const c = findCategory(id);
@@ -163,7 +247,12 @@ export const catalogService = {
     c.deletedAt = iso(mockNow());
   },
 
-  /** C-5 */
+  /**
+   * C-5: lists products, on sale or not. Staff and managers.
+   *
+   * @param categoryId - only this category; omit for all
+   * @returns products that are not deleted
+   */
   async listProducts(categoryId?: number): Promise<Product[]> {
     await delay();
     requireActor(["STAFF", "MANAGER"]);
@@ -172,7 +261,13 @@ export const catalogService = {
       .map(stripDeleted);
   },
 
-  /** C-6 */
+  /**
+   * C-6: creates a product. Managers only.
+   *
+   * @param input - product fields
+   * @returns the new product
+   * @throws {ApiError} see `validateProduct`
+   */
   async createProduct(input: ProductInput): Promise<Product> {
     await delay();
     requireActor(["MANAGER"]);
@@ -187,7 +282,15 @@ export const catalogService = {
     return stripDeleted(row);
   },
 
-  /** C-7 — price changes go to audit_log on the backend (BR-15) */
+  /**
+   * C-7: updates a product. The backend writes price changes to `audit_log`
+   * (BR-15). Managers only.
+   *
+   * @param id - product id
+   * @param input - new values
+   * @returns the saved product
+   * @throws {ApiError} see `validateProduct`
+   */
   async updateProduct(id: number, input: ProductInput): Promise<Product> {
     await delay();
     const p = findProduct(id);
@@ -197,7 +300,14 @@ export const catalogService = {
     return stripDeleted(p);
   },
 
-  /** C-8 — staff may switch off an item that ran out */
+  /**
+   * C-8: switches a product on or off sale. Staff may use it when an item
+   * runs out.
+   *
+   * @param id - product id
+   * @param isAvailable - `true` to sell it
+   * @returns the saved product
+   */
   async setProductAvailability(
     id: number,
     isAvailable: boolean,
@@ -209,7 +319,13 @@ export const catalogService = {
     return stripDeleted(p);
   },
 
-  /** C-9 — BR-14 */
+  /**
+   * C-9: deletes a product. A product that was sold is soft-deleted, so old
+   * orders keep it; otherwise it is removed (BR-14). Managers only.
+   *
+   * @param id - product id
+   * @throws {ApiError} 422 `BR-13` while a combo still contains it
+   */
   async deleteProduct(id: number): Promise<void> {
     await delay();
     const p = findProduct(id);
@@ -220,14 +336,24 @@ export const catalogService = {
     else db.products.splice(db.products.indexOf(p), 1);
   },
 
-  /** C-10 */
+  /**
+   * C-10: lists combos with their `sellable` flag. Staff and managers.
+   *
+   * @returns combos that are not deleted
+   */
   async listCombos(): Promise<Combo[]> {
     await delay();
     requireActor(["STAFF", "MANAGER"]);
     return liveCombos().map(toCombo);
   },
 
-  /** C-11 */
+  /**
+   * C-11: creates a combo. Managers only.
+   *
+   * @param input - combo fields and its products
+   * @returns the new combo
+   * @throws {ApiError} see `validateCombo`
+   */
   async createCombo(input: ComboInput): Promise<Combo> {
     await delay();
     requireActor(["MANAGER"]);
@@ -241,7 +367,14 @@ export const catalogService = {
     return toCombo(row);
   },
 
-  /** C-12 */
+  /**
+   * C-12: updates a combo. Managers only.
+   *
+   * @param id - combo id
+   * @param input - new values
+   * @returns the saved combo
+   * @throws {ApiError} see `validateCombo`
+   */
   async updateCombo(id: number, input: ComboInput): Promise<Combo> {
     await delay();
     const c = findCombo(id);
@@ -251,7 +384,13 @@ export const catalogService = {
     return toCombo(c);
   },
 
-  /** C-13 */
+  /**
+   * C-13: switches a combo on or off sale. Managers only.
+   *
+   * @param id - combo id
+   * @param isAvailable - `true` to sell it
+   * @returns the saved combo
+   */
   async setComboAvailability(id: number, isAvailable: boolean): Promise<Combo> {
     await delay();
     const c = findCombo(id);
@@ -260,7 +399,11 @@ export const catalogService = {
     return toCombo(c);
   },
 
-  /** C-14 — BR-14 */
+  /**
+   * C-14: deletes a combo; soft delete when it was sold (BR-14). Managers only.
+   *
+   * @param id - combo id
+   */
   async deleteCombo(id: number): Promise<void> {
     await delay();
     const c = findCombo(id);

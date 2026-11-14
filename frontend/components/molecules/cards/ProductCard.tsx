@@ -7,14 +7,16 @@ import Image from "next/image";
 import type { ProductCardProps } from "./Card.types";
 
 /**
- * Product card — fills the parent grid cell width (w-full).
- *
- * Layout (top → bottom):
- *   1. Image area (fixed height h-36) with coffee-mug fallback icon
- *   2. Name + description (flex-1, grows to fill space)
- *   3. Price + Buy button row (pinned to bottom)
- *
- * Responsive: card width is controlled by the parent grid, not the card itself.
+ * Menu card for a product or combo: image (a mug icon shows if it fails to
+ * load), name, description, price and a "Mua" button. It fills the width of
+ * its grid cell, so the grid decides how many cards fit per row.
+ * @param props.image Image URL.
+ * @param props.imageAlt Alt text for the image.
+ * @param props.productName Name shown and used in the button's label.
+ * @param props.price A number is formatted as VND; a string is shown as is.
+ * @param props.description Up to two lines are shown.
+ * @param props.badge Small tag before the name, e.g. "Combo".
+ * @param props.onBuy Called when "Mua" is pressed.
  */
 export default function ProductCard({
   image,
@@ -29,13 +31,11 @@ export default function ProductCard({
 
   return (
     <div className="flex w-full cursor-default flex-col overflow-hidden rounded-2xl border border-(--color-border-light) bg-(--color-bg-card) shadow-[0_2px_8px_var(--color-shadow-sm)] transition-all duration-250 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_var(--color-shadow-md)]">
-      {/* ── Image area ── */}
       <div className="relative h-36 w-full shrink-0 overflow-hidden bg-(--color-border-light)">
         {/* Fallback icon (shown when image fails or is missing) */}
         <div className="absolute inset-0 z-0 flex items-center justify-center text-4xl text-(--color-border)">
           <i className="fa-solid fa-mug-hot"></i>
         </div>
-        {/* Product image */}
         <Image
           src={image}
           alt={imageAlt}
@@ -48,7 +48,6 @@ export default function ProductCard({
         />
       </div>
 
-      {/* ── Name + description ── */}
       <div className="flex flex-1 flex-col gap-1 px-3 pt-2.5 pb-1.5">
         <h3 className="text-foreground line-clamp-1 text-sm leading-tight font-bold">
           {badge && (
@@ -61,7 +60,6 @@ export default function ProductCard({
         <Caption className="line-clamp-2">{description}</Caption>
       </div>
 
-      {/* ── Price + Buy button ── */}
       <div className="flex shrink-0 items-center justify-between border-t border-(--color-border-light) px-3 py-2.5">
         <Text variant="body2" className="font-bold">
           {formattedPrice}

@@ -7,6 +7,10 @@ import { useState } from "react";
 import CategoryModal from "./CategoryModal";
 import DeleteConfirm from "./DeleteConfirm";
 
+/**
+ * Manager tab listing menu categories with their product counts, plus add,
+ * edit and delete through modals (C-1 → C-4).
+ */
 export default function CategoriesTab() {
   const { categories, products, saveCategory, deleteCategory } = useManager();
 

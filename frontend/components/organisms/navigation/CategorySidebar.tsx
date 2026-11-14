@@ -8,13 +8,12 @@ import type { CategorySidebarProps } from "./Navigation.types";
 import { categoryButtonClass, categoryIconClass } from "./categoryStyles";
 
 /**
- * Left sidebar — always visible, collapsible on all screen sizes.
- *
- * Collapsed  → 64 px wide, icon only
- * Expanded   → 240 px wide, icon + label
- *
- * Width transition is handled by Tailwind w-16 / w-60 + transition-all.
- * Parent controls open/close state via isOpen + onToggle props.
+ * Category sidebar of the menu page, from `md` up. Collapsed it is 64 px wide
+ * and shows icons only; expanded it is 240 px with labels. On `xl` it is
+ * always expanded. Selecting a category updates the shared menu state.
+ * @param props.isOpen Expanded (true) or icons only (false).
+ * @param props.onToggle Called by the toggle button.
+ * @param props.openHours Opening hours shown at the bottom.
  */
 export default function CategorySidebar({
   isOpen,
@@ -33,11 +32,9 @@ export default function CategorySidebar({
         } as React.CSSProperties
       }
     >
-      {/* ── Sidebar header: title + toggle button ── */}
       <div
         className={`flex shrink-0 items-center border-b border-(--color-border) xl:justify-between xl:px-4 xl:py-3 ${isOpen ? "justify-between px-4 py-3" : "justify-center px-0 py-3"} `}
       >
-        {/* Title — shown when expanded, always shown on xl+ */}
         <span
           className={`text-xs font-bold tracking-widest whitespace-nowrap text-(--color-text-muted) uppercase ${isOpen ? "block" : "hidden"} xl:block`}
         >
@@ -45,7 +42,6 @@ export default function CategorySidebar({
           Thực Đơn
         </span>
 
-        {/* Toggle button — hidden on xl+ (sidebar is always expanded there) */}
         <button
           onClick={onToggle}
           title={isOpen ? "Thu gọn menu" : "Mở rộng menu"}
@@ -60,7 +56,6 @@ export default function CategorySidebar({
         </button>
       </div>
 
-      {/* ── Category list ── */}
       <nav className="flex-1 py-2">
         <ul className="flex flex-col gap-0.5 px-2">
           {menuCategories.map((cat: MenuCategory) => {
@@ -72,12 +67,10 @@ export default function CategorySidebar({
                   title={!isOpen ? cat.name : undefined}
                   className={`flex w-full cursor-pointer items-center rounded-xl border-none text-sm font-medium transition-all duration-150 xl:justify-start xl:gap-3 xl:px-3 xl:py-2.5 ${isOpen ? "gap-3 px-3 py-2.5" : "justify-center px-0 py-2.5"} ${categoryButtonClass(isActive)}`}
                 >
-                  {/* Icon */}
                   <i
                     className={` ${cat.icon} w-5 shrink-0 text-center text-base ${categoryIconClass(isActive)}`}
                   ></i>
 
-                  {/* Label — hidden when collapsed, always shown on xl+ */}
                   <span
                     className={`overflow-hidden text-ellipsis whitespace-nowrap ${isOpen ? "block" : "hidden"} xl:block`}
                   >
@@ -90,11 +83,9 @@ export default function CategorySidebar({
         </ul>
       </nav>
 
-      {/* ── Sidebar footer: opening hours ── */}
       <div
         className={`shrink-0 border-t border-(--color-border) py-3 xl:px-4 ${isOpen ? "px-4" : "flex justify-center px-0"} `}
       >
-        {/* Text row — shown when expanded, always shown on xl+ */}
         <div
           className={`items-center gap-2 text-xs text-(--color-text-muted) ${isOpen ? "flex" : "hidden"} xl:flex`}
         >
@@ -102,7 +93,6 @@ export default function CategorySidebar({
           <span>{openHours}</span>
         </div>
 
-        {/* Icon-only — shown when collapsed, hidden on xl+ */}
         <span className="xl:hidden">
           <i
             className={`fa-solid fa-clock text-sm text-(--color-text-muted) ${isOpen ? "hidden" : "block"}`}

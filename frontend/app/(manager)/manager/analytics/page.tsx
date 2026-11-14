@@ -1,5 +1,6 @@
 "use client";
 
+import { Alert } from "@/components/atoms";
 import {
   AnalyticsHeader,
   ProductAnalysisSection,
@@ -12,7 +13,7 @@ import { ALL_CATEGORY_ID } from "@/lib/services";
 import type { AnalyticsPeriod } from "@/lib/types";
 import { useState } from "react";
 
-/** UC-23: RP-1 → RP-3 */
+/** Revenue and product reports for the manager (UC-23, RP-1 → RP-3). */
 export default function AnalyticsPage() {
   const [period, setPeriod] = useState<AnalyticsPeriod>("month");
   const [categoryFilter, setCategoryFilter] = useState(ALL_CATEGORY_ID);
@@ -23,14 +24,7 @@ export default function AnalyticsPage() {
       <AnalyticsHeader period={period} onPeriodChange={setPeriod} />
 
       <main className="mx-auto max-w-screen-2xl space-y-6 p-4 pb-10">
-        {a.error && (
-          <p
-            role="alert"
-            className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700"
-          >
-            {a.error}
-          </p>
-        )}
+        <Alert message={a.error} />
         {a.summary && <SummarySection period={period} summary={a.summary} />}
 
         {/* The SVG charts need at least one point to compute their scales */}

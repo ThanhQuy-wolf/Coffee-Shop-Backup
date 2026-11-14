@@ -1,10 +1,11 @@
 "use client";
 
-import ShiftCard from "@/components/molecules/cards/ShiftCard";
+import { ShiftCard } from "@/components/molecules/cards";
 import { useShift } from "@/lib/contexts/shift-context";
 import {
   MONTH_NAMES_VI,
   SCHEDULE_TODAY,
+  WEEKDAY_LABELS_VI,
   formatDateISO,
   isToday,
 } from "@/lib/utils/date";
@@ -12,8 +13,11 @@ import { useMemo, useState } from "react";
 
 import type { MobileShiftViewProps } from "./ShiftSchedule.types";
 
-const DAY_HEADERS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
-
+/**
+ * Phone layout of the schedule: a month calendar with coloured dots per day,
+ * and the shifts of the selected day below it.
+ * @param props.onShiftClick Called when a shift card is tapped.
+ */
 export default function MobileShiftView({
   onShiftClick,
 }: MobileShiftViewProps) {
@@ -61,13 +65,11 @@ export default function MobileShiftView({
   }, [shifts, selectedDate]);
 
   const selectedDateObj = new Date(selectedDate + "T00:00:00");
-  const dayOfWeek = DAY_HEADERS[(selectedDateObj.getDay() + 6) % 7];
+  const dayOfWeek = WEEKDAY_LABELS_VI[(selectedDateObj.getDay() + 6) % 7];
 
   return (
     <div className="space-y-4">
-      {/* Compact month calendar */}
       <div className="rounded-xl border border-(--color-border-light) bg-white p-3">
-        {/* Month navigation */}
         <div className="mb-3 flex items-center justify-between">
           <button
             title="Trở lại tháng trước"
@@ -90,9 +92,8 @@ export default function MobileShiftView({
           </button>
         </div>
 
-        {/* Day headers */}
         <div className="mb-1 grid grid-cols-7">
-          {DAY_HEADERS.map((day) => (
+          {WEEKDAY_LABELS_VI.map((day) => (
             <div
               key={day}
               className="py-1 text-center text-[10px] font-semibold text-(--color-text-muted) uppercase"
@@ -102,7 +103,6 @@ export default function MobileShiftView({
           ))}
         </div>
 
-        {/* Calendar grid */}
         <div className="grid grid-cols-7">
           {calendarDays.map((date, i) => {
             if (!date) {
@@ -144,7 +144,6 @@ export default function MobileShiftView({
           })}
         </div>
 
-        {/* Legend */}
         <div className="mt-3 flex flex-wrap justify-center gap-3 border-t border-(--color-border-light) pt-2">
           <div className="flex items-center gap-1">
             <span className="h-2 w-2 rounded-full bg-amber-400"></span>
@@ -169,7 +168,6 @@ export default function MobileShiftView({
         </div>
       </div>
 
-      {/* Selected day shifts */}
       <div>
         <h3 className="text-foreground mb-3 text-sm font-bold">
           {dayOfWeek}, {selectedDateObj.getDate()}/

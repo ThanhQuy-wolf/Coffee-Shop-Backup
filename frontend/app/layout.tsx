@@ -24,6 +24,11 @@ export const metadata: Metadata = {
   },
 };
 
+/**
+ * Root HTML layout: fonts, the FontAwesome stylesheet and the app-wide
+ * providers.
+ * @param props.children The route group layout.
+ */
 export default function RootLayout({
   children,
 }: Readonly<{

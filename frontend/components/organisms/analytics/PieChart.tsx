@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 
+/** One slice of the pie. */
 export interface PieSlice {
   label: string;
   value: number;
@@ -13,8 +14,9 @@ interface PieChartProps {
 }
 
 /**
- * Pure-SVG interactive pie chart.
- * Hover a slice or legend item to highlight it and show its percentage.
+ * SVG pie chart with a legend. Hovering a slice or a legend item highlights
+ * it and shows its share.
+ * @param props.data Slices; their values need not add up to anything.
  */
 export function PieChart({ data }: PieChartProps) {
   const [hovered, setHovered] = useState<number | null>(null);
@@ -91,7 +93,6 @@ export function PieChart({ data }: PieChartProps) {
         )}
       </svg>
 
-      {/* Legend */}
       <div className="flex flex-wrap gap-x-4 gap-y-2 sm:flex-col">
         {slices.map((s) => (
           <div

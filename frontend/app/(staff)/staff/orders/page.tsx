@@ -1,5 +1,6 @@
 "use client";
 
+import { Alert } from "@/components/atoms";
 import { Modal } from "@/components/molecules/modal";
 import Header from "@/layouts/header";
 import { useAuth } from "@/lib/contexts/auth-context";
@@ -10,7 +11,9 @@ import { errorMessage } from "@/lib/utils/errors";
 import { ORDER_STATUS, formatDateTime } from "@/lib/utils/order";
 import { useCallback, useEffect, useState } from "react";
 
+/** How often the queue is reloaded. */
 const POLL_MS = 5000;
+/** Statuses that still need work from the staff. */
 const QUEUE: OrderStatus[] = ["PENDING_PAYMENT", "PAID", "PREPARING", "READY"];
 
 type Action =
@@ -19,7 +22,11 @@ type Action =
   | { kind: "ready" }
   | { kind: "complete" };
 
-/** UC-10 xử lý đơn (O-4 → O-8), UC-11 huỷ đơn (O-9) */
+/**
+ * Staff order queue (UC-10): confirm payment, start, mark ready and complete
+ * orders (O-4 → O-8), or cancel them (UC-11, O-9). Reloads every few seconds;
+ * a toggle shows finished orders instead.
+ */
 export default function StaffOrdersPage() {
   const { user } = useAuth();
   const isManager = user!.role === "MANAGER";
@@ -117,14 +124,7 @@ export default function StaffOrdersPage() {
           </div>
         </div>
 
-        {message && (
-          <p
-            role="alert"
-            className={`mb-4 rounded-lg px-3 py-2 text-sm ${message.tone === "error" ? "bg-red-50 text-red-700" : "bg-sky-50 text-sky-800"}`}
-          >
-            {message.text}
-          </p>
-        )}
+        <Alert message={message?.text} tone={message?.tone} className="mb-4" />
 
         <div
           className={`grid gap-4 ${showDone ? "md:grid-cols-2" : "md:grid-cols-2 xl:grid-cols-4"}`}
@@ -180,6 +180,14 @@ export default function StaffOrdersPage() {
   );
 }
 
+/**
+ * One order in the queue with the buttons for its next step.
+ * @param props.order The order.
+ * @param props.busy Disables the buttons while an action runs.
+ * @param props.isManager Managers may also cancel paid orders.
+ * @param props.onAction Called with the chosen step.
+ * @param props.onCancel Opens the cancel dialog.
+ */
 function OrderCard({
   order,
   busy,
@@ -299,6 +307,12 @@ function OrderCard({
   );
 }
 
+/**
+ * Cancel dialog. A paid order needs a reason and is refunded (BR-29).
+ * @param props.order The order to cancel.
+ * @param props.onClose Closes the dialog.
+ * @param props.onDone Called after the attempt with the error text, or null.
+ */
 function CancelDialog({
   order,
   onClose,

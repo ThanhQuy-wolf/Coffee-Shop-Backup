@@ -1,5 +1,6 @@
 "use client";
 
+import { Alert } from "@/components/atoms";
 import { Modal, ModalHeader } from "@/components/molecules/modal";
 import { useShift } from "@/lib/contexts/shift-context";
 import { SCHEDULE_TODAY, formatDateISO, timeToMinutes } from "@/lib/utils/date";
@@ -13,7 +14,13 @@ const inputCls =
 const labelCls =
   "mb-1 block text-xs font-semibold text-(--color-text-secondary)";
 
-/** Create (FR-23) or edit (FR-24) a shift. */
+/**
+ * Form to create (FR-23) or edit (FR-24) a shift: department, date, times,
+ * maximum staff, wage and whether other departments may register.
+ * @param props.onClose Closes the modal.
+ * @param props.defaultDate Date filled in for a new shift, `YYYY-MM-DD`.
+ * @param props.shift The shift to edit; create mode when omitted.
+ */
 export default function ShiftCreateModal({
   onClose,
   defaultDate,
@@ -168,15 +175,7 @@ export default function ShiftCreateModal({
           Cho phép nhân viên bộ phận khác đăng ký (BR-46)
         </label>
 
-        {error && (
-          <div
-            role="alert"
-            className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700"
-          >
-            <i className="fa-solid fa-circle-exclamation mr-2"></i>
-            {error}
-          </div>
-        )}
+        <Alert message={error} />
 
         <div className="flex gap-2 pt-2">
           <button

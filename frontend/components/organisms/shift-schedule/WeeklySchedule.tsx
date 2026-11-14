@@ -1,30 +1,25 @@
 "use client";
 
-import ShiftCard from "@/components/molecules/cards/ShiftCard";
+import { ShiftCard } from "@/components/molecules/cards";
 import { useShift } from "@/lib/contexts/shift-context";
-import { formatDateISO, formatDateShort, isToday } from "@/lib/utils/date";
+import {
+  MONTH_NAMES_VI,
+  WEEKDAY_LABELS_VI,
+  formatDateISO,
+  formatDateShort,
+  isToday,
+} from "@/lib/utils/date";
 import { useMemo, useState } from "react";
 
 import type { WeeklyScheduleProps } from "./ShiftSchedule.types";
 
-const MONTH_NAMES_EN = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
-
-const DAY_LABELS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
-const DAY_LABELS_EN = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
+/**
+ * Week view of the schedule with one row per department. On phones it shows
+ * a week strip and the shifts of the selected day instead.
+ * @param props.onShiftClick Called when a shift card is clicked.
+ * @param props.onCreateShift Shows a "+" per day and department when given.
+ * @param props.mobileCalendarHeader Use the phone layout.
+ */
 export default function WeeklySchedule({
   onShiftClick,
   onCreateShift,
@@ -84,7 +79,7 @@ export default function WeeklySchedule({
             <i className="fa-solid fa-chevron-left text-xs"></i>
           </button>
           <h3 className="text-base font-bold text-(--color-primary-dark)">
-            {MONTH_NAMES_EN[currentDate.getMonth()]} {currentDate.getFullYear()}
+            {MONTH_NAMES_VI[currentDate.getMonth()]} {currentDate.getFullYear()}
           </h3>
           <button
             title="Tuần sau"
@@ -113,7 +108,7 @@ export default function WeeklySchedule({
                 <span
                   className={`text-xs font-medium ${i >= 5 ? "text-pink-500" : "text-(--color-primary-dark)"}`}
                 >
-                  {DAY_LABELS_EN[i]}
+                  {WEEKDAY_LABELS_VI[i]}
                 </span>
                 <span
                   className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold ${
@@ -206,7 +201,7 @@ export default function WeeklySchedule({
                     : "bg-gray-50 font-semibold text-(--color-text-muted)"
                 }`}
               >
-                <span className="block uppercase">{DAY_LABELS[i]}</span>
+                <span className="block uppercase">{WEEKDAY_LABELS_VI[i]}</span>
                 <span className="mt-0.5 block text-[11px] font-normal">
                   {formatDateShort(date)}
                 </span>

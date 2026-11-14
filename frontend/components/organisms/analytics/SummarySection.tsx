@@ -1,5 +1,5 @@
 import type { AnalyticsPeriod, ReportSummary } from "@/lib/types";
-import { formatCurrency } from "@/lib/utils/analytics";
+import { formatNumber, formatVNDShort } from "@/lib/utils/currency";
 
 import { SummaryCard } from "./SummaryCard";
 import { PERIOD_LABELS } from "./constants";
@@ -9,9 +9,12 @@ export interface SummarySectionProps {
   summary: ReportSummary;
 }
 
-/** The 4 KPI cards at the top of the analytics page (RP-1). */
+/**
+ * The four KPI cards at the top of the analytics page (RP-1).
+ * @param props.period Period, used in the "vs previous" text.
+ * @param props.summary Figures from `analyticsService.getSummary`.
+ */
 export function SummarySection({ period, summary }: SummarySectionProps) {
-  const count = (n: number) => n.toLocaleString("vi-VN");
   return (
     <section>
       <h2 className="mb-3 text-sm font-semibold tracking-wider text-(--color-text-muted) uppercase">
@@ -21,31 +24,31 @@ export function SummarySection({ period, summary }: SummarySectionProps) {
         <SummaryCard
           icon="fa-solid fa-sack-dollar"
           title="Doanh thu"
-          value={formatCurrency(summary.revenue.current)}
+          value={formatVNDShort(summary.revenue.current)}
           subtitle={`${PERIOD_LABELS[period]} · chỉ tính đơn hoàn tất`}
           comparison={summary.revenue}
-          formatDelta={formatCurrency}
+          formatDelta={formatVNDShort}
         />
         <SummaryCard
           icon="fa-solid fa-receipt"
           title="Số đơn hàng"
-          value={count(summary.orders.current)}
+          value={formatNumber(summary.orders.current)}
           subtitle="Đơn hoàn tất trong kỳ"
           comparison={summary.orders}
-          formatDelta={count}
+          formatDelta={formatNumber}
         />
         <SummaryCard
           icon="fa-solid fa-circle-dollar-to-slot"
           title="Lợi nhuận gộp"
-          value={formatCurrency(summary.grossProfit.current)}
+          value={formatVNDShort(summary.grossProfit.current)}
           subtitle="Doanh thu trừ giá vốn lúc bán"
           comparison={summary.grossProfit}
-          formatDelta={formatCurrency}
+          formatDelta={formatVNDShort}
         />
         <SummaryCard
           icon="fa-solid fa-basket-shopping"
           title="Giá trị đơn TB"
-          value={formatCurrency(summary.averageOrderValue)}
+          value={formatVNDShort(summary.averageOrderValue)}
           subtitle="Doanh thu / số đơn"
         />
       </div>

@@ -3,6 +3,10 @@
 import { useCart } from "@/lib/contexts/cart-context";
 import Link from "next/link";
 
+/**
+ * Floating cart button linking to checkout, with the item count. Hidden while
+ * the cart is empty.
+ */
 export default function CartFab() {
   const { totalItems } = useCart();
 

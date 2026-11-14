@@ -32,12 +32,19 @@ lib/
 |   +-- use-local-storage.ts # useLocalStorage (hydration-safe), useHydrated
 |   +-- use-guest-orders.ts  # guest tokens of orders placed on this device
 +-- utils/
-    +-- currency.ts | date.ts | order.ts (status labels)
+    +-- currency.ts          # formatVND, formatVNDShort (chart axes), formatNumber
+    +-- date.ts              # week/month helpers, MONTH_NAMES_VI, WEEKDAY_LABELS_VI
+    +-- order.ts             # ORDER_STATUS labels, formatDateTime, secondsUntil
     +-- errors.ts            # errorMessage(err), errorCode(err): pick UI text by code
 ```
 
 ## Rules
 
+- Import each module by its own path (`@/lib/utils/currency`,
+  `@/lib/contexts/auth-context`). Only `@/lib/services` has a barrel.
+- Every exported function, context member and service method has JSDoc with
+  `@param`, `@returns` and, for services, `@throws {ApiError}` with the code and
+  the endpoint (`O-1`, `W-7`...). Keep it updated when the behaviour changes.
 - **Components never import `lib/mock-data`.** They use a context or a service.
 - Every service function is `async` and throws `ApiError`. Choose the message
   from `err.code` (`BR-xx`, `NOT_FOUND`...), never from `err.message`.
@@ -60,16 +67,16 @@ lib/
   `shop_info` row, and no row carries a `shopId`. Order codes are
   `DH-YYMMDD-NNNN` (BR-25).
 
-| Account | Login | Role |
-|---|---|---|
-| `admin` / `admin` | Tab "Nhân viên quán" | Manager |
-| `an`, `binh`, `cuong` / `123456` | Tab "Nhân viên quán" | Staff |
-| `0987654321` / `user1` | Tab "Khách hàng" (real backend, A-1) | Customer |
-| OTP for registration | `123456` | |
+| Account                          | Login                                | Role     |
+| -------------------------------- | ------------------------------------ | -------- |
+| `admin` / `admin`                | Tab "Nhân viên quán"                 | Manager  |
+| `an`, `binh`, `cuong` / `123456` | Tab "Nhân viên quán"                 | Staff    |
+| `0987654321` / `user1`           | Tab "Khách hàng" (real backend, A-1) | Customer |
+| OTP for registration             | `123456`                             |          |
 
 ## Backend
 
-`/api/*` is proxied to the backend in development by `next.config.ts`
-(default `http://host.docker.internal:32080`, override with `API_PROXY_URL`).
-Only `POST /api/customer/login` is real today. Its user is mirrored into the
-mock so the other mocked endpoints recognise the customer.
+`/api/*` is proxied to the backend in development by `next.config.ts` (default
+`http://host.docker.internal:32080`, override with `API_PROXY_URL`). Only
+`POST /api/customer/login` is real today. Its user is mirrored into the mock so
+the other mocked endpoints recognise the customer.

@@ -4,7 +4,12 @@ import { notificationService } from "@/lib/services";
 import type { AppNotification } from "@/lib/types";
 import { useEffect, useState } from "react";
 
-/** A-8, A-9: shift changes reach staff here on their next visit (BR-42). */
+/**
+ * Bell with the count of unread notifications and a dropdown to read them.
+ * Loads once on mount (A-8); "Đã đọc" removes an item right away and tells
+ * the server in the background (A-9). Shift changes reach staff here on
+ * their next visit (BR-42).
+ */
 export default function NotificationBell() {
   const [items, setItems] = useState<AppNotification[]>([]);
   const [open, setOpen] = useState(false);

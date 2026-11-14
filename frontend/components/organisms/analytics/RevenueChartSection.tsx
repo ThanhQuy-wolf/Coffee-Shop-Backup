@@ -25,7 +25,14 @@ export interface RevenueChartSectionProps {
   pieData: PieSlice[];
 }
 
-/** Revenue chart card with a Line / Bar / Pie switcher. */
+/**
+ * Revenue chart card with a line, bar and pie switcher.
+ * @param props.period Period, used in the titles.
+ * @param props.revenueData Points for the line chart.
+ * @param props.barCurrent Current period points for the bar chart.
+ * @param props.barPrevious Previous period points for the bar chart.
+ * @param props.pieData Revenue by category for the pie chart.
+ */
 export function RevenueChartSection({
   period,
   revenueData,

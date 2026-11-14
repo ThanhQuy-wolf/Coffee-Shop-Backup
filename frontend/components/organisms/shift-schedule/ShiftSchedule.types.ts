@@ -2,7 +2,9 @@ import type { ShiftView } from "@/lib/contexts/shift-context";
 
 export interface WeeklyScheduleProps {
   onShiftClick: (shift: ShiftView) => void;
+  /** Shows a "+" per day and department when given (managers only). */
   onCreateShift?: (date: string) => void;
+  /** Phone layout: a week strip and the selected day's shifts. */
   mobileCalendarHeader?: boolean;
 }
 
@@ -15,7 +17,7 @@ export interface MobileShiftViewProps {
 }
 
 export interface ShiftDetailModalProps {
-  /** Looked up in the context so the modal shows fresh data after each action */
+  /** Looked up in the context so the modal shows fresh data after each action. */
   shiftId: number | null;
   onClose: () => void;
   onEdit: (shift: ShiftView) => void;
@@ -24,6 +26,6 @@ export interface ShiftDetailModalProps {
 export interface ShiftFormModalProps {
   onClose: () => void;
   defaultDate?: string;
-  /** Edit mode when given */
+  /** Edit mode when given. */
   shift?: ShiftView;
 }

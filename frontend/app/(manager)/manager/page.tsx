@@ -1,5 +1,6 @@
 "use client";
 
+import { Alert } from "@/components/atoms";
 import {
   CategoriesTab,
   CombosTab,
@@ -12,6 +13,7 @@ import { type ManagerTab, useManager } from "@/lib/contexts/manager-context";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+/** Subtitle under the page title for each tab. */
 const SUBTITLE: Record<ManagerTab, string> = {
   products: "Món, giá bán, giá vốn và tình trạng bán",
   combos: "Combo và các món thành phần",
@@ -20,6 +22,7 @@ const SUBTITLE: Record<ManagerTab, string> = {
   reviews: "Đánh giá của khách về quán",
 };
 
+/** Sidebar links to the other manager pages. */
 const LINKS = [
   { href: "/staff/orders", label: "Đơn hàng", icon: "fa-solid fa-receipt" },
   {
@@ -34,7 +37,11 @@ const LINKS = [
   },
 ];
 
-/** UC-12 → UC-14 thực đơn, UC-15 thông tin quán, UC-17 xem đánh giá */
+/**
+ * Manager dashboard with tabs for products, combos and categories
+ * (UC-12 → UC-14), shop info (UC-15) and reviews (UC-17). The selected tab
+ * lives in the manager context.
+ */
 export default function ManagerPage() {
   const router = useRouter();
   const { user, logout } = useAuth();
@@ -76,7 +83,6 @@ export default function ManagerPage() {
 
   return (
     <div className="flex min-h-screen">
-      {/* ── Sidebar ── */}
       <aside className="hidden w-64 shrink-0 flex-col border-r border-(--color-border-light) bg-white shadow-sm lg:flex">
         <div className="flex items-center gap-3 border-b border-(--color-border-light) px-5 py-5">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-(--color-primary)">
@@ -168,7 +174,6 @@ export default function ManagerPage() {
         </div>
       </aside>
 
-      {/* ── Main content ── */}
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-40 flex items-center justify-between border-b border-(--color-border-light) bg-white px-5 py-4 shadow-sm">
           <div>
@@ -180,7 +185,6 @@ export default function ManagerPage() {
             </p>
           </div>
 
-          {/* Mobile tabs */}
           <div className="flex flex-wrap items-center justify-end gap-1 lg:hidden">
             {tabs.map((tab) => (
               <button
@@ -209,7 +213,6 @@ export default function ManagerPage() {
             ))}
           </div>
 
-          {/* Desktop actions */}
           <div className="hidden items-center gap-2 lg:flex">
             <Link
               href="/manager/analytics"
@@ -231,14 +234,7 @@ export default function ManagerPage() {
         <main className="flex-1 p-5 md:p-8">
           {activeTab === "products" && <ProductsTab />}
           {activeTab === "combos" && <CombosTab />}
-          {loadError && (
-            <p
-              role="alert"
-              className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700"
-            >
-              {loadError}
-            </p>
-          )}
+          <Alert message={loadError} className="mb-4" />
           {activeTab === "categories" && <CategoriesTab />}
           {activeTab === "shop" && <ShopInfoTab />}
           {activeTab === "reviews" && <ReviewsTab />}

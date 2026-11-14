@@ -1,5 +1,10 @@
 import type { TextProps } from "./Typography.types";
 
+/**
+ * Paragraph in one of the app's text styles.
+ * @param props.variant `body1` (default), `body2`, `caption` or `label`.
+ * @param props.className Extra classes.
+ */
 export default function Text({
   variant = "body1",
   children,

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Heading, Text, Textarea } from "@/components/atoms";
+import { Alert, Button, Heading, Text, Textarea } from "@/components/atoms";
 import { Modal } from "@/components/molecules/modal";
 import { reviewService } from "@/lib/services";
 import { errorMessage } from "@/lib/utils/errors";
@@ -10,7 +10,14 @@ import type { ReviewModalProps } from "./Modal.types";
 
 const COMMENT_MAX = 500; // BR-31
 
-/** UC-16: one review per completed order, cannot be edited afterwards. */
+/**
+ * Dialog for reviewing a completed order with 1–5 stars and an optional
+ * comment. One review per order, and it cannot be edited afterwards (UC-16).
+ * @param props.orderId The order being reviewed.
+ * @param props.orderCode Shown in the title.
+ * @param props.onClose Called on cancel or close.
+ * @param props.onSubmitted Called with the saved review.
+ */
 export default function ReviewModal({
   orderId,
   orderCode,
@@ -78,7 +85,6 @@ export default function ReviewModal({
             Đơn {orderCode}. Đánh giá chỉ gửi được một lần.
           </p>
 
-          {/* Star rating */}
           <div className="mb-5">
             <p className="mb-2 text-sm font-medium text-(--color-text-secondary)">
               Mức độ hài lòng
@@ -119,7 +125,6 @@ export default function ReviewModal({
             )}
           </div>
 
-          {/* Review textarea */}
           <div className="mb-6">
             <Textarea
               id="review-text"
@@ -135,16 +140,8 @@ export default function ReviewModal({
             </p>
           </div>
 
-          {error && (
-            <p
-              role="alert"
-              className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
-            >
-              {error}
-            </p>
-          )}
+          <Alert message={error} className="mb-4" />
 
-          {/* Footer buttons */}
           <div className="flex gap-3">
             <Button
               type="button"

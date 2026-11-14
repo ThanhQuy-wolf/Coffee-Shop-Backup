@@ -5,8 +5,8 @@ import { useMenu } from "@/lib/contexts/menu-context";
 import { categoryButtonClass, categoryIconClass } from "./categoryStyles";
 
 /**
- * Horizontal, scrollable category tabs — mobile only (< md).
- * On md+ the CategorySidebar is used instead; both read the same menu state.
+ * Horizontal, scrollable category tabs for phones (below `md`). Larger
+ * screens use CategorySidebar; both read the same menu state.
  */
 export default function MobileCategoryTabs() {
   const { menuCategories, activeCategory, setActiveCategory } = useMenu();

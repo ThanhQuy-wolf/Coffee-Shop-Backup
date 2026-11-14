@@ -1,5 +1,6 @@
 "use client";
 
+import { Alert } from "@/components/atoms";
 import { Modal, ModalHeader } from "@/components/molecules/modal";
 import type { ProductInput } from "@/lib/types";
 import { useState } from "react";
@@ -9,6 +10,15 @@ import { inputCls, labelCls, useSaveForm } from "./useSaveForm";
 
 const PLACEHOLDER_IMAGE = "/imgs/products/placeholder.jpg";
 
+/**
+ * Add or edit a product: name, category, price, cost price, image,
+ * description and sale status. Shows the margin as the prices are typed and
+ * warns when the cost price is missing (BR-10).
+ * @param props.product The product to edit, or null to add one.
+ * @param props.categories Categories to choose from.
+ * @param props.onSave Saves the form; resolves once the server accepted it.
+ * @param props.onClose Closes the modal.
+ */
 export default function ProductModal({
   product,
   categories,
@@ -167,14 +177,7 @@ export default function ProductModal({
           />
         </label>
 
-        {error && (
-          <p
-            role="alert"
-            className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
-          >
-            {error}
-          </p>
-        )}
+        <Alert message={error} />
 
         <div className="flex gap-3 pt-1">
           <button

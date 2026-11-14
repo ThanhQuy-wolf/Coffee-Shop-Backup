@@ -1,113 +1,80 @@
-# Components Documentation
+# Components
 
-> This project follows **Atomic Design** pattern. See `Atomic.md` at project
-> root for full structure guide.
+Components follow Atomic Design. Each component documents itself with JSDoc
+(summary plus `@param props.x`), so hovering its name or a prop in the editor
+shows the description. This file is the map.
 
-## Directory Structure
+## Layers
 
 ```
 components/
-├── atoms/           # Basic building blocks (Button, Input, Text, Badge...)
-├── molecules/       # Groups of atoms (ProductCard, SearchBar...)
-├── organisms/       # Complex UI sections (CategorySidebar, CartFab, ProductGrid, ReviewModal, analytics charts...)
-└── templates/       # Page layout structures (MainLayout, AuthLayout...)
++-- atoms/        # Smallest pieces, no app state (ATOMS.md)
++-- molecules/    # Small groups of atoms: cards, modal shell, search bar, bell
++-- organisms/    # Screen sections that read contexts or call services
++-- templates/    # Route group layouts and the role guard
 ```
 
----
+A layer may only import from the layers above it in this list (an organism may
+use molecules and atoms, never another template).
 
-## MOLECULES
+## Imports
 
-### ProductCard (`molecules/cards/ProductCard.tsx`)
+- Atoms come from the layer barrel:
+  `import { Button, Alert } from "@/components/atoms"`.
+- Everything else comes from its folder index, never from a file inside it:
+  `import { Modal, ModalHeader } from "@/components/molecules/modal"`,
+  `import { ShiftCard } from "@/components/molecules/cards"`.
+- Inside one folder, files import each other by relative path.
+- There is no barrel for the whole molecules, organisms or templates layer, so
+  one import does not pull in unrelated screens.
 
-**Description:** Product card molecule. Displays product image, name,
-description, formatted price, and a Buy button. Width is controlled by the
-parent grid (w-full).
+## Atoms
 
-**Atomic level:** Molecule (composed of Button, Caption, Text atoms)
+| Folder        | Exports                      | Use                                                                       |
+| ------------- | ---------------------------- | ------------------------------------------------------------------------- |
+| `buttons/`    | `Button`                     | Every button. Shape, colour and size presets, optional icon               |
+| `feedback/`   | `Alert`, `Spinner`           | Error or notice box (`role="alert"`); loading indicator (`role="status"`) |
+| `errors/`     | `ErrorMessageLogin`          | Form-level or field-level error on login and register                     |
+| `inputs/`     | `LoginInput`, `Textarea`     | Login/register text field with password toggle; multi-line field          |
+| `typography/` | `Heading`, `Text`, `Caption` | Text styles                                                               |
 
-### SearchBar (`molecules/search-bar/SearchBar.tsx`)
+## Molecules
 
-**Description:** Search input with clear button. Controlled component — value
-and onChange come from parent.
+| Folder               | Exports                                         | Use                                                            |
+| -------------------- | ----------------------------------------------- | -------------------------------------------------------------- |
+| `cards/`             | `ProductCard`, `ShiftCard`, `SHIFT_VIEW_STYLES` | Menu card; shift card coloured by state                        |
+| `modal/`             | `Modal`, `ModalHeader`                          | Dialog shell (Esc, backdrop, scroll lock, ARIA) and its header |
+| `notification-bell/` | `NotificationBell`                              | Unread notifications (A-8, A-9)                                |
+| `search-bar/`        | `SearchBar`                                     | Search field with clear button                                 |
 
----
+## Organisms
 
-## ORGANISMS
+| Folder            | Exports                                                                                                                             | Used by              |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| `analytics/`      | Charts (`LineChart`, `BarChart`, `PieChart`), sections, `useAnalytics`                                                              | `/manager/analytics` |
+| `cart/`           | `CartFab`                                                                                                                           | `MainLayout`         |
+| `forms/`          | `LoginForm`                                                                                                                         | `/login`             |
+| `manager/`        | Tabs (`ProductsTab`, `CombosTab`, `CategoriesTab`, `ShopInfoTab`, `ReviewsTab`), their modals, `StatusBadge`, `DeleteConfirm`       | `/manager`           |
+| `modals/`         | `ReviewModal`                                                                                                                       | `/orders/[orderId]`  |
+| `navigation/`     | `CategorySidebar`, `MobileCategoryTabs`                                                                                             | `/`                  |
+| `product-grid/`   | `ProductGrid`                                                                                                                       | `/`                  |
+| `shift-schedule/` | `WeeklySchedule`, `MonthlyCalendar`, `MobileShiftView`, `ScheduleHeader`, `ScheduleSidebar`, `ShiftDetailModal`, `ShiftCreateModal` | `/staff/schedule`    |
 
-### CategorySidebar (`organisms/navigation/CategorySidebar.tsx`)
+## Templates
 
-**Description:** Left sidebar with collapsible category filter. Sticky below
-header, full viewport height minus header.
+| Folder            | Export          | Use                                                 |
+| ----------------- | --------------- | --------------------------------------------------- |
+| `main-layout/`    | `MainLayout`    | `(main)` group: header, footer, cart button         |
+| `staff-layout/`   | `StaffLayout`   | `(staff)` group, staff and manager only             |
+| `manager-layout/` | `ManagerLayout` | `(manager)` group, manager only, mounts the catalog |
+| `role-guard/`     | `RoleGuard`     | Wraps any page that needs a role (FR-04)            |
 
-### CartFab (`organisms/cart/CartFab.tsx`)
+## Conventions
 
-**Description:** Floating Action Button displaying cart item count. Links to
-/checkout page.
-
-### ProductGrid (`organisms/product-grid/ProductGrid.tsx`)
-
-**Description:** Full product grid organism with mobile category tabs,
-filtering, and empty state. Uses useCart and useMenu contexts.
-
-### ReviewModal (`organisms/modals/ReviewModal.tsx`)
-
-**Description:** Modal for customer reviews. Shows 5-star rating and textarea.
-After submission, displays thank-you message.
-
-### Analytics Charts (`organisms/analytics/`)
-
-**Description:** Pure-SVG chart and table components for the Financial Analytics
-dashboard. All components are interactive with hover tooltips.
-
-| Component    | File             | Description                                                |
-| ------------ | ---------------- | ---------------------------------------------------------- |
-| LineChart    | LineChart.tsx    | Revenue trend line chart with area fill and hover tooltips |
-| BarChart     | BarChart.tsx     | Grouped bar chart comparing current vs previous period     |
-| PieChart     | PieChart.tsx     | Pie chart with interactive legend for category breakdown   |
-| SummaryCard  | SummaryCard.tsx  | Metric card with period-over-period comparison indicator   |
-| ProductTable | ProductTable.tsx | Sortable product sales table with profit margin badges     |
-
-**Usage:** Imported via `@/components/organisms/analytics` barrel index.
-
----
-
-## TEMPLATES
-
-### MainLayout (`templates/main-layout/MainLayout.tsx`)
-
-**Description:** Main layout template — wraps content with Header, Footer, and
-CartFab. Used by (main) route group.
-
-### AuthLayout (`templates/auth-layout/AuthLayout.tsx`)
-
-**Description:** Auth layout template — centers content in screen. Used by
-login/register pages.
-
-### ManagerLayout (`templates/manager-layout/ManagerLayout.tsx`)
-
-**Description:** Manager layout template — auth guard + ManagerProvider. Used by
-the manager route group.
-
----
-
-## Contexts Documentation
-
-### AuthContext (`lib/contexts/auth-context.tsx`)
-
-Manages user authentication state including login, logout, and registration.
-Uses localStorage for persistence.
-
-### CartContext (`lib/contexts/cart-context.tsx`)
-
-Manages shopping cart state with localStorage persistence. Tracks items,
-quantities, and totals.
-
-### MenuContext (`lib/contexts/menu-context.tsx`)
-
-Provides shared activeCategory state across components. Synchronizes Header
-mobile menu and CategorySidebar selection.
-
-### ManagerContext (`lib/contexts/manager-context.tsx`)
-
-Manages menu CRUD state (products, combos, categories) for the manager
-dashboard.
+- Show a service error with `<Alert message={error} />` and a loading state with
+  `<Spinner />`; do not hand-write the markup again.
+- Format money with `formatVND`, `formatVNDShort` or `formatNumber` from
+  `@/lib/utils/currency`, never with `toLocaleString`.
+- Props types live in a `*.types.ts` file next to the component, or at the top
+  of the component file when only that file uses them.
+- Comments say why, or cite a rule (`BR-xx`, `UC-xx`). Do not label JSX blocks.

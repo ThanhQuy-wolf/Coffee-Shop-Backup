@@ -2,6 +2,16 @@ import { useState } from "react";
 
 import { LoginInputProps } from "./Input.types";
 
+/**
+ * Labelled text field used on the login and register forms. A password field
+ * gets an eye button that toggles the text visible.
+ * @param props.label Label, also used as the placeholder.
+ * @param props.type Input type; `password` adds the show/hide button.
+ * @param props.name Field name, also the input id the label points to.
+ * @param props.value Current value (controlled).
+ * @param props.errors Error for this field; turns the border red.
+ * @param props.onChange Change handler.
+ */
 export default function LoginInput({
   label,
   type,

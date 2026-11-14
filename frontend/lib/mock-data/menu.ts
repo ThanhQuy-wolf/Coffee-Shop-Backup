@@ -1,7 +1,6 @@
 // Seed menu of the shop.
 import type { Combo, MenuCategory, Product } from "../types";
 
-// ===== MENU CATEGORIES =====
 export const MENU_CATEGORIES: MenuCategory[] = [
   {
     id: 1,
@@ -37,7 +36,6 @@ export const MENU_CATEGORIES: MenuCategory[] = [
   },
 ];
 
-// ===== MOCK PRODUCTS =====
 export const MOCK_PRODUCTS: Product[] = [
   {
     id: 1,
@@ -239,7 +237,6 @@ export const MOCK_PRODUCTS: Product[] = [
   },
 ];
 
-// ===== MOCK COMBOS =====
 export const MOCK_COMBOS: Combo[] = [
   {
     id: 1,

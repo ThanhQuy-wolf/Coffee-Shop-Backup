@@ -1,5 +1,6 @@
 "use client";
 
+import { Alert } from "@/components/atoms";
 import { useManager } from "@/lib/contexts/manager-context";
 import type { Combo } from "@/lib/types";
 import { formatVND } from "@/lib/utils/currency";
@@ -10,6 +11,11 @@ import ComboModal from "./ComboModal";
 import DeleteConfirm from "./DeleteConfirm";
 import StatusBadge from "./StatusBadge";
 
+/**
+ * Manager tab listing combos with price, contents and sale status. The
+ * manager can switch a combo on or off, add, edit and delete it (C-10 → C-14).
+ * A combo that is on but contains a product that is off shows as blocked.
+ */
 export default function CombosTab() {
   const { combos, products, saveCombo, deleteCombo, setComboAvailability } =
     useManager();
@@ -45,14 +51,7 @@ export default function CombosTab() {
         </button>
       </div>
 
-      {toggleError && (
-        <p
-          role="alert"
-          className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
-        >
-          {toggleError}
-        </p>
-      )}
+      <Alert message={toggleError} />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {combos.length === 0 ? (

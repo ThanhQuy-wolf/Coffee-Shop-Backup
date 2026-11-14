@@ -1,5 +1,10 @@
 import type { StatusBadgeProps } from "./Manager.types";
 
+/**
+ * Sale status pill: on sale, paused, or missing a component (combos only).
+ * @param props.available Whether the item is switched on.
+ * @param props.blocked Combo that is on but contains a product that is off.
+ */
 export default function StatusBadge({
   available,
   blocked = false,

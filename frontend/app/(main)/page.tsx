@@ -1,5 +1,6 @@
 "use client";
 
+import { Spinner } from "@/components/atoms";
 import { SearchBar } from "@/components/molecules/search-bar";
 import { CategorySidebar } from "@/components/organisms/navigation";
 import { ProductGrid } from "@/components/organisms/product-grid";
@@ -17,7 +18,7 @@ import type {
 import { errorMessage } from "@/lib/utils/errors";
 import { useEffect, useState } from "react";
 
-/** Home page: shop info and menu (UC-04, UC-05, UC-06) */
+/** Home page: shop info and menu (UC-04, UC-05, UC-06). Loads both once. */
 export default function HomePage() {
   const [data, setData] = useState<{ shop: ShopInfo; menu: Menu } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -41,11 +42,7 @@ export default function HomePage() {
     );
   }
   if (!data) {
-    return (
-      <p className="py-24 text-center text-sm text-(--color-text-muted)">
-        <i className="fa-solid fa-spinner fa-spin mr-2"></i>Đang tải menu...
-      </p>
-    );
+    return <Spinner label="Đang tải menu..." size="sm" className="py-24" />;
   }
 
   return (
@@ -55,6 +52,11 @@ export default function HomePage() {
   );
 }
 
+/**
+ * Shop banner, category navigation, search and product grid.
+ * @param props.shop Shop info for the banner and opening hours.
+ * @param props.menu Categories, products and combos on sale.
+ */
 function ShopMenu({ shop, menu }: { shop: ShopInfo; menu: Menu }) {
   const { activeCategory, setActiveCategory, menuCategories } = useMenu();
   const { addToCart } = useCart();

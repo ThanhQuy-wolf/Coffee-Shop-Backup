@@ -2,22 +2,26 @@
 
 import { useCallback, useSyncExternalStore } from "react";
 
-// ─── localStorage-backed state, hydration-safe ───────────────────────────────
-//
-// Built on useSyncExternalStore so that:
-//   - the server render and the first client render both use `fallback`
-//     (no hydration mismatch),
-//   - the stored value is picked up right after hydration without a
-//     setState-in-effect,
-//   - every component using the same key stays in sync (also across tabs).
-
 const listeners = new Map<string, Set<() => void>>();
 const cache = new Map<string, { raw: string | null; value: unknown }>();
 
+/**
+ * Re-renders every component that reads `key`.
+ *
+ * @param key - localStorage key that changed
+ */
 function notify(key: string) {
   listeners.get(key)?.forEach((l) => l());
 }
 
+/**
+ * Registers a listener for changes of `key`, in this tab and in other tabs
+ * (`storage` event).
+ *
+ * @param key - localStorage key to watch
+ * @param listener - called after each change
+ * @returns a function that removes the listener
+ */
 function subscribe(key: string, listener: () => void) {
   if (!listeners.has(key)) listeners.set(key, new Set());
   listeners.get(key)!.add(listener);
@@ -29,6 +33,15 @@ function subscribe(key: string, listener: () => void) {
   };
 }
 
+/**
+ * Reads and parses `key`. The parsed value is cached per raw string so
+ * useSyncExternalStore gets the same object until the stored text changes.
+ *
+ * @param key - localStorage key
+ * @param fallback - value when the key is missing, unreadable or invalid JSON
+ * @param validate - optional guard that turns the parsed JSON into a `T`
+ * @returns the stored value or `fallback`
+ */
 function read<T>(key: string, fallback: T, validate?: (v: unknown) => T): T {
   let raw: string | null = null;
   try {
@@ -52,6 +65,19 @@ function read<T>(key: string, fallback: T, validate?: (v: unknown) => T): T {
   return value;
 }
 
+/**
+ * React state saved in localStorage. It is hydration-safe: the server render
+ * and the first client render use `fallback`, and the stored value appears
+ * right after hydration. Every component that uses the same key stays in sync,
+ * also across browser tabs.
+ *
+ * @param key - localStorage key
+ * @param fallback - value before hydration and when nothing valid is stored;
+ *   keep it a module constant so its identity is stable
+ * @param validate - optional guard for the parsed JSON (also a module constant)
+ * @returns `[value, setValue]`; `setValue` takes a value, `null` to remove the
+ *   key, or an updater `(prev) => next`
+ */
 export function useLocalStorage<T>(
   key: string,
   fallback: T,
@@ -72,7 +98,7 @@ export function useLocalStorage<T>(
         if (resolved === null) window.localStorage.removeItem(key);
         else window.localStorage.setItem(key, JSON.stringify(resolved));
       } catch {
-        // storage full / blocked: keep going with in-memory UI
+        // Storage full or blocked: the UI keeps working, it just is not saved.
       }
       notify(key);
     },
@@ -84,9 +110,15 @@ export function useLocalStorage<T>(
   return [value, setValue] as const;
 }
 
+/** Subscription that never fires, for {@link useHydrated}. */
 const noopSubscribe = () => () => {};
 
-/** false during SSR and hydration, true afterwards. */
+/**
+ * Tells whether the component has hydrated, to avoid rendering data that only
+ * exists in the browser (localStorage, session) during SSR.
+ *
+ * @returns `false` during SSR and hydration, `true` afterwards
+ */
 export function useHydrated(): boolean {
   return useSyncExternalStore(
     noopSubscribe,

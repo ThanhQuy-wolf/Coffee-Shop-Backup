@@ -1,6 +1,10 @@
 import { ManagerLayout } from "@/components/templates/manager-layout";
 
-export default function RootManagerLayout({
+/**
+ * Layout of the manager route group.
+ * @param props.children Page content.
+ */
+export default function ManagerRouteLayout({
   children,
 }: {
   children: React.ReactNode;

@@ -7,6 +7,7 @@ import { type FormEvent, useEffect, useState } from "react";
 
 import { inputCls, labelCls } from "./useSaveForm";
 
+/** Editable text fields of the shop info form. */
 const SHOP_FIELDS: {
   key: keyof Omit<ShopInfo, "socialLinks">;
   label: string;
@@ -24,7 +25,7 @@ const SHOP_FIELDS: {
   { key: "coverImageUrl", label: "Ảnh bìa (URL)" },
 ];
 
-// P-06 → P-12 in docs/02-business-rules.md
+/** Business parameters P-06 → P-12 (docs/02-business-rules.md). */
 const SETTING_FIELDS: {
   key: keyof ShopSettings;
   label: string;
@@ -64,6 +65,10 @@ const SETTING_FIELDS: {
 
 type Status = { tone: "ok" | "error"; text: string } | null;
 
+/**
+ * Result line under a form: green after a save, red after an error.
+ * @param props.status Tone and text, or null to show nothing.
+ */
 function StatusLine({ status }: { status: Status }) {
   if (!status) return null;
   return (
@@ -76,7 +81,10 @@ function StatusLine({ status }: { status: Status }) {
   );
 }
 
-/** UC-15: S-2/S-3 thông tin quán, S-4/S-5 tham số nghiệp vụ */
+/**
+ * Manager tab with two forms (UC-15): the shop's information (S-2, S-3) and
+ * the business parameters (S-4, S-5). Each form saves on its own.
+ */
 export default function ShopInfoTab() {
   const [shop, setShop] = useState<ShopInfo | null>(null);
   const [settings, setSettings] = useState<ShopSettings | null>(null);

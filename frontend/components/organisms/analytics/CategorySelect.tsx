@@ -3,7 +3,13 @@
 import { useCatalog } from "@/lib/contexts/catalog-context";
 import { ALL_CATEGORY_ID } from "@/lib/services";
 
-/** Category filter <select> used by the analytics sections. */
+/**
+ * Category filter `<select>` used by the analytics sections, with an
+ * "all categories" option first.
+ * @param props.value Selected category id, or `ALL_CATEGORY_ID`.
+ * @param props.onChange Called with the new id.
+ * @param props.label Text before the select.
+ */
 export function CategorySelect({
   value,
   onChange,

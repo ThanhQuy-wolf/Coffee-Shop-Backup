@@ -1,7 +1,7 @@
 "use client";
 
 import type { RevenueDataPoint } from "@/lib/types";
-import { formatCurrency } from "@/lib/utils/analytics";
+import { formatVNDShort } from "@/lib/utils/currency";
 import { useState } from "react";
 
 interface LineChartProps {
@@ -10,9 +10,11 @@ interface LineChartProps {
 }
 
 /**
- * Pure-SVG interactive line chart for revenue over time.
- * Hover dots show tooltip with label, revenue, and order count.
- * Tooltip auto-flips above/below the dot to stay inside the viewBox.
+ * SVG line chart of revenue over time. Hovering a dot shows a tooltip with the
+ * label, revenue and order count; the tooltip flips below the dot when it
+ * would leave the chart.
+ * @param props.data Points to plot, at least one.
+ * @param props.height Chart height in viewBox units, 200 by default.
  */
 export function LineChart({ data, height = 200 }: LineChartProps) {
   const [hovered, setHovered] = useState<number | null>(null);
@@ -85,7 +87,7 @@ export function LineChart({ data, height = 200 }: LineChartProps) {
               fontSize="10"
               fill="#A08060"
             >
-              {formatCurrency(g.val)}
+              {formatVNDShort(g.val)}
             </text>
           </g>
         ))}
@@ -171,7 +173,7 @@ export function LineChart({ data, height = 200 }: LineChartProps) {
                   fontWeight="600"
                   fill="#C8973A"
                 >
-                  {formatCurrency(p.data.revenue)}
+                  {formatVNDShort(p.data.revenue)}
                 </text>
                 <text
                   x={tipX + tipW / 2}

@@ -1,6 +1,10 @@
 import { StaffLayout } from "@/components/templates/staff-layout";
 
-export default function RootStaffLayout({
+/**
+ * Layout of the staff route group.
+ * @param props.children Page content.
+ */
+export default function StaffRouteLayout({
   children,
 }: {
   children: React.ReactNode;

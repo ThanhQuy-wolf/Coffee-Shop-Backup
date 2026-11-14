@@ -1,5 +1,6 @@
 "use client";
 
+import { Alert } from "@/components/atoms";
 import { reviewService } from "@/lib/services";
 import type { ReviewList } from "@/lib/types";
 import { errorMessage } from "@/lib/utils/errors";
@@ -8,7 +9,10 @@ import { useEffect, useState } from "react";
 
 const PAGE_SIZE = 10;
 
-/** UC-17: R-2 xem đánh giá */
+/**
+ * Manager tab with customer reviews (UC-17, R-2): the average rating, the
+ * count per star, a star filter and pages of 10 reviews.
+ */
 export default function ReviewsTab() {
   const [rating, setRating] = useState(0);
   const [page, setPage] = useState(1);
@@ -25,15 +29,7 @@ export default function ReviewsTab() {
       .then(setData, (err) => setError(errorMessage(err)));
   }, [rating, page]);
 
-  if (error)
-    return (
-      <p
-        role="alert"
-        className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
-      >
-        {error}
-      </p>
-    );
+  if (error) return <Alert message={error} />;
   if (!data) return null;
 
   const totalAll = Object.values(data.countByRating).reduce((s, n) => s + n, 0);

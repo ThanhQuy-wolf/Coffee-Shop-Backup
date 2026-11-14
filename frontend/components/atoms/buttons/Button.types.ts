@@ -4,7 +4,9 @@ export interface ButtonProps extends Omit<
   ButtonHTMLAttributes<HTMLButtonElement>,
   "style"
 > {
+  /** Shape preset. `base` is the default rounded button. */
   style?: "base" | "payment" | "login";
+  /** Colour preset. */
   variant?:
     | "primary"
     | "secondary"
@@ -12,8 +14,11 @@ export interface ButtonProps extends Omit<
     | "ghost"
     | "primaryNoBorder"
     | "bgWhite";
+  /** Padding and font size. */
   size?: "sm" | "md" | "lg";
-  icon?: string; // FontAwesome class like "fa-solid fa-cart-plus"
+  /** FontAwesome icon name; `fa-solid` is added for you, e.g. `fa-cart-plus`. */
+  icon?: string;
+  /** Side of the label the icon goes on, `left` by default. */
   iconPosition?: "left" | "right";
   className?: string;
   disabled?: boolean;

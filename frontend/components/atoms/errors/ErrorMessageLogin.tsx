@@ -1,9 +1,17 @@
 import { ErrorMessageLoginProps } from "./Error.types";
 
+/**
+ * Error text for the login and register forms, with a warning icon.
+ * @param props.message The error to show; nothing is rendered when empty.
+ * @param props.type `primary` (default) for a boxed form-level error,
+ *   `secondary` for a small line under a field.
+ */
 export default function ErrorMessageLogin({
   message,
   type = "primary",
 }: ErrorMessageLoginProps) {
+  if (!message) return null;
+
   function primaryType() {
     return (
       <div

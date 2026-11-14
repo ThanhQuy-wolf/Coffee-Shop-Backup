@@ -1,8 +1,8 @@
+// Static report figures for RP-1 → RP-3. Each revenue series holds the
+// previous period followed by the current one.
 import type { ProductSalesStats, RevenueDataPoint } from "../types";
 
-// ===== MOCK FINANCIAL DATA =====
-
-// Daily revenue for the last 30 days (current month)
+/** Daily revenue for the last 30 days. */
 export const MOCK_REVENUE_DAILY: RevenueDataPoint[] = [
   { label: "01/04", revenue: 1250000, orders: 42 },
   { label: "02/04", revenue: 980000, orders: 35 },
@@ -36,7 +36,7 @@ export const MOCK_REVENUE_DAILY: RevenueDataPoint[] = [
   { label: "30/04", revenue: 1720000, orders: 62 },
 ];
 
-// Weekly revenue (last 12 weeks)
+/** Weekly revenue for the last 12 weeks. */
 export const MOCK_REVENUE_WEEKLY: RevenueDataPoint[] = [
   { label: "T1/W1", revenue: 8200000, orders: 295 },
   { label: "T1/W2", revenue: 9450000, orders: 340 },
@@ -52,7 +52,7 @@ export const MOCK_REVENUE_WEEKLY: RevenueDataPoint[] = [
   { label: "T3/W4", revenue: 10900000, orders: 392 },
 ];
 
-// Monthly revenue (last 12 months)
+/** Monthly revenue for the last 12 months. */
 export const MOCK_REVENUE_MONTHLY: RevenueDataPoint[] = [
   { label: "T4/2025", revenue: 42000000, orders: 1512 },
   { label: "T5/2025", revenue: 45500000, orders: 1638 },
@@ -68,7 +68,7 @@ export const MOCK_REVENUE_MONTHLY: RevenueDataPoint[] = [
   { label: "T3/2026", revenue: 53500000, orders: 1926 },
 ];
 
-// Yearly revenue (last 5 years)
+/** Yearly revenue for the last 5 years. */
 export const MOCK_REVENUE_YEARLY: RevenueDataPoint[] = [
   { label: "2022", revenue: 420000000, orders: 15120 },
   { label: "2023", revenue: 485000000, orders: 17460 },
@@ -77,7 +77,7 @@ export const MOCK_REVENUE_YEARLY: RevenueDataPoint[] = [
   { label: "2026", revenue: 180000000, orders: 6480 },
 ];
 
-// Product sales statistics (with cost price for profit analysis)
+/** Sales per product, with cost so profit can be shown. */
 export const MOCK_PRODUCT_SALES: ProductSalesStats[] = [
   {
     productId: 12,

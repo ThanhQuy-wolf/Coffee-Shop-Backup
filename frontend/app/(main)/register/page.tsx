@@ -1,6 +1,6 @@
 "use client";
 
-import Button from "@/components/atoms/buttons/Button";
+import { Button, ErrorMessageLogin } from "@/components/atoms";
 import { BRAND } from "@/lib/constants";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { ApiError, VN_PHONE_REGEX, authService } from "@/lib/services";
@@ -13,20 +13,17 @@ import { type SubmitEvent, useEffect, useState } from "react";
 const DEMO_OTP = "123456"; // the mock always sends this code
 const MIN_PASSWORD = 6;
 
+/**
+ * Classes for a register form input.
+ * @param hasError Turns the border red.
+ */
 const inputClass = (hasError: boolean) =>
   `text-foreground w-full rounded-xl border bg-white px-4 py-3 outline-none transition-all duration-150 placeholder:text-(--color-text-muted) focus:border-(--color-primary) focus:ring-2 focus:ring-(--color-primary) ${hasError ? "border-red-400" : "border-(--color-border)"}`;
 
-function FieldError({ message }: { message?: string }) {
-  if (!message) return null;
-  return (
-    <p className="mt-1.5 flex items-center gap-1 text-xs text-red-500">
-      <i className="fa-solid fa-circle-exclamation"></i>
-      {message}
-    </p>
-  );
-}
-
-/** UC-01: A-3 gửi OTP, A-4 tạo tài khoản */
+/**
+ * Customer sign-up (UC-01) in two steps: send an OTP to the phone (A-3),
+ * then enter the code, name and password to create the account (A-4).
+ */
 export default function RegisterPage() {
   const router = useRouter();
   const { startSession } = useAuth();
@@ -142,7 +139,7 @@ export default function RegisterPage() {
                 placeholder="0912345678"
                 className={inputClass(!!errors.phone)}
               />
-              <FieldError message={errors.phone} />
+              <ErrorMessageLogin type="secondary" message={errors.phone} />
             </div>
             <div className="space-y-3 pt-2">
               <Button
@@ -185,7 +182,7 @@ export default function RegisterPage() {
                 maxLength={6}
                 className={`${inputClass(!!errors.otp)} text-center text-lg tracking-widest`}
               />
-              <FieldError message={errors.otp} />
+              <ErrorMessageLogin type="secondary" message={errors.otp} />
             </div>
             <div>
               <label
@@ -201,7 +198,7 @@ export default function RegisterPage() {
                 maxLength={100}
                 className={inputClass(!!errors.fullName)}
               />
-              <FieldError message={errors.fullName} />
+              <ErrorMessageLogin type="secondary" message={errors.fullName} />
             </div>
             <div>
               <label
@@ -217,7 +214,7 @@ export default function RegisterPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 className={inputClass(!!errors.password)}
               />
-              <FieldError message={errors.password} />
+              <ErrorMessageLogin type="secondary" message={errors.password} />
             </div>
             <div className="space-y-3 pt-2">
               <Button

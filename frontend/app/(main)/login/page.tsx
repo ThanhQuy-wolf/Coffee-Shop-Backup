@@ -1,15 +1,14 @@
 "use client";
 
-import LoginForm from "@/components/organisms/forms/LoginForm";
+import { LoginForm } from "@/components/organisms/forms";
 import { BRAND } from "@/lib/constants";
 import Image from "next/image";
 
+/** Login page: brand, the login form and the demo accounts. */
 export default function LoginPage() {
   return (
     <div className="bg-background flex min-h-screen items-center justify-center px-4 py-8">
-      {/* Login Form Card */}
       <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
-        {/* Logo & Shop Name */}
         <div className="mb-8 flex flex-col items-center">
           <div className="relative mb-4 h-20 w-20">
             <Image
@@ -29,10 +28,8 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Login Form */}
         <LoginForm />
 
-        {/* Demo Credentials Info */}
         <div className="bg-background mt-6 rounded-lg p-4">
           <p className="mb-2 text-xs font-semibold text-(--color-text-muted)">
             Tài khoản demo:

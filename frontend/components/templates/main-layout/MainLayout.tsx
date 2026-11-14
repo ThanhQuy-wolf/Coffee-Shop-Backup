@@ -5,22 +5,19 @@ import Header from "@/layouts/header";
 import type { MainLayoutProps } from "./MainLayout.types";
 
 /**
- * Main layout template — wraps content with Header, Footer, and CartFab.
- * Used by the (main) route group layout.
+ * Layout of the customer pages: sticky header, content that fills the
+ * remaining height, footer and the floating cart button.
+ * @param props.children Page content.
  */
 export default function MainLayout({ children }: MainLayoutProps) {
   return (
     <>
-      {/* Sticky top header */}
       <Header />
 
-      {/* Page content (grows to fill remaining height) */}
       <div className="flex-1">{children}</div>
 
-      {/* Footer always at bottom */}
       <Footer />
 
-      {/* Global floating cart button */}
       <CartFab />
     </>
   );

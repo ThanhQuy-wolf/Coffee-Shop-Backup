@@ -7,7 +7,16 @@ import { ALL_CATEGORY_ID } from "@/lib/services/catalog";
 
 import type { ProductGridProps } from "./ProductGrid.types";
 
-/** Products and combos are already filtered to what is on sale (S-6). */
+/**
+ * Menu grid of the selected category, filtered by the search text. Combos
+ * show only under "Tất cả" because they have no category. The number of
+ * columns shrinks while the sidebar is expanded.
+ * @param props.products Products on sale (S-6 already filters them).
+ * @param props.combos Combos on sale.
+ * @param props.searchQuery Text to match against names and descriptions.
+ * @param props.isSidebarOpen Whether the category sidebar is expanded.
+ * @param props.onAdd Called when "Mua" is pressed on a card.
+ */
 export default function ProductGrid({
   products,
   combos,

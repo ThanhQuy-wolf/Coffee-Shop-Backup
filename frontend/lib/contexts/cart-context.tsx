@@ -5,6 +5,7 @@ import { createContext, useContext, useMemo } from "react";
 import { useLocalStorage } from "../hooks/use-local-storage";
 import type { CreateOrderRequest, OrderItemType } from "../types";
 
+/** One product or combo in the cart. A line is identified by `type` + `id`. */
 export interface CartLine {
   type: OrderItemType;
   id: number;
@@ -22,26 +23,69 @@ export interface Cart {
 }
 
 interface CartContextValue {
+  /** Current cart, `null` when empty. */
   cart: Cart | null;
+  /** Sum of all quantities. */
   totalItems: number;
+  /** Sum of `unitPrice × quantity`, in đồng. */
   totalPrice: number;
+  /**
+   * Adds one unit of an item. A new item gets its own line, an item already
+   * in the cart gets its quantity increased.
+   *
+   * @param line - the item without quantity
+   */
   addToCart: (line: Omit<CartLine, "quantity">) => void;
-  /** Reorder after an expired order (UC-11, BR-28): replaces the whole cart */
+  /**
+   * Replaces the whole cart, e.g. to reorder after an order expired
+   * (UC-11, BR-28). A new Idempotency-Key is created.
+   *
+   * @param cart - lines to put in the cart; empty lines clear it
+   */
   loadCart: (cart: Omit<Cart, "idempotencyKey">) => void;
+  /**
+   * Sets the quantity of a line. 0 or less removes the line.
+   *
+   * @param type - `PRODUCT` or `COMBO`
+   * @param id - product or combo id
+   * @param quantity - new quantity, rounded down
+   */
   setQuantity: (type: OrderItemType, id: number, quantity: number) => void;
+  /**
+   * Removes a line.
+   *
+   * @param type - `PRODUCT` or `COMBO`
+   * @param id - product or combo id
+   */
   removeLine: (type: OrderItemType, id: number) => void;
-  /** After BR-22: take the server's prices */
+  /**
+   * Takes the current prices sent by the server after a `BR-22` error.
+   *
+   * @param prices - new unit price per item
+   */
   applyPrices: (
     prices: { type: OrderItemType; id: number; price: number }[],
   ) => void;
+  /** Empties the cart, e.g. after the order was placed. */
   clearCart: () => void;
+  /**
+   * Builds the `items` of the O-1 request body from the cart.
+   *
+   * @returns one entry per line, with the price the customer saw
+   */
   toOrderItems: () => CreateOrderRequest["items"];
 }
 
-// v3: carts without shopId (single shop). Older carts are dropped.
+// v3: carts without shopId (single shop), so older carts are dropped.
 const STORAGE_KEY = "coffee-shop-cart-v3";
 const CartContext = createContext<CartContextValue | null>(null);
 
+/**
+ * Validates the cart read from localStorage.
+ *
+ * @param v - parsed JSON
+ * @returns the cart without empty lines, or `null` when the shape is wrong
+ */
 function parseCart(v: unknown): Cart | null {
   if (!v || typeof v !== "object") return null;
   const c = v as Cart;
@@ -49,13 +93,31 @@ function parseCart(v: unknown): Cart | null {
   return { ...c, lines: c.lines.filter((l) => l && l.quantity > 0) };
 }
 
+/**
+ * Creates an Idempotency-Key for the O-1 request (BR-24).
+ *
+ * @returns a UUID v4
+ */
 function newKey() {
   return crypto.randomUUID();
 }
 
+/**
+ * Tells whether a cart line is the given item.
+ *
+ * @param l - cart line
+ * @param type - `PRODUCT` or `COMBO`
+ * @param id - product or combo id
+ */
 const same = (l: CartLine, type: OrderItemType, id: number) =>
   l.type === type && l.id === id;
 
+/**
+ * Holds the cart for the whole app and saves it in localStorage (FR-11).
+ * Mounted once in app/providers.tsx.
+ *
+ * @param props.children - the app
+ */
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useLocalStorage<Cart | null>(
     STORAGE_KEY,
@@ -137,6 +199,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
+/**
+ * Reads the cart and its actions.
+ *
+ * @returns the cart context (see `CartContextValue`)
+ * @throws {Error} when used outside `CartProvider`
+ */
 export function useCart() {
   const context = useContext(CartContext);
   if (!context) {

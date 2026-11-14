@@ -1,19 +1,14 @@
-// Buttons
 export { Button } from "./buttons";
 export type { ButtonProps } from "./buttons";
 
-// Inputs
-export { TextInput, SearchInput, Textarea } from "./inputs";
-export type { TextInputProps, SearchInputProps, TextareaProps } from "./inputs";
+export { ErrorMessageLogin } from "./errors";
+export type { ErrorMessageLoginProps } from "./errors";
 
-// Typography
-export { Heading, Text, Caption } from "./typography";
-export type { HeadingProps, TextProps, CaptionProps } from "./typography";
+export { Alert, Spinner } from "./feedback";
+export type { AlertProps, SpinnerProps } from "./feedback";
 
-// Badges
-export { Badge, PriceBadge } from "./badges";
-export type { BadgeProps } from "./badges";
+export { LoginInput, Textarea } from "./inputs";
+export type { LoginInputProps, TextareaProps } from "./inputs";
 
-// Dividers
-export { Divider } from "./dividers";
-export type { DividerProps } from "./dividers";
+export { Caption, Heading, Text } from "./typography";
+export type { CaptionProps, HeadingProps, TextProps } from "./typography";

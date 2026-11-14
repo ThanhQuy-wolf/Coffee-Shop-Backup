@@ -8,11 +8,15 @@ import {
 } from "@/lib/utils/date";
 
 export interface ScheduleHeaderProps {
-  /** Shows the "Tạo ca" button when provided (managers only) */
+  /** Shows the "Tạo ca" button when provided (managers only). */
   onCreateShift?: () => void;
 }
 
-/** Sticky header of the shift schedule: title, period label, view toggle, navigation. */
+/**
+ * Sticky header of the shift schedule: title, current week or month, view
+ * toggle and previous/next/today buttons.
+ * @param props.onCreateShift Shows the "Tạo ca" button when given.
+ */
 export default function ScheduleHeader({ onCreateShift }: ScheduleHeaderProps) {
   const {
     view,
@@ -42,7 +46,6 @@ export default function ScheduleHeader({ onCreateShift }: ScheduleHeaderProps) {
       </div>
 
       <div className="flex items-center gap-2">
-        {/* View toggle (mobile) */}
         <div className="flex items-center rounded-xl border border-(--color-border-light) lg:hidden">
           <button
             type="button"
@@ -68,7 +71,6 @@ export default function ScheduleHeader({ onCreateShift }: ScheduleHeaderProps) {
           </button>
         </div>
 
-        {/* Navigation arrows */}
         <div className="hidden items-center gap-1 md:flex">
           <button
             title="Về trước"
@@ -95,7 +97,6 @@ export default function ScheduleHeader({ onCreateShift }: ScheduleHeaderProps) {
           </button>
         </div>
 
-        {/* Create shift button (manager only) */}
         {onCreateShift && (
           <button
             type="button"
@@ -107,7 +108,6 @@ export default function ScheduleHeader({ onCreateShift }: ScheduleHeaderProps) {
           </button>
         )}
 
-        {/* Mobile nav */}
         <div className="flex items-center gap-1 md:hidden">
           <button
             title="Về trước"

@@ -1,6 +1,6 @@
 import type { Department, ShopInfo, ShopSettings } from "../types";
 
-/** Seed row of shop_info (docs/04-erd.md) */
+/** Seed row of shop_info (docs/04-erd.md). */
 export const MOCK_SHOP_INFO: ShopInfo = {
   name: "Drinkool Coffee",
   tagline: "Hương vị đậm đà – Khoảnh khắc thư giãn",
@@ -19,7 +19,7 @@ export const MOCK_SHOP_INFO: ShopInfo = {
   },
 };
 
-/** Suggested values from docs/02-business-rules.md §2 */
+/** Suggested values from docs/02-business-rules.md §2. */
 export const DEFAULT_SHOP_SETTINGS: ShopSettings = {
   paymentTimeoutMinutes: 15,
   maxItemQuantity: 20,
@@ -29,6 +29,7 @@ export const DEFAULT_SHOP_SETTINGS: ShopSettings = {
   shiftBookingDays: 14,
 };
 
+/** The shop's departments. */
 export const MOCK_DEPARTMENTS: Department[] = [
   {
     id: 1,

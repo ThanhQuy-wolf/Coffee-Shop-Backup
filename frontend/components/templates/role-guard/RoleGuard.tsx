@@ -1,21 +1,23 @@
 "use client";
 
+import { Spinner } from "@/components/atoms";
 import { homePathFor, useAuth } from "@/lib/contexts/auth-context";
 import type { UserRole } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useEffect } from "react";
 
 export interface RoleGuardProps {
-  /** Roles allowed to see the children */
+  /** Roles allowed to see the children. */
   allow: UserRole[];
   children: ReactNode;
 }
 
 /**
- * Client-side route guard.
- *   - while the saved session is loading → spinner
- *   - not logged in                       → redirect to /login
- *   - logged in with a role not allowed   → that role's home page (FR-04)
+ * Client-side route guard. Shows a spinner while the saved session loads,
+ * sends a guest to /login, and sends a signed-in user whose role is not
+ * allowed to their own home page (FR-04).
+ * @param props.allow Roles allowed to see the children.
+ * @param props.children Protected content.
  */
 export default function RoleGuard({ allow, children }: RoleGuardProps) {
   const { user, isReady } = useAuth();
@@ -30,12 +32,10 @@ export default function RoleGuard({ allow, children }: RoleGuardProps) {
 
   if (!allowed) {
     return (
-      <div className="bg-background flex min-h-screen items-center justify-center">
-        <div className="flex flex-col items-center gap-4 text-(--color-text-muted)">
-          <i className="fa-solid fa-spinner fa-spin text-3xl text-(--color-primary)"></i>
-          <p className="text-sm">Đang kiểm tra quyền truy cập...</p>
-        </div>
-      </div>
+      <Spinner
+        label="Đang kiểm tra quyền truy cập..."
+        className="bg-background min-h-screen flex-col"
+      />
     );
   }
 

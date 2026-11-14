@@ -1,8 +1,6 @@
 "use client";
 
-import Button from "@/components/atoms/buttons/Button";
-import ErrorMessageLogin from "@/components/atoms/errors/ErrorMessageLogin";
-import LoginInput from "@/components/atoms/inputs/LoginInput";
+import { Button, ErrorMessageLogin, LoginInput } from "@/components/atoms";
 import { homePathFor, useAuth } from "@/lib/contexts/auth-context";
 import { ApiError, VN_PHONE_REGEX } from "@/lib/services";
 import { errorMessage } from "@/lib/utils/errors";
@@ -14,7 +12,11 @@ type Mode = "customer" | "staff";
 
 const NO_ERRORS = { account: "", password: "", general: "" };
 
-/** UC-02: khách (A-1), nhân viên và quản lý (A-2) */
+/**
+ * Login form with two tabs: customers sign in by phone (A-1), staff and the
+ * manager by username (A-2). On success it sends the user to the home page
+ * of their role (UC-02).
+ */
 export default function LoginForm() {
   const router = useRouter();
   const { loginCustomer, loginStaff } = useAuth();
@@ -95,7 +97,7 @@ export default function LoginForm() {
         {tab("staff", "Nhân viên quán")}
       </div>
 
-      {errors.general && <ErrorMessageLogin message={errors.general} />}
+      <ErrorMessageLogin message={errors.general} />
 
       <form onSubmit={handleSubmit} className="space-y-5" noValidate>
         <div>
@@ -110,9 +112,7 @@ export default function LoginForm() {
             }}
             errors={errors.account}
           />
-          {errors.account && (
-            <ErrorMessageLogin message={errors.account} type="secondary" />
-          )}
+          <ErrorMessageLogin message={errors.account} type="secondary" />
         </div>
 
         <div>
@@ -127,9 +127,7 @@ export default function LoginForm() {
             }}
             errors={errors.password}
           />
-          {errors.password && (
-            <ErrorMessageLogin message={errors.password} type="secondary" />
-          )}
+          <ErrorMessageLogin message={errors.password} type="secondary" />
         </div>
 
         <div className="space-y-3 pt-2">

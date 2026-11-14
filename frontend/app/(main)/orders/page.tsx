@@ -1,5 +1,6 @@
 "use client";
 
+import { Alert, Spinner } from "@/components/atoms";
 import { RoleGuard } from "@/components/templates/role-guard";
 import { orderService } from "@/lib/services";
 import type { Order } from "@/lib/types";
@@ -9,7 +10,7 @@ import { ORDER_STATUS, formatDateTime } from "@/lib/utils/order";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-/** UC-09: lịch sử đơn của khách có tài khoản (O-3) */
+/** Order history of a signed-in customer, newest first (UC-09, O-3). */
 function OrderHistory() {
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -23,17 +24,8 @@ function OrderHistory() {
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-6 md:py-8">
       <h1 className="text-foreground mb-4 text-2xl font-bold">Đơn của tôi</h1>
-      {error && (
-        <p
-          role="alert"
-          className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
-        >
-          {error}
-        </p>
-      )}
-      {!orders && !error && (
-        <i className="fa-solid fa-spinner fa-spin text-2xl text-(--color-primary)"></i>
-      )}
+      <Alert message={error} />
+      {!orders && !error && <Spinner className="py-12" />}
       {orders?.length === 0 && (
         <p className="text-(--color-text-muted)">
           Bạn chưa có đơn nào.{" "}
@@ -81,6 +73,7 @@ function OrderHistory() {
   );
 }
 
+/** Order history page, for customers only. */
 export default function OrdersPage() {
   return (
     <RoleGuard allow={["CUSTOMER"]}>

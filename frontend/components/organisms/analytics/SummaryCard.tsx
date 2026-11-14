@@ -5,12 +5,21 @@ export interface SummaryCardProps {
   title: string;
   value: string;
   subtitle?: string;
-  /** Omit for metrics that are not compared with the previous period */
+  /** Omit for metrics that are not compared with the previous period. */
   comparison?: MetricComparison;
+  /** Formats the absolute change, `String` by default. */
   formatDelta?: (n: number) => string;
 }
 
-/** KPI card with the period-over-period change (RP-1). */
+/**
+ * KPI card with the change against the previous period (RP-1).
+ * @param props.icon FontAwesome classes for the icon.
+ * @param props.title Metric name.
+ * @param props.value Formatted value of the current period.
+ * @param props.subtitle Line under the value, used when there is no comparison.
+ * @param props.comparison Current and previous values; omit to hide the change.
+ * @param props.formatDelta Formats the absolute change.
+ */
 export function SummaryCard({
   icon,
   title,

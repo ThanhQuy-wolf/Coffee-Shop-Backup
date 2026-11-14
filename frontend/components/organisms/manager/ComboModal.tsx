@@ -1,5 +1,6 @@
 "use client";
 
+import { Alert } from "@/components/atoms";
 import { Modal, ModalHeader } from "@/components/molecules/modal";
 import type { ComboInput } from "@/lib/types";
 import { formatVND } from "@/lib/utils/currency";
@@ -8,6 +9,14 @@ import { useState } from "react";
 import type { ComboModalProps } from "./Manager.types";
 import { inputCls, useSaveForm } from "./useSaveForm";
 
+/**
+ * Add or edit a combo: name, price, image and the products it contains with
+ * their quantities. A combo needs at least 2 units in total (BR-13).
+ * @param props.combo The combo to edit, or null to add one.
+ * @param props.products Products that can go into the combo.
+ * @param props.onSave Saves the form; resolves once the server accepted it.
+ * @param props.onClose Closes the modal.
+ */
 export default function ComboModal({
   combo,
   products,
@@ -207,14 +216,7 @@ export default function ComboModal({
               ` · khách tiết kiệm ${formatVND(partsTotal - form.price)}`}
           </p>
         )}
-        {error && (
-          <p
-            role="alert"
-            className="mx-6 mb-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
-          >
-            {error}
-          </p>
-        )}
+        <Alert message={error} className="mx-6 mb-2" />
         <div className="flex gap-3 border-t border-(--color-border-light) px-6 py-4">
           <button
             type="button"

@@ -6,6 +6,10 @@ import { ManagerProvider } from "@/lib/contexts/manager-context";
 
 import type { ManagerLayoutProps } from "./ManagerLayout.types";
 
+/**
+ * Provides the catalog and manager contexts to the manager pages.
+ * @param props.children Page content.
+ */
 function WithCatalog({ children }: ManagerLayoutProps) {
   return (
     <CatalogProvider>
@@ -18,7 +22,11 @@ function WithCatalog({ children }: ManagerLayoutProps) {
   );
 }
 
-/** Managers only. */
+/**
+ * Layout of the manager pages. Only the manager gets in; the catalog is
+ * loaded once for all tabs.
+ * @param props.children Page content.
+ */
 export default function ManagerLayout({ children }: ManagerLayoutProps) {
   return (
     <RoleGuard allow={["MANAGER"]}>

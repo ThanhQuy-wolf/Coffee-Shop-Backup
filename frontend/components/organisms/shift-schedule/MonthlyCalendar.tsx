@@ -1,13 +1,15 @@
 "use client";
 
 import { useShift } from "@/lib/contexts/shift-context";
-import { formatDateISO, isToday } from "@/lib/utils/date";
+import { WEEKDAY_LABELS_VI, formatDateISO, isToday } from "@/lib/utils/date";
 import { useMemo } from "react";
 
 import type { MonthlyCalendarProps } from "./ShiftSchedule.types";
 
-const DAY_HEADERS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
-
+/**
+ * Month grid starting on Monday, with the number of shifts on each day.
+ * @param props.onDateSelect Called with the clicked day as `YYYY-MM-DD`.
+ */
 export default function MonthlyCalendar({
   onDateSelect,
 }: MonthlyCalendarProps) {
@@ -25,17 +27,14 @@ export default function MonthlyCalendar({
 
     const days: (Date | null)[] = [];
 
-    // Fill leading empty cells
     for (let i = 0; i < startOffset; i++) {
       days.push(null);
     }
 
-    // Fill actual days
     for (let d = 1; d <= lastDay.getDate(); d++) {
       days.push(new Date(year, month, d));
     }
 
-    // Fill trailing empty cells to complete the grid
     while (days.length % 7 !== 0) {
       days.push(null);
     }
@@ -57,9 +56,8 @@ export default function MonthlyCalendar({
 
   return (
     <div className="overflow-hidden rounded-xl border border-(--color-border-light)">
-      {/* Day headers */}
       <div className="grid grid-cols-7 border-b border-(--color-border-light) bg-gray-50">
-        {DAY_HEADERS.map((day) => (
+        {WEEKDAY_LABELS_VI.map((day) => (
           <div
             key={day}
             className="px-2 py-2.5 text-center text-xs font-semibold text-(--color-text-muted) uppercase"
@@ -69,7 +67,6 @@ export default function MonthlyCalendar({
         ))}
       </div>
 
-      {/* Calendar grid */}
       <div className="grid grid-cols-7">
         {calendarDays.map((date, i) => {
           if (!date) {

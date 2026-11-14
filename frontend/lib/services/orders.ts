@@ -1,4 +1,4 @@
-// O-1 → O-9, R-1, R-2 in docs/05-api.md
+// O-1 → O-9, R-1, R-2 in docs/05-api.md.
 import {
   type OrderItemRow,
   type OrderRow,
@@ -26,10 +26,23 @@ import type {
 
 const REVIEW_COMMENT_MAX = 500; // BR-31
 
+/**
+ * Hides all but the last three digits of a phone number.
+ * @param phone Full phone number, or null for guest orders.
+ * @returns The masked number (`*******321`), or null.
+ */
 function maskPhone(phone: string | null) {
   return phone ? `*******${phone.slice(-3)}` : null;
 }
 
+/**
+ * Converts a stored order row into the API shape. Strips internal fields
+ * (idempotency data, unit costs, category ids) and attaches the review.
+ * @param row The stored order.
+ * @param viewer Who is reading; only the owning customer sees the full phone.
+ * @param withGuestToken Include `guestToken`, only in the response to O-1.
+ * @returns A detached copy of the order.
+ */
 function toOrder(
   row: OrderRow,
   viewer: MockAccount | null,
@@ -55,6 +68,12 @@ function toOrder(
   });
 }
 
+/**
+ * Runs due background jobs, then looks up an order.
+ * @param id Order id.
+ * @returns The stored row (mutable).
+ * @throws {ApiError} 404 `NOT_FOUND` when no order has this id.
+ */
 function findOrder(id: number): OrderRow {
   runJobs();
   const o = db.orders.find((x) => x.id === id);
@@ -65,6 +84,10 @@ function findOrder(id: number): OrderRow {
 /**
  * Who may read an order: its customer, the guest holding its token, or any
  * staff member. A wrong guest token gets 404 so it does not reveal the order.
+ * @param o The order being read.
+ * @param guestToken Token returned to a guest by O-1.
+ * @returns The signed-in actor, or null for a guest with a valid token.
+ * @throws {ApiError} 404 `NOT_FOUND` when the caller may not see the order.
  */
 function authorizeRead(o: OrderRow, guestToken?: string): MockAccount | null {
   const actor = currentActor();
@@ -74,7 +97,16 @@ function authorizeRead(o: OrderRow, guestToken?: string): MockAccount | null {
   fail(404, "NOT_FOUND", "Không tìm thấy đơn");
 }
 
-/** BR-27 + allowed transitions */
+/**
+ * Moves an order to a new status with optimistic locking (BR-27) and bumps
+ * its version.
+ * @param o The order to change.
+ * @param version The version the client last saw.
+ * @param from Statuses this move is allowed from.
+ * @param to The new status.
+ * @throws {ApiError} 409 `BR-27` with `currentVersion` when the version is stale.
+ * @throws {ApiError} 409 `ORDER_STATE` when the current status is not in `from`.
+ */
 function transition(
   o: OrderRow,
   version: number,
@@ -91,7 +123,11 @@ function transition(
   o.version++;
 }
 
-/** BR-25: DH-YYMMDD-NNNN, counted per business day */
+/**
+ * Issues the next order code, `DH-YYMMDD-NNNN`, with the counter restarting
+ * each business day (BR-25).
+ * @returns The new code.
+ */
 function nextOrderCode() {
   const now = mockNow();
   const y = now.getFullYear().toString().slice(2);
@@ -104,12 +140,27 @@ function nextOrderCode() {
 }
 
 export const orderService = {
-  /** Server clock, for countdowns to paymentDeadline. */
+  /**
+   * Server clock, used for countdowns to `paymentDeadline`.
+   * @returns The current (mock) server time.
+   */
   now(): Date {
     return mockNow();
   },
 
-  /** O-1 — idempotent by Idempotency-Key (BR-24) */
+  /**
+   * O-1: places an order and starts its payment countdown. Repeating a call
+   * with the same key and cart returns the first order (BR-24).
+   * @param req Cart lines with the prices the client showed, payment method,
+   *   table and note.
+   * @param idempotencyKey One key per checkout attempt.
+   * @returns The new order; guests also get `guestToken` to track it.
+   * @throws {ApiError} 403 `FORBIDDEN` when a staff account tries to order.
+   * @throws {ApiError} 422 `BR-24` when the key was used for a different cart.
+   * @throws {ApiError} 422 `BR-23` for an empty cart or a quantity out of range.
+   * @throws {ApiError} 422 `BR-21` with `errors[]` for items no longer on sale.
+   * @throws {ApiError} 409 `BR-22` with `errors[].currentPrice` when prices changed.
+   */
   async create(
     req: CreateOrderRequest,
     idempotencyKey: string,
@@ -271,14 +322,24 @@ export const orderService = {
     return toOrder(row, actor, true);
   },
 
-  /** O-2 */
+  /**
+   * O-2: reads one order.
+   * @param orderId Order id.
+   * @param guestToken Needed when the caller is a guest.
+   * @returns The order, with the phone masked unless the caller owns it.
+   * @throws {ApiError} 404 `NOT_FOUND` when missing or not visible to the caller.
+   */
   async get(orderId: number, guestToken?: string): Promise<Order> {
     await delay(80);
     const o = findOrder(orderId);
     return toOrder(o, authorizeRead(o, guestToken));
   },
 
-  /** O-3 */
+  /**
+   * O-3: the signed-in customer's orders, newest first.
+   * @returns The customer's orders.
+   * @throws {ApiError} 401/403 when the caller is not a customer.
+   */
   async listMine(): Promise<Order[]> {
     await delay();
     runJobs();
@@ -289,7 +350,15 @@ export const orderService = {
       .map((o) => toOrder(o, actor));
   },
 
-  /** O-4 */
+  /**
+   * O-4: the staff order queue, oldest first.
+   * @param filter Optional filters.
+
+   * @param filter.status Only these statuses; all when omitted.
+   * @param filter.q Part of an order code, case-insensitive.
+   * @returns Matching orders.
+   * @throws {ApiError} 401/403 when the caller is not staff or manager.
+   */
   async listQueue(
     filter: { status?: OrderStatus[]; q?: string } = {},
   ): Promise<Order[]> {
@@ -307,7 +376,19 @@ export const orderService = {
       .map((o) => toOrder(o, actor));
   },
 
-  /** O-5 — BR-26, BR-27 */
+  /**
+   * O-5: staff confirm that the customer paid; the order becomes PAID.
+   * @param orderId Order id.
+   * @param body Request body.
+
+   * @param body.method How the customer actually paid.
+   * @param body.amount Amount received; must equal the order total (BR-26).
+   * @param body.version The version the staff member last saw (BR-27).
+   * @returns The updated order.
+   * @throws {ApiError} 409 `BR-27` when the order changed in the meantime.
+   * @throws {ApiError} 409 `BR-26` when the order is no longer awaiting payment.
+   * @throws {ApiError} 422 `BR-26` when the amount differs from the total.
+   */
   async confirmPayment(
     orderId: number,
     body: { method: PaymentMethod; amount: number; version: number },
@@ -335,7 +416,13 @@ export const orderService = {
     return toOrder(o, actor);
   },
 
-  /** O-6 */
+  /**
+   * O-6: starts preparing a paid order (PAID → PREPARING).
+   * @param orderId Order id.
+   * @param version The version the staff member last saw.
+   * @returns The updated order.
+   * @throws {ApiError} 409 `BR-27` or `ORDER_STATE`, see {@link transition}.
+   */
   async start(orderId: number, version: number): Promise<Order> {
     await delay();
     const o = findOrder(orderId);
@@ -344,7 +431,13 @@ export const orderService = {
     return toOrder(o, actor);
   },
 
-  /** O-7 */
+  /**
+   * O-7: marks an order ready for pickup (PREPARING → READY).
+   * @param orderId Order id.
+   * @param version The version the staff member last saw.
+   * @returns The updated order.
+   * @throws {ApiError} 409 `BR-27` or `ORDER_STATE`, see {@link transition}.
+   */
   async markReady(orderId: number, version: number): Promise<Order> {
     await delay();
     const o = findOrder(orderId);
@@ -353,7 +446,14 @@ export const orderService = {
     return toOrder(o, actor);
   },
 
-  /** O-8 */
+  /**
+   * O-8: hands the order over (READY → COMPLETED), which opens the review
+   * window.
+   * @param orderId Order id.
+   * @param version The version the staff member last saw.
+   * @returns The updated order.
+   * @throws {ApiError} 409 `BR-27` or `ORDER_STATE`, see {@link transition}.
+   */
   async complete(orderId: number, version: number): Promise<Order> {
     await delay();
     const o = findOrder(orderId);
@@ -363,7 +463,22 @@ export const orderService = {
     return toOrder(o, actor);
   },
 
-  /** O-9 — who may cancel depends on the status (docs/05-api.md §2.4) */
+  /**
+   * O-9: cancels an order. Who may cancel depends on the status
+   * (docs/05-api.md §2.4): an unpaid order by its customer, guest or staff
+   * (payment VOIDED); a paid or preparing one only by a manager with a reason
+   * (payment REFUNDED, BR-29).
+   * @param orderId Order id.
+   * @param body Request body.
+
+   * @param body.version The version the caller last saw.
+   * @param body.reason Required when the order was already paid.
+   * @param guestToken Needed when the caller is a guest.
+   * @returns The cancelled order.
+   * @throws {ApiError} 403 `BR-29` when a non-manager cancels a paid order.
+   * @throws {ApiError} 422 `BR-29` when a paid order is cancelled without a reason.
+   * @throws {ApiError} 409 `BR-27` or `ORDER_STATE`, see {@link transition}.
+   */
   async cancel(
     orderId: number,
     body: { version: number; reason?: string },
@@ -393,7 +508,19 @@ export const orderService = {
 };
 
 export const reviewService = {
-  /** R-1 — BR-30, BR-31 */
+  /**
+   * R-1: the customer reviews one of their completed orders, once, within the
+   * review window.
+   * @param orderId Order id.
+   * @param body Request body.
+
+   * @param body.rating 1 to 5 stars.
+   * @param body.comment Optional, at most 500 characters.
+   * @returns The saved review.
+   * @throws {ApiError} 422 `BR-30` when the order is not the caller's, not
+   *   completed, or past the review window.
+   * @throws {ApiError} 422 `BR-31` for a second review, a bad rating or a long comment.
+   */
   async create(
     orderId: number,
     body: { rating: number; comment?: string },
@@ -431,7 +558,16 @@ export const reviewService = {
     return clone(review);
   },
 
-  /** R-2 */
+  /**
+   * R-2: lists reviews for the manager, newest first, with overall stats.
+   * @param filter Optional filters.
+
+   * @param filter.rating Only this star rating.
+   * @param filter.page Page number from 1 (default 1).
+   * @param filter.size Page size (default 20).
+   * @returns One page plus `average` and `countByRating` over all reviews.
+   * @throws {ApiError} 401/403 when the caller is not the manager.
+   */
   async list(
     filter: { rating?: number; page?: number; size?: number } = {},
   ): Promise<ReviewList> {

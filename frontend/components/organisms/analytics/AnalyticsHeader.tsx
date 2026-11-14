@@ -10,7 +10,11 @@ export interface AnalyticsHeaderProps {
   onPeriodChange: (period: AnalyticsPeriod) => void;
 }
 
-/** Sticky page header: back link, title and period selector. */
+/**
+ * Sticky page header: back link, title and period selector.
+ * @param props.period The selected period.
+ * @param props.onPeriodChange Called when another period is picked.
+ */
 export function AnalyticsHeader({
   period,
   onPeriodChange,
@@ -38,7 +42,6 @@ export function AnalyticsHeader({
           </div>
         </div>
 
-        {/* Period selector */}
         <div className="ml-auto flex items-center gap-2">
           {(Object.keys(PERIOD_LABELS) as AnalyticsPeriod[]).map((p) => (
             <button

@@ -1,5 +1,6 @@
 "use client";
 
+import { Alert } from "@/components/atoms";
 import { Modal, ModalHeader } from "@/components/molecules/modal";
 import type { CategoryInput } from "@/lib/types";
 import { useState } from "react";
@@ -7,6 +8,7 @@ import { useState } from "react";
 import type { CategoryModalProps } from "./Manager.types";
 import { inputCls, labelCls, useSaveForm } from "./useSaveForm";
 
+/** Icons the manager can pick for a category. */
 const FA_ICONS = [
   "fa-solid fa-mug-hot",
   "fa-solid fa-leaf",
@@ -26,6 +28,14 @@ const FA_ICONS = [
   "fa-solid fa-carrot",
 ];
 
+/**
+ * Add or edit a category: name, icon and sort order. Stays open and shows the
+ * server error if saving fails.
+ * @param props.category The category to edit, or null to add one.
+ * @param props.nextSortOrder Default sort order for a new category.
+ * @param props.onSave Saves the form; resolves once the server accepted it.
+ * @param props.onClose Closes the modal.
+ */
 export default function CategoryModal({
   category,
   nextSortOrder,
@@ -106,14 +116,7 @@ export default function CategoryModal({
           </div>
         </div>
 
-        {error && (
-          <p
-            role="alert"
-            className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
-          >
-            {error}
-          </p>
-        )}
+        <Alert message={error} />
 
         <div className="flex gap-3 pt-1">
           <button

@@ -2,7 +2,7 @@
 
 import { useCatalog } from "@/lib/contexts/catalog-context";
 import type { ProductSalesStats } from "@/lib/types";
-import { formatCurrencyFull } from "@/lib/utils/analytics";
+import { formatNumber, formatVND } from "@/lib/utils/currency";
 import { useMemo, useState } from "react";
 
 interface ProductTableProps {
@@ -12,6 +12,16 @@ interface ProductTableProps {
 type SortKey = keyof ProductSalesStats;
 type SortDir = "asc" | "desc";
 
+/**
+ * Table header cell that sorts by its column when clicked and shows the
+ * current direction.
+ * @param props.col Column this header sorts by.
+ * @param props.label Header text.
+ * @param props.className Extra classes.
+ * @param props.sortKey Column the table is sorted by now.
+ * @param props.sortDir Current direction.
+ * @param props.onSort Called with `col` on click.
+ */
 function SortTh({
   col,
   label,
@@ -44,8 +54,9 @@ function SortTh({
 }
 
 /**
- * Sortable product sales table.
- * Click column headers to sort ascending/descending.
+ * Product sales table. Clicking a header sorts by that column; clicking it
+ * again reverses the order.
+ * @param props.data Rows to show.
  */
 export function ProductTable({ data }: ProductTableProps) {
   const { categories } = useCatalog();
@@ -142,10 +153,10 @@ export function ProductTable({ data }: ProductTableProps) {
                 </span>
               </td>
               <td className="text-foreground px-4 py-3 text-right tabular-nums">
-                {row.unitsSold.toLocaleString()}
+                {formatNumber(row.unitsSold)}
               </td>
               <td className="px-4 py-3 text-right font-medium text-(--color-primary) tabular-nums">
-                {formatCurrencyFull(row.revenue)}
+                {formatVND(row.revenue)}
               </td>
               <td className="px-4 py-3 text-right text-(--color-text-muted) tabular-nums">
                 {row.missingCost ? (
@@ -156,14 +167,14 @@ export function ProductTable({ data }: ProductTableProps) {
                     Chưa có giá vốn
                   </span>
                 ) : (
-                  formatCurrencyFull(row.costPrice)
+                  formatVND(row.costPrice)
                 )}
               </td>
               <td className="px-4 py-3 text-right text-(--color-text-secondary) tabular-nums">
-                {formatCurrencyFull(row.sellingPrice)}
+                {formatVND(row.sellingPrice)}
               </td>
               <td className="px-4 py-3 text-right font-medium text-green-600 tabular-nums">
-                {row.missingCost ? "—" : formatCurrencyFull(row.profit)}
+                {row.missingCost ? "—" : formatVND(row.profit)}
               </td>
               <td className="px-4 py-3 text-right">
                 {row.missingCost ? (

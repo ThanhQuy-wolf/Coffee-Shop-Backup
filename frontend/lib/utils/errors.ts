@@ -1,9 +1,6 @@
 import { ApiError } from "../services/client";
 
-/**
- * Messages chosen by error code, as docs/05-api.md §3 asks. Codes not listed
- * fall back to the server's own message.
- */
+/** UI text per error code (docs/05-api.md §3). Other codes use the server text. */
 const MESSAGES: Record<string, string> = {
   UNAUTHENTICATED: "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.",
   FORBIDDEN: "Bạn không có quyền thực hiện thao tác này.",
@@ -12,6 +9,13 @@ const MESSAGES: Record<string, string> = {
   "BR-44": "Bạn đã có trong ca này.",
 };
 
+/**
+ * Turns any thrown value into a sentence to show the user.
+ *
+ * @param err - value caught from a service call
+ * @returns the text for `err.code` when known, the server message for other
+ *   API errors, a generic text for 5xx, network and unknown errors
+ */
 export function errorMessage(err: unknown): string {
   if (err instanceof ApiError) {
     if (err.status >= 500)
@@ -22,6 +26,13 @@ export function errorMessage(err: unknown): string {
   return "Có lỗi xảy ra, vui lòng thử lại.";
 }
 
+/**
+ * Reads the business code of an API error, to branch on a specific rule.
+ *
+ * @param err - value caught from a service call
+ * @returns e.g. `"BR-22"` or `"NOT_FOUND"`, or `null` when `err` is not an
+ *   `ApiError`
+ */
 export function errorCode(err: unknown): string | null {
   return err instanceof ApiError ? err.code : null;
 }

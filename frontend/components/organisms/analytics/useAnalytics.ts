@@ -13,7 +13,15 @@ import { useEffect, useMemo, useState } from "react";
 import type { PieSlice } from "./PieChart";
 import { CATEGORY_COLORS } from "./constants";
 
-/** Loads RP-1 → RP-3 for one period and derives the numbers the sections show. */
+/**
+ * Loads RP-1 → RP-3 for one period and derives the numbers the analytics
+ * sections show. Reloads when the period changes; the category filter only
+ * changes the derived numbers.
+ * @param period Reporting period.
+ * @param categoryFilter Category id, or `ALL_CATEGORY_ID`.
+ * @returns Loading and error state, the raw reports and the derived figures
+ *   (chart data, top 5, filtered totals and margin).
+ */
 export function useAnalytics(period: AnalyticsPeriod, categoryFilter: number) {
   const [summary, setSummary] = useState<ReportSummary | null>(null);
   const [revenue, setRevenue] = useState<RevenueReport | null>(null);

@@ -2,6 +2,17 @@
 
 import type { ButtonProps } from "./Button.types";
 
+/**
+ * The app's button. Picks classes from three lookup tables (shape, colour,
+ * size) and can show a FontAwesome icon before or after the label. Any other
+ * `<button>` attribute, such as `type` or `onClick`, is passed through.
+ * @param props.style Shape preset: `base` (default), `payment` or `login`.
+ * @param props.variant Colour preset, `primary` by default.
+ * @param props.size Padding and font size, `md` by default.
+ * @param props.icon FontAwesome icon name without `fa-solid`, e.g. `fa-check`.
+ * @param props.iconPosition Side of the label the icon goes on.
+ * @param props.disabled Greys the button out and blocks clicks.
+ */
 export default function Button({
   style = "base",
   variant = "primary",

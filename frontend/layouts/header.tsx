@@ -8,12 +8,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+/** A link in the header navigation. */
 interface NavLink {
   href: string;
   label: string;
   icon: string;
 }
 
+/** Header links for each role. */
 const NAV_BY_ROLE: Record<UserRole, NavLink[]> = {
   CUSTOMER: [{ href: "/orders", label: "Đơn của tôi", icon: "fa-receipt" }],
   STAFF: [
@@ -27,6 +29,7 @@ const NAV_BY_ROLE: Record<UserRole, NavLink[]> = {
   ],
 };
 
+/** Role name shown next to the account button. */
 const ROLE_LABEL: Record<UserRole, string> = {
   CUSTOMER: "Khách hàng",
   STAFF: "Nhân viên",

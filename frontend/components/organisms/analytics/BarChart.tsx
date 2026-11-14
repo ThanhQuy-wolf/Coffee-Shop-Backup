@@ -1,7 +1,7 @@
 "use client";
 
 import type { RevenueDataPoint } from "@/lib/types";
-import { formatCurrency } from "@/lib/utils/analytics";
+import { formatVNDShort } from "@/lib/utils/currency";
 import { useState } from "react";
 
 interface BarChartProps {
@@ -11,9 +11,12 @@ interface BarChartProps {
 }
 
 /**
- * Pure-SVG grouped bar chart comparing current vs previous period revenue.
- * Hover bars show tooltip with label, revenue, and order count.
- * Tooltip auto-flips above/below bar top to stay inside the viewBox.
+ * SVG bar chart comparing revenue of the current and previous period, bar by
+ * bar. Hovering a bar shows a tooltip with the label, revenue and order count;
+ * the tooltip flips below the bar when it would leave the chart.
+ * @param props.current Points of the current period.
+ * @param props.previous Points of the previous period, same length.
+ * @param props.height Chart height in viewBox units, 200 by default.
  */
 export function BarChart({ current, previous, height = 200 }: BarChartProps) {
   const [hovered, setHovered] = useState<{
@@ -73,7 +76,7 @@ export function BarChart({ current, previous, height = 200 }: BarChartProps) {
               fontSize="10"
               fill="#A08060"
             >
-              {formatCurrency(g.val)}
+              {formatVNDShort(g.val)}
             </text>
           </g>
         ))}
@@ -172,7 +175,7 @@ export function BarChart({ current, previous, height = 200 }: BarChartProps) {
                   fontWeight="600"
                   fill="#C8973A"
                 >
-                  {formatCurrency(d.revenue)}
+                  {formatVNDShort(d.revenue)}
                 </text>
                 <text
                   x={tipX + tipW / 2}
@@ -187,7 +190,6 @@ export function BarChart({ current, previous, height = 200 }: BarChartProps) {
             );
           })()}
 
-        {/* Legend */}
         <rect x={padL} y={4} width={10} height={10} rx="2" fill="#6F4E37" />
         <text x={padL + 13} y={13} fontSize="10" fill="#6F4E37">
           Hiện tại

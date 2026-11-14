@@ -1,5 +1,6 @@
 "use client";
 
+import { Alert } from "@/components/atoms";
 import { type CartLine, useCart } from "@/lib/contexts/cart-context";
 import { useGuestOrders } from "@/lib/hooks/use-guest-orders";
 import { ApiError, orderService } from "@/lib/services";
@@ -14,9 +15,18 @@ const MAX_QTY = 20; // P-08 default; the server checks the configured value
 
 type ItemError = { itemType: OrderItemType; id: number; currentPrice?: number };
 
+/**
+ * Key of a cart line in the error map.
+ * @param type Product or combo.
+ * @param id Item id.
+ */
 const lineKey = (type: OrderItemType, id: number) => `${type}-${id}`;
 
-/** UC-07 */
+/**
+ * Checkout page (UC-07): review and edit the cart, choose cash or QR, add a
+ * table and note, then place the order (O-1). Items that stopped selling or
+ * changed price are flagged on their lines.
+ */
 export default function CheckoutPage() {
   const router = useRouter();
   const {
@@ -263,14 +273,7 @@ export default function CheckoutPage() {
               </span>
             </div>
 
-            {error && (
-              <p
-                role="alert"
-                className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
-              >
-                {error}
-              </p>
-            )}
+            <Alert message={error} />
 
             <button
               type="button"

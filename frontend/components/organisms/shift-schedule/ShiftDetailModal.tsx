@@ -1,16 +1,19 @@
 "use client";
 
-import { SHIFT_VIEW_STYLES } from "@/components/molecules/cards/ShiftCard";
+import { Alert } from "@/components/atoms";
+import { SHIFT_VIEW_STYLES } from "@/components/molecules/cards";
 import { Modal, ModalHeader } from "@/components/molecules/modal";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { isSeatHolder, useShift } from "@/lib/contexts/shift-context";
 import { shiftService } from "@/lib/services/shifts";
 import type { AssignmentStatus } from "@/lib/types";
+import { formatVND } from "@/lib/utils/currency";
 import { errorCode, errorMessage } from "@/lib/utils/errors";
 import { useState } from "react";
 
 import type { ShiftDetailModalProps } from "./ShiftSchedule.types";
 
+/** Label and colours of each assignment status in the staff list. */
 const ASSIGNMENT_LABEL: Record<
   AssignmentStatus,
   { label: string; cls: string }
@@ -29,6 +32,16 @@ const ASSIGNMENT_LABEL: Record<
 const btn =
   "cursor-pointer rounded-lg border-none px-2 py-1 text-xs font-medium transition";
 
+/**
+ * Shift details with the actions the viewer may take. Staff register, give
+ * up a seat or request leave; the manager edits or cancels the shift, decides
+ * leave requests, records attendance and removes people. Too close to the
+ * start, giving up a seat turns into a leave request (BR-47).
+ * @param props.shiftId Shift to show, looked up in the context so the modal
+ *   reflects each action; null renders nothing.
+ * @param props.onClose Closes the modal.
+ * @param props.onEdit Opens the edit form for the shift.
+ */
 export default function ShiftDetailModal({
   shiftId,
   onClose,
@@ -118,7 +131,7 @@ export default function ShiftDetailModal({
               "Số người",
               `${shift.occupied}/${shift.maxStaff} (còn ${shift.remaining})`,
             ],
-            ["Lương ca", `${shift.wage.toLocaleString("vi-VN")} VND`],
+            ["Lương ca", formatVND(shift.wage)],
           ].map(([label, value]) => (
             <div key={label} className="rounded-xl bg-gray-50 p-3">
               <p className="text-[10px] font-semibold text-(--color-text-muted) uppercase">
@@ -315,15 +328,7 @@ export default function ShiftDetailModal({
           </div>
         )}
 
-        {error && (
-          <div
-            role="alert"
-            className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700"
-          >
-            <i className="fa-solid fa-circle-exclamation mr-2"></i>
-            {error}
-          </div>
-        )}
+        <Alert message={error} />
         {success && (
           <div
             role="status"

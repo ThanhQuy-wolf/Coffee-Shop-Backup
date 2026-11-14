@@ -4,9 +4,11 @@ import {
   type ShiftViewStatus,
   isSeatHolder,
 } from "@/lib/contexts/shift-context";
+import { formatNumber } from "@/lib/utils/currency";
 
 import type { ShiftCardProps } from "./ShiftCard.types";
 
+/** Card colours, badge colours and label for each shift state. */
 export const SHIFT_VIEW_STYLES: Record<
   ShiftViewStatus,
   { card: string; badge: string; label: string }
@@ -48,12 +50,22 @@ export const SHIFT_VIEW_STYLES: Record<
   },
 };
 
+/**
+ * Short wage label for the cards, e.g. 120000 → "120k".
+ * @param wage Wage per shift in VND.
+ */
 function formatWage(wage: number): string {
-  return wage >= 1000
-    ? `${(wage / 1000).toFixed(0)}k`
-    : wage.toLocaleString("vi-VN");
+  return wage >= 1000 ? `${(wage / 1000).toFixed(0)}k` : formatNumber(wage);
 }
 
+/**
+ * Clickable shift card coloured by the shift's state for the viewer. The full
+ * card lists who is in the shift; the compact one only shows time, seats and
+ * wage, for the month calendar.
+ * @param props.shift The shift as seen by the current user.
+ * @param props.compact Use the small layout.
+ * @param props.onClick Called with the shift when the card is clicked.
+ */
 export default function ShiftCard({
   shift,
   compact = false,

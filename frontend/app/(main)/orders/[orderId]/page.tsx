@@ -1,5 +1,6 @@
 "use client";
 
+import { Alert, Spinner } from "@/components/atoms";
 import { ReviewModal } from "@/components/organisms/modals";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { useCart } from "@/lib/contexts/cart-context";
@@ -13,9 +14,11 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
+/** How often the order is reloaded while it is still in progress. */
 const POLL_MS = 5000;
 const FINAL = new Set(["COMPLETED", "CANCELLED"]);
 
+/** Progress steps shown for an order that was not cancelled. */
 const STEPS = [
   "PENDING_PAYMENT",
   "PAID",
@@ -24,7 +27,11 @@ const STEPS = [
   "COMPLETED",
 ] as const;
 
-/** UC-08 theo dõi đơn, UC-11 khách huỷ đơn, UC-16 đánh giá */
+/**
+ * Order tracking page (UC-08): status steps, payment countdown and QR, items
+ * and total. Reloads every few seconds until the order is final. The customer
+ * can cancel while it is unpaid (UC-11) and review it once completed (UC-16).
+ */
 export default function OrderPage() {
   const { orderId } = useParams<{ orderId: string }>();
   const id = Number(orderId);
@@ -81,11 +88,7 @@ export default function OrderPage() {
   }
 
   if (!order) {
-    return (
-      <div className="flex justify-center py-24 text-(--color-text-muted)">
-        <i className="fa-solid fa-spinner fa-spin text-3xl text-(--color-primary)"></i>
-      </div>
-    );
+    return <Spinner className="py-24" />;
   }
 
   const status = ORDER_STATUS[order.status];
@@ -250,14 +253,7 @@ export default function OrderPage() {
         </div>
       )}
 
-      {actionError && (
-        <p
-          role="alert"
-          className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
-        >
-          {actionError}
-        </p>
-      )}
+      <Alert message={actionError} />
 
       <div className="bg-card rounded-2xl border border-(--color-border-light)">
         <ul className="divide-y divide-(--color-border-light)">

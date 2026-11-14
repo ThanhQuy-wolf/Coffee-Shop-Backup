@@ -1,5 +1,6 @@
 import type { AssignmentStatus } from "../types";
 
+/** A stored shift (table `shift`). */
 export interface ShiftRow {
   id: number;
   departmentId: number;
@@ -13,6 +14,7 @@ export interface ShiftRow {
   version: number;
 }
 
+/** A staff member's seat in a shift (table `shift_assignment`). */
 export interface AssignmentRow {
   id: number;
   shiftId: number;
@@ -21,6 +23,7 @@ export interface AssignmentRow {
   leaveReason: string | null;
 }
 
+/** The four daily slots used by the seed, with the wage per shift. */
 const TIME_SLOTS = [
   { start: "07:00", end: "11:00", wage: 120000 },
   { start: "11:00", end: "15:00", wage: 120000 },
@@ -28,7 +31,7 @@ const TIME_SLOTS = [
   { start: "19:00", end: "22:00", wage: 100000 },
 ];
 
-/** staff id → department id, see users.ts */
+/** Seeded staff and their department, matching users.ts. */
 const STAFF = [
   { id: 2, departmentId: 1 },
   { id: 3, departmentId: 3 },
@@ -39,6 +42,7 @@ const STAFF = [
  * Shifts from Mon 6/4 to Sun 26/4/2026, around the mock "today"
  * (10/04/2026). Each staff member is only placed in their own department, so
  * the seed never breaks BR-45 or BR-46.
+ * @returns The seed shifts and assignments.
  */
 function generate() {
   const shifts: ShiftRow[] = [];

@@ -5,16 +5,20 @@ import { type ReactNode, useEffect, useRef } from "react";
 export interface ModalProps {
   onClose: () => void;
   children: ReactNode;
-  /** Classes for the white panel (width, padding, flex layout...) */
+  /** Classes for the white panel (width, padding, flex layout). */
   className?: string;
-  /** id of the element that names the dialog (defaults to ModalHeader's title) */
+  /** Id of the element that names the dialog, usually ModalHeader's `titleId`. */
   labelledBy?: string;
 }
 
 /**
- * Modal shell — backdrop, centered panel, Esc / backdrop click to close,
- * body scroll lock and dialog ARIA. Content (header, form, footer) is up to
- * the caller; use <ModalHeader> for the standard title + close button row.
+ * Modal shell: backdrop, centred panel, closing on Esc or a backdrop click,
+ * body scroll lock and dialog ARIA. The caller supplies the content; use
+ * {@link ModalHeader} for the standard title and close button row.
+ * @param props.onClose Called on Esc, a backdrop click or the close button.
+ * @param props.children Panel content.
+ * @param props.className Classes for the white panel, `max-w-md` by default.
+ * @param props.labelledBy Id of the element that names the dialog.
  */
 export function Modal({
   onClose,
@@ -64,14 +68,22 @@ export function Modal({
 export interface ModalHeaderProps {
   title: ReactNode;
   subtitle?: ReactNode;
-  /** Optional icon / element shown left of the title */
+  /** Icon or element shown left of the title. */
   leading?: ReactNode;
   onClose: () => void;
-  /** id put on the title, pass the same to <Modal labelledBy> */
+  /** Id put on the title; pass the same to `Modal labelledBy`. */
   titleId?: string;
 }
 
-/** Standard modal header: title (+ subtitle) on the left, close button on the right. */
+/**
+ * Standard modal header: title and subtitle on the left, close button on the
+ * right.
+ * @param props.title Dialog title.
+ * @param props.subtitle Smaller line under the title.
+ * @param props.leading Icon or element left of the title.
+ * @param props.onClose Called by the close button.
+ * @param props.titleId Id put on the title; pass the same to `Modal labelledBy`.
+ */
 export function ModalHeader({
   title,
   subtitle,

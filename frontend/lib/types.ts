@@ -1,7 +1,7 @@
 // Domain types. Field names follow docs/04-erd.md in camelCase, and the
 // request/response shapes follow docs/05-api.md.
 
-// ===== COMMON =====
+// Common
 export interface Page<T> {
   items: T[];
   page: number;
@@ -9,7 +9,7 @@ export interface Page<T> {
   total: number;
 }
 
-// ===== ACCOUNT (app_user) =====
+// Account (app_user)
 export type UserRole = "CUSTOMER" | "STAFF" | "MANAGER";
 
 export interface User {
@@ -44,7 +44,7 @@ export interface AppNotification {
   createdAt: string;
 }
 
-// ===== SHOP (shop_info, single row) =====
+// Shop (shop_info, single row)
 export interface SocialLinks {
   facebook?: string;
   tiktok?: string;
@@ -75,7 +75,7 @@ export interface ShopSettings {
   shiftBookingDays: number; // P-12
 }
 
-// ===== MENU (category, product, combo, combo_item) =====
+// Menu (category, product, combo, combo_item)
 export interface MenuCategory {
   id: number;
   name: string;
@@ -127,7 +127,7 @@ export interface Menu {
   combos: Combo[];
 }
 
-// ===== ORDER (customer_order, order_item, payment) =====
+// Order (customer_order, order_item, payment)
 export type OrderStatus =
   | "PENDING_PAYMENT"
   | "PAID"
@@ -195,7 +195,7 @@ export interface CreateOrderRequest {
   }[];
 }
 
-// ===== REVIEW =====
+// Review (review)
 export interface Review {
   id: number;
   orderId: number;
@@ -211,7 +211,7 @@ export interface ReviewList extends Page<Review> {
   countByRating: Record<1 | 2 | 3 | 4 | 5, number>;
 }
 
-// ===== SHIFT (department, shift, shift_assignment) =====
+// Shift (department, shift, shift_assignment)
 export interface Department {
   id: number;
   code: string;
@@ -275,7 +275,7 @@ export type ShiftInput = Pick<
   | "allowCrossDepartment"
 >;
 
-// ===== REPORTS =====
+// Reports
 export type AnalyticsPeriod = "day" | "week" | "month" | "year";
 
 export interface RevenueDataPoint {
