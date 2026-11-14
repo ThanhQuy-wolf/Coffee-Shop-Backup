@@ -53,6 +53,7 @@ jobs:
 
       - name: Get pnpm store directory
         shell: bash
+        working-directory: frontend
         run: |
           echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
 
@@ -60,20 +61,24 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('frontend/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
       - name: Update dependencies
+        working-directory: frontend
         run: pnpm update
 
       - name: Format code
+        working-directory: frontend
         run: pnpm format
 
       - name: Build application
+        working-directory: frontend
         run: pnpm build
 
       - name: Release
+        working-directory: frontend
         env:
           GITEA_USER: ${{ github.actor }}
           GITEA_TOKEN: ${{ secrets.ACCESS_TOKEN }}
@@ -81,6 +86,7 @@ jobs:
 
       - name: Set Version Output
         id: set_output
+        working-directory: frontend
         run: |
           # Đọc version hiện tại trong package.json sau khi release
           VERSION=$(node -p "require('./package.json').version")
@@ -111,7 +117,7 @@ jobs:
         if: gitea.ref == 'refs/heads/main'
         uses: docker/build-push-action@v4
         with:
-          context: .
+          context: ./frontend
           push: true
           tags: |
             vps.demonkernel.io.vn/${{ steps.meta.outputs.repo }}:latest
