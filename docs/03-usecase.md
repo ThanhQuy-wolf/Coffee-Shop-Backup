@@ -130,8 +130,8 @@ flowchart LR
 | Mục | Nội dung |
 |---|---|
 | Actor | Khách vãng lai, Khách hàng |
-| Mục tiêu | Chọn size, đường, đá, topping cho một món rồi thêm vào giỏ |
-| Tiền điều kiện | Món đang bán và có ít nhất một nhóm tuỳ chọn |
+| Mục tiêu | Chọn size, đường, đá, topping cho một món, hoặc cho từng ly trong combo, rồi thêm vào giỏ |
+| Tiền điều kiện | Món đang bán và có ít nhất một nhóm tuỳ chọn, hoặc combo đang bán có ít nhất một món thành phần mang nhóm tuỳ chọn |
 | Hậu điều kiện thành công | Giỏ có một dòng mang đúng lựa chọn và đơn giá đã cộng giá chênh |
 
 **Luồng chính**
@@ -140,7 +140,8 @@ flowchart LR
 3. Khách bấm "Thêm vào giỏ". Nếu giỏ đã có dòng cùng món, cùng lựa chọn thì cộng dồn số lượng, nếu không thì tạo dòng mới (BR-23).
 
 **Luồng thay thế**
-- 1a. Món không có nhóm tuỳ chọn: thêm thẳng vào giỏ, không mở hộp thoại.
+- 1a. Món không có nhóm tuỳ chọn, hoặc combo không có món nào mang nhóm tuỳ chọn: thêm thẳng vào giỏ, không mở hộp thoại.
+- 1c. Khách bấm "Thêm" ở một combo: hộp thoại chia theo từng ly trong combo (ví dụ "Ly 1 · Trà Đào Cam Sả", "Ly 2 · Trà Đào Cam Sả"), mỗi ly có các nhóm của món đó và chọn sẵn mặc định. Giá trên nút là giá combo + Σ giá chênh của mọi ly (BR-17, FR-37).
 - 2a. Nhóm `MULTIPLE` đã đủ `max_select`: các giá trị chưa chọn bị khoá cho tới khi khách bỏ bớt.
 
 **Luồng ngoại lệ**

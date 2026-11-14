@@ -141,6 +141,8 @@ export interface OptionGroupRow extends Omit<
 export interface OrderItemOptionRow extends OrderItemOption {
   optionGroupId: number;
   costDelta: number;
+  /** COMBO lines only: product of that unit (component_product_id) */
+  componentProductId?: number;
 }
 
 export interface OrderItemRow {
@@ -355,17 +357,10 @@ function seedOrders(): OrderRow[] {
     seedOrder(7, 7, "PREPARING", 9, [[7, 2, [2, 5, 9, 11]]], {
       note: "Mang đi",
     }),
-    seedOrder(
-      8,
-      8,
-      "READY",
-      12,
-      [
-        [13, 1],
-        [16, 1],
-      ],
-      { customerId: 10, guestToken: undefined },
-    ),
+    seedOrder(8, 8, "READY", 12, [[13, 1, [1, 3, 8, 11]]], {
+      customerId: 10,
+      guestToken: undefined,
+    }),
   ];
 }
 

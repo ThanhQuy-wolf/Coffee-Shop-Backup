@@ -7,7 +7,7 @@ import { ApiError, orderService } from "@/lib/services";
 import type { PaymentMethod } from "@/lib/types";
 import { formatVND } from "@/lib/utils/currency";
 import { errorCode, errorMessage } from "@/lib/utils/errors";
-import { describeOptions } from "@/lib/utils/options";
+import { optionLines } from "@/lib/utils/options";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -19,6 +19,8 @@ type ItemError = {
   line: number;
   reason?: string;
   optionValueId?: number;
+  /** Unit of a combo the error is about (FR-37) */
+  componentNo?: number;
   message?: string;
   currentPrice?: number;
 };
@@ -85,7 +87,9 @@ export default function CheckoutPage() {
           new Map(
             items.map((i) => {
               const opt = cart.lines[i.line]?.options.find(
-                (o) => o.optionValueId === i.optionValueId,
+                (o) =>
+                  o.optionValueId === i.optionValueId &&
+                  o.componentNo === i.componentNo,
               );
               return [
                 keyOf(i),
@@ -102,7 +106,8 @@ export default function CheckoutPage() {
           new Map(
             items.map((i) => [
               keyOf(i),
-              i.message ?? "Tuỳ chọn không còn hợp lệ",
+              (i.componentNo ? `Ly ${i.componentNo}: ` : "") +
+                (i.message ?? "Tuỳ chọn không còn hợp lệ"),
             ]),
           ),
         );
@@ -161,11 +166,14 @@ export default function CheckoutPage() {
                         )}
                         {line.name}
                       </p>
-                      {line.options.length > 0 && (
-                        <p className="text-xs text-(--color-text-muted)">
-                          {describeOptions(line.options)}
+                      {optionLines(line.options).map((text) => (
+                        <p
+                          key={text}
+                          className="text-xs text-(--color-text-muted)"
+                        >
+                          {text}
                         </p>
-                      )}
+                      ))}
                       <p className="text-sm text-(--color-primary)">
                         {formatVND(line.unitPrice)}
                       </p>

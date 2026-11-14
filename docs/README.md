@@ -35,6 +35,7 @@ Tất cả sơ đồ đều viết bằng [Mermaid](https://mermaid.js.org/), n�
 | Khách vãng lai | Người chưa đăng nhập. Được xem menu và đặt món, nhưng không xem được lịch sử đơn và không đánh giá được |
 | Món (product) | Một đồ uống hoặc đồ ăn bán lẻ, thuộc đúng một danh mục |
 | Combo | Gói nhiều món, có giá riêng |
+| Ly trong combo (component) | Một đơn vị món trong combo, đánh số `no` từ 1. Mỗi ly có lựa chọn tuỳ chọn riêng |
 | Nhóm tuỳ chọn (option group) | Một nhóm lựa chọn dùng chung cho nhiều món, ví dụ Size, Mức đường, Mức đá, Topping. Chọn một hoặc chọn nhiều, có thể bắt buộc |
 | Giá trị tuỳ chọn (option value) | Một lựa chọn trong nhóm, ví dụ Size L, 50% đường, Trân châu. Có thể cộng thêm tiền (giá chênh) |
 | Đơn (order) | Một lần đặt món tại quán. Giá được "đóng băng" vào đơn tại thời điểm đặt |

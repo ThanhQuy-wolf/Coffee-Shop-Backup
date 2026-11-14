@@ -28,12 +28,6 @@ export const MENU_CATEGORIES: MenuCategory[] = [
     icon: "fa-solid fa-ice-cream",
     sortOrder: 6,
   },
-  {
-    id: 7,
-    name: "Topping",
-    icon: "fa-solid fa-layer-group",
-    sortOrder: 7,
-  },
 ];
 
 // ===== MOCK PRODUCTS =====
@@ -201,39 +195,6 @@ const BASE_PRODUCTS: Omit<Product, "optionGroupIds">[] = [
     imageUrl: "/imgs/products/placeholder.jpg",
     description:
       "Bánh flan mềm mịn, ngọt ngào với lớp caramel vàng óng, tan chảy trong miệng.",
-    isAvailable: true,
-  },
-  {
-    id: 16,
-    name: "Trân Châu Đen",
-    categoryId: 7,
-    price: 10000,
-    costPrice: 4000,
-    imageUrl: "/imgs/products/placeholder.jpg",
-    description:
-      "Trân châu đen dẻo dai, thêm vào bất kỳ đồ uống nào để tăng thêm hương vị.",
-    isAvailable: true,
-  },
-  {
-    id: 17,
-    name: "Thạch Cà Phê",
-    categoryId: 7,
-    price: 10000,
-    costPrice: 4000,
-    imageUrl: "/imgs/products/placeholder.jpg",
-    description:
-      "Thạch cà phê mát lạnh, thêm hương vị đặc biệt cho đồ uống của bạn.",
-    isAvailable: true,
-  },
-  {
-    id: 18,
-    name: "Trân Châu Trắng",
-    categoryId: 7,
-    price: 10000,
-    costPrice: 4000,
-    imageUrl: "/imgs/products/placeholder.jpg",
-    description:
-      "Trân châu trắng dẻo dai, thêm vào bất kỳ đồ uống nào để tăng thêm hương vị.",
     isAvailable: true,
   },
 ];

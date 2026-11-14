@@ -88,11 +88,36 @@ Thêm tính năng tuỳ chọn món (size, mức đường, mức đá, topping)
 | R-25 | 04 | Lợi nhuận (BR-51) dùng `unit_cost` của dòng, nhưng size L tốn nguyên liệu hơn size M | Thêm `cost_delta` cho giá trị và cộng vào `unit_cost` khi chụp (BR-17) |
 | R-26 | 05 | Lỗi `BR-21`, `BR-22` của O-1 chỉ ra mục bằng `itemType` và `id`. Khi cùng một món nằm ở hai dòng khác tuỳ chọn, frontend không biết dòng nào bị lỗi | Thêm `line` (vị trí trong `items` của request) vào mọi phần tử `errors[]` của O-1 |
 
-## 5. Điểm còn mở
+## 5. Rà soát lần 4: tuỳ chọn trong combo (2026-11-14)
+
+Business chốt Q-07 theo phương án (b): món trong combo được chọn tuỳ chọn, giá chênh cộng vào dòng combo. Đồng thời bỏ danh mục "Topping" cũ trong dữ liệu mẫu, vì topping nay là nhóm tuỳ chọn chứ không còn là món bán lẻ.
+
+| Hạng mục | Kết quả |
+|---|---|
+| Mã tham chiếu | 36 FR, 7 NFR, 38 BR, 12 P, 24 UC, 5 Q còn mở. Mã mới: FR-37. Sửa A-10, BR-17, BR-18, BR-22, BR-23. Q-07 đã chốt |
+| Cú pháp Mermaid | 20/20 khối render được bằng `mermaid` 11.4.1 |
+| Độ phủ | FR-37 có UC-05, API O-1 và màn hình `/` trong [08-truy-vet.md](08-truy-vet.md) |
+
+**Thay đổi chính**
+
+- ERD: `order_item_option` thêm `component_no`, `component_product_id`, `component_name_snapshot` để ghi lựa chọn của từng ly trong combo.
+- API: dòng `COMBO` của O-1 gửi `components[]` (`no`, `optionValueIds`). Response trả `options` của dòng combo kèm `componentNo`, `componentName`. Lỗi `BR-18` ở một ly có thêm `componentNo`.
+- Màn hình: hộp chọn tuỳ chọn mở cho cả combo, chia theo từng ly. Giỏ, `/checkout`, `/orders/[orderId]` và `/staff/orders` hiện lựa chọn dưới từng ly.
+
+**Lỗi phát hiện và đã sửa**
+
+| # | Tài liệu | Vấn đề | Đã sửa |
+|---|---|---|---|
+| R-27 | 01, 02 | Chốt "cho chọn trong combo" nhưng chưa nói chọn một lần cho cả combo hay cho từng ly. Combo 2 Trà Đào thường là hai người uống, mỗi người một mức đường | A-10: chọn theo từng ly, đánh số `no` theo thứ tự `combo_item` và số lượng |
+| R-28 | 02, 05 | Nếu chỉ gửi ly nào khách đổi lựa chọn thì ly có nhóm bắt buộc mà không được gửi sẽ thiếu Size | BR-18: ly không gửi coi như chọn rỗng nên vẫn bị kiểm nhóm bắt buộc. Frontend gửi mọi ly có nhóm tuỳ chọn |
+| R-29 | 04 | Lưu lựa chọn của ly chỉ bằng số thứ tự thì khi quản lý sửa thành phần combo, đơn cũ không còn biết ly 1 là món gì | Chụp `component_product_id` và `component_name_snapshot` cùng hàng lựa chọn |
+| R-30 | 02 | BR-17 chỉ định nghĩa đơn giá và giá vốn của dòng món. Báo cáo lợi nhuận sẽ bỏ sót giá vốn chênh của size L trong combo | BR-17 thêm công thức cho dòng combo |
+
+## 6. Điểm còn mở
 
 Những điểm sau không phải lỗi của đặc tả mà là quyết định nghiệp vụ. Thiết kế hiện dùng phương án mặc định, xem [01-dac-ta.md](01-dac-ta.md#10-câu-hỏi-mở):
 
-- Q-01 → Q-04, Q-06 và Q-07 chưa được business chốt.
+- Q-01 → Q-04 và Q-06 chưa được business chốt. Q-07 đã chốt ở mục 5.
 - Mọi tham số P-01 → P-12 là **gợi ý**.
 - Thông báo (BR-42) chỉ hiện trong ứng dụng. Nếu nhân viên ít khi mở ứng dụng, cần cân nhắc gửi SMS hoặc Zalo cho trường hợp huỷ ca sát giờ.
 - Backend cũ đang trả thẳng `user` cho `POST /api/customer/login`. Frontend chấp nhận cả hai dạng response trong giai đoạn chuyển tiếp ([05-api.md](05-api.md#21-xác-thực-và-tài-khoản)).

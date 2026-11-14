@@ -82,8 +82,8 @@ interface CartContextValue {
    * Builds the `items` of the O-1 request body from the cart, in line order,
    * so the `line` index in the server's errors points back to a cart line.
    *
-   * @returns one entry per line, with the price the customer saw and, for
-   *   products, the chosen `optionValueIds`
+   * @returns one entry per line, with the price the customer saw, the
+   *   chosen `optionValueIds` for products and `components` for combos
    */
   toOrderItems: () => CreateOrderRequest["items"];
 }
@@ -93,20 +93,49 @@ const STORAGE_KEY = "coffee-shop-cart-v4";
 const CartContext = createContext<CartContextValue | null>(null);
 
 /**
- * Key of a cart line: the item plus its sorted option value ids.
+ * Key of a cart line: the item plus its sorted option value ids. Combo
+ * options are prefixed with their unit number, so the same value on another
+ * unit makes another key.
  *
  * @param type - `PRODUCT` or `COMBO`
  * @param id - product or combo id
  * @param options - chosen options
- * @returns e.g. `PRODUCT-5-2.5.11`
+ * @returns e.g. `PRODUCT-5-2.5.11` or `COMBO-2-1:2.3:11`
  */
 export function lineKey(
   type: OrderItemType,
   id: number,
-  options: { optionValueId: number }[],
+  options: { optionValueId: number; componentNo?: number }[],
 ) {
-  const ids = options.map((o) => o.optionValueId).sort((a, b) => a - b);
+  const ids = [...options]
+    .sort(
+      (a, b) =>
+        (a.componentNo ?? 0) - (b.componentNo ?? 0) ||
+        a.optionValueId - b.optionValueId,
+    )
+    .map((o) =>
+      o.componentNo ? `${o.componentNo}:${o.optionValueId}` : o.optionValueId,
+    );
   return `${type}-${id}-${ids.join(".")}`;
+}
+
+/**
+ * Groups a combo line's options by unit for the O-1 request (FR-37).
+ *
+ * @param options - the line's options, each with `componentNo`
+ * @returns one entry per unit that has options, in unit order
+ */
+function toComponents(options: CartLineOption[]) {
+  const byNo = new Map<number, number[]>();
+  for (const o of options)
+    if (o.componentNo)
+      byNo.set(o.componentNo, [
+        ...(byNo.get(o.componentNo) ?? []),
+        o.optionValueId,
+      ]);
+  return [...byNo.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([no, optionValueIds]) => ({ no, optionValueIds }));
 }
 
 /**
@@ -236,7 +265,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         unitPrice: l.unitPrice,
         ...(l.type === "PRODUCT"
           ? { optionValueIds: l.options.map((o) => o.optionValueId) }
-          : {}),
+          : { components: toComponents(l.options) }),
       })),
   };
 

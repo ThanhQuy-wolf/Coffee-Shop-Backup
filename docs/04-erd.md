@@ -180,6 +180,9 @@ erDiagram
     order_item_option {
         bigint id PK
         bigint order_item_id FK
+        smallint component_no "NULL nếu dòng món"
+        bigint component_product_id FK
+        varchar component_name_snapshot
         bigint option_group_id FK
         bigint option_value_id FK
         varchar group_name_snapshot
@@ -259,6 +262,7 @@ erDiagram
 - **`order_item` chụp lại tên, giá bán, giá vốn và danh mục** (`name_snapshot`, `unit_price`, `unit_cost`, `category_id_snapshot`). Đơn cũ phải giữ đúng như lúc bán, kể cả khi món bị đổi tên, đổi giá hay xoá mềm (BR-14). Báo cáo lợi nhuận dùng `unit_cost` đã chụp (BR-51), và tỷ trọng theo danh mục dùng `category_id_snapshot`. Dòng combo có `category_id_snapshot` để trống và `unit_cost` bằng tổng giá vốn của các món thành phần lúc bán.
 - **Tuỳ chọn là nhóm dùng chung, gắn vào món qua `product_option_group`.** Nhóm "Size" hay "Topping" thường giống nhau cho cả chục món, nên định nghĩa một lần rồi gắn nhiều nơi. Sửa giá trân châu một chỗ là đúng cho mọi món. Nếu sau này cần giá size khác nhau theo món (Size L của cà phê +5.000 đ, của trà +8.000 đ), tách thành hai nhóm riêng thay vì thêm cột ghi đè giá ở bảng nối.
 - **`order_item_option` chụp tên nhóm, tên giá trị và giá chênh** giống cách `order_item` chụp giá món (BR-17). `order_item.unit_price` và `unit_cost` đã gồm phần chênh, nên báo cáo doanh thu và lợi nhuận không phải join bảng này. Hai dòng cùng món khác lựa chọn là hai `order_item` riêng (BR-23).
+- **Lựa chọn trong combo nằm cùng bảng `order_item_option`, phân biệt bằng `component_no`** (ly thứ mấy trong combo, đếm từ 1 theo thứ tự `combo_item` và số lượng). Bảng chụp luôn món và tên món của ly đó (`component_product_id`, `component_name_snapshot`) vì thành phần combo có thể đổi sau khi bán. Dòng món để ba cột này NULL. Ly không có lựa chọn nào thì không có hàng nào, nhân viên pha theo công thức thường.
 - **`payment` tách khỏi `customer_order`.** Vòng đời thanh toán (hoàn tiền, huỷ trước khi trả) khác vòng đời đơn. Khi tích hợp cổng thanh toán (Q-03), chỉ cần thêm cột hoặc bảng giao dịch cổng mà không phải sửa bảng đơn. MVP là 1–1 (`order_id` unique).
 - **Trạng thái nghỉ phép và vắng mặt nằm ở `shift_assignment`**, không nằm ở `shift`. Mỗi người trong cùng một ca có thể ở trạng thái khác nhau. "Đã đủ người" được tính từ số phân ca đang chiếm chỗ, không lưu.
 - **`app_user` dùng chung cho mọi role.** Khách đăng nhập bằng `phone`, nhân viên bằng `username`. Ràng buộc kiểm tra bảo đảm Staff và Manager luôn có `username`, còn Customer luôn có `phone`.
@@ -468,13 +472,19 @@ CREATE INDEX idx_order_item_order ON order_item (order_id);
 CREATE TABLE order_item_option (
     id                  bigserial PRIMARY KEY,
     order_item_id       bigint      NOT NULL REFERENCES order_item(id),
+    component_no        smallint    CHECK (component_no >= 1),
+    component_product_id bigint     REFERENCES product(id),
+    component_name_snapshot varchar(100),
     option_group_id     bigint      NOT NULL REFERENCES option_group(id),
     option_value_id     bigint      NOT NULL REFERENCES option_value(id),
     group_name_snapshot varchar(60) NOT NULL,
     value_name_snapshot varchar(60) NOT NULL,
     price_delta         bigint      NOT NULL CHECK (price_delta >= 0),
     cost_delta          bigint      NOT NULL CHECK (cost_delta >= 0),
-    UNIQUE (order_item_id, option_value_id)
+    -- Các cột component đi cùng nhau: đủ cả ba (dòng combo) hoặc NULL cả ba (dòng món)
+    CHECK ((component_no IS NULL) = (component_product_id IS NULL)
+       AND (component_no IS NULL) = (component_name_snapshot IS NULL)),
+    UNIQUE NULLS NOT DISTINCT (order_item_id, component_no, option_value_id)
 );
 CREATE INDEX idx_order_item_option_item ON order_item_option (order_item_id);
 
@@ -574,7 +584,7 @@ Những rule sau phải kiểm ở tầng service, trong cùng transaction với
 | BR-13 | Combo phải có tổng số lượng thành phần ≥ 2, và mọi món thành phần phải chưa bị xoá |
 | BR-21 | Khi tạo đơn, món, combo và giá trị tuỳ chọn phải `is_available = true` và `deleted_at IS NULL` |
 | BR-16 | Nhóm `SINGLE` có tối đa 1 `option_value` mặc định chưa xoá, nhóm `SINGLE` bắt buộc có đúng 1. Nhóm `MULTIPLE` không có mặc định. Nhóm có ít nhất 1 giá trị chưa xoá. Kiểm khi lưu cả nhóm cùng các giá trị |
-| BR-18 | Với mỗi dòng món: mọi `option_value_id` gửi lên thuộc một `option_group` có trong `product_option_group` của món, đếm theo nhóm phải nằm trong `[min_select, max_select]`. Dòng combo không được gửi lựa chọn. `order_item_option` chỉ trỏ tới `order_item` có `item_type = 'PRODUCT'` |
+| BR-18 | Với mỗi dòng món: mọi `option_value_id` gửi lên thuộc một `option_group` có trong `product_option_group` của món, đếm theo nhóm phải nằm trong `[min_select, max_select]`. Dòng combo gửi lựa chọn theo từng ly: mỗi `no` trỏ tới một đơn vị món của combo và được kiểm với `product_option_group` của món đó. Hàng `order_item_option` của dòng `PRODUCT` có `component_no` NULL, của dòng `COMBO` có `component_no` NOT NULL (kiểm ở tầng ứng dụng vì CHECK không đọc được `order_item`) |
 | BR-19 | Xoá cứng `option_value`/`option_group` chỉ khi không có `order_item_option` nào trỏ tới. Nhóm còn gắn vào món chưa xoá thì phải gỡ trước. Menu tính món "tạm hết" khi một nhóm bắt buộc có ít hơn `min_select` giá trị đang bán |
 | BR-43 | `SELECT … FROM shift WHERE id = ? FOR UPDATE`, rồi đếm phân ca đang chiếm chỗ trước khi chèn |
 | BR-45 | Truy vấn phân ca chiếm chỗ của nhân viên trong cùng `shift_date` có `start_time < :end AND end_time > :start` |

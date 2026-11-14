@@ -4,7 +4,10 @@ import { Spinner } from "@/components/atoms";
 import { SearchBar } from "@/components/molecules/search-bar";
 import { CategorySidebar } from "@/components/organisms/navigation";
 import { ProductGrid } from "@/components/organisms/product-grid";
-import { ProductOptionsModal } from "@/components/organisms/product-options";
+import {
+  ProductOptionsModal,
+  type ProductOptionsModalProps,
+} from "@/components/organisms/product-options";
 import { type NewCartLine, useCart } from "@/lib/contexts/cart-context";
 import { MenuProvider, useMenu } from "@/lib/contexts/menu-context";
 import { shopService } from "@/lib/services";
@@ -17,7 +20,7 @@ import type {
   ShopInfo,
 } from "@/lib/types";
 import { errorMessage } from "@/lib/utils/errors";
-import { groupsOf } from "@/lib/utils/options";
+import { comboUnits, groupsOf } from "@/lib/utils/options";
 import { useEffect, useState } from "react";
 
 /** Home page: shop info and menu (UC-04, UC-05, UC-06). Loads both once. */
@@ -66,7 +69,10 @@ function ShopMenu({ shop, menu }: { shop: ShopInfo; menu: Menu }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [toast, setToast] = useState<string | null>(null);
-  const [picking, setPicking] = useState<Product | null>(null);
+  const [picking, setPicking] = useState<Pick<
+    ProductOptionsModalProps,
+    "item" | "units"
+  > | null>(null);
 
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 1024px)");
@@ -88,13 +94,20 @@ function ShopMenu({ shop, menu }: { shop: ShopInfo; menu: Menu }) {
     setToast(`Đã thêm ${quantity > 1 ? `${quantity} × ` : ""}${line.name}`);
   };
 
-  // FR-35: products with option groups open the picker first
+  // FR-35, FR-37: a product with option groups, or a combo with such a
+  // product inside, opens the picker first
   const handleAdd = (type: OrderItemType, item: Product | Combo) => {
-    if (
-      type === "PRODUCT" &&
-      groupsOf(item as Product, menu.optionGroups).length
-    ) {
-      setPicking(item as Product);
+    const units =
+      type === "PRODUCT"
+        ? [{ groups: groupsOf(item as Product, menu.optionGroups) }].filter(
+            (u) => u.groups.length,
+          )
+        : comboUnits(item as Combo, menu.products, menu.optionGroups);
+    if (units.length) {
+      setPicking({
+        item: { type, id: item.id, name: item.name, price: item.price },
+        units,
+      });
       return;
     }
     add({
@@ -168,8 +181,8 @@ function ShopMenu({ shop, menu }: { shop: ShopInfo; menu: Menu }) {
 
       {picking && (
         <ProductOptionsModal
-          product={picking}
-          groups={groupsOf(picking, menu.optionGroups)}
+          item={picking.item}
+          units={picking.units}
           onAdd={(line, quantity) => {
             add(line, quantity);
             setPicking(null);

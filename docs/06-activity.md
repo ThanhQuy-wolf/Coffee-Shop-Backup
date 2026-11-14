@@ -10,7 +10,7 @@ flowchart TD
         A0(("Bắt đầu")) --> A1["Mở trang chủ /"]
         A1 --> A2["Xem menu, chọn món"]
         A2 --> A3{"Món có<br/>nhóm tuỳ chọn?"}
-        A3 -- "Có" --> A4["Chọn size, đường, đá, topping,<br/>giá cập nhật theo lựa chọn<br/>(BR-16, BR-17)"]
+        A3 -- "Có" --> A4["Chọn size, đường, đá, topping<br/>cho món hoặc từng ly trong combo,<br/>giá cập nhật theo lựa chọn<br/>(BR-16, BR-17, FR-37)"]
         A4 --> A5["Thêm vào giỏ: cùng lựa chọn<br/>thì cộng dồn, khác thì dòng mới"]
         A3 -- "Không" --> A5
         A5 --> A6["Mở /checkout"]

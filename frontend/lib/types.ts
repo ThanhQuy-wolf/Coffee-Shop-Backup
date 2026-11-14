@@ -185,6 +185,10 @@ export interface OrderItemOption {
   groupName: string;
   valueName: string;
   priceDelta: number;
+  /** COMBO lines only: which unit of the combo, from 1 (FR-37) */
+  componentNo?: number;
+  /** COMBO lines only: product name of that unit when ordered */
+  componentName?: string;
 }
 
 export interface OrderItem {
@@ -243,6 +247,8 @@ export interface CreateOrderRequest {
     unitPrice: number;
     /** PRODUCT lines only (BR-18) */
     optionValueIds?: number[];
+    /** COMBO lines only: options per unit of the combo (BR-18, FR-37) */
+    components?: { no: number; optionValueIds: number[] }[];
   }[];
 }
 

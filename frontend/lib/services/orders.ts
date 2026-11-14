@@ -1,5 +1,6 @@
 // O-1 → O-9, R-1, R-2 in docs/05-api.md.
 import {
+  type OrderItemOptionRow,
   type OrderItemRow,
   type OrderRow,
   clone,
@@ -23,10 +24,42 @@ import type {
   Review,
   ReviewList,
 } from "../types";
-import { checkSelection, groupsOf } from "../utils/options";
+import { checkSelection, expandCombo, groupsOf } from "../utils/options";
 import { productSellable } from "./catalog";
 
 const REVIEW_COMMENT_MAX = 500; // BR-31
+
+/**
+ * Checks the options chosen for one product, or for one unit of a combo.
+ * @param product The product the options are for.
+ * @param ids Chosen value ids.
+ * @returns `soldOut`: chosen values that are off sale or deleted (BR-21);
+ *   `problems`: BR-18 violations, only checked when nothing is sold out;
+ *   `options`: the rows to snapshot when both lists are empty.
+ */
+function resolveOptions(product: { optionGroupIds: number[] }, ids: number[]) {
+  // Deleted values stay in the rows so an old cart gets BR-21, not BR-18.
+  const groups = groupsOf(
+    product,
+    db.optionGroups.filter((g) => !g.deletedAt),
+  );
+  const chosen = groups.flatMap((g) =>
+    g.values.filter((v) => ids.includes(v.id)).map((v) => ({ g, v })),
+  );
+  const soldOut = chosen
+    .filter(({ v }) => v.deletedAt || !v.isAvailable)
+    .map(({ v }) => v.id);
+  const problems = soldOut.length ? [] : checkSelection(groups, ids);
+  const options: OrderItemOptionRow[] = chosen.map(({ g, v }) => ({
+    optionValueId: v.id,
+    optionGroupId: g.id,
+    groupName: g.name,
+    valueName: v.name,
+    priceDelta: v.priceDelta,
+    costDelta: v.costDelta,
+  }));
+  return { soldOut, problems, options };
+}
 
 /**
  * Hides all but the last three digits of a phone number.
@@ -67,7 +100,10 @@ function toOrder(
     ...(withGuestToken && guestToken ? { guestToken } : {}),
     items: items.map(({ categoryId: _c, unitCost: _u, options, ...i }) => ({
       ...i,
-      options: options.map(({ optionGroupId: _g, costDelta: _d, ...o }) => o),
+      options: options.map(
+        ({ optionGroupId: _g, costDelta: _d, componentProductId: _p, ...o }) =>
+          o,
+      ),
     })),
     review: db.reviews.find((r) => r.orderId === row.id) ?? null,
   });
@@ -166,7 +202,8 @@ export const orderService = {
    * @throws {ApiError} 422 `BR-21` with `errors[]` for items no longer on sale,
    *   or reason `OPTION_UNAVAILABLE` when a chosen option is sold out (BR-19).
    * @throws {ApiError} 422 `BR-18` with `errors[].line` when the options break
-   *   a group's rules, belong to another product or are sent for a combo.
+   *   a group's rules or belong to another product; for a combo unit the
+   *   entry also has `componentNo` (FR-37).
    * @throws {ApiError} 409 `BR-22` with `errors[].currentPrice` when prices changed.
    */
   async create(
@@ -201,6 +238,7 @@ export const orderService = {
       itemType: string;
       id: number;
       optionValueId?: number;
+      componentNo?: number;
       reason: string;
     }[] = [];
     const invalid: {
@@ -208,6 +246,7 @@ export const orderService = {
       itemType: string;
       id: number;
       groupId: number;
+      componentNo?: number;
       message: string;
     }[] = [];
     const priceChanged: {
@@ -241,41 +280,26 @@ export const orderService = {
           });
           continue;
         }
-        const ids = item.optionValueIds ?? [];
-        // Deleted values stay in the rows so an old cart gets BR-21, not BR-18.
-        const groups = groupsOf(
+        const { soldOut, problems, options } = resolveOptions(
           p,
-          db.optionGroups.filter((g) => !g.deletedAt),
+          item.optionValueIds ?? [],
         );
-        const chosen = groups.flatMap((g) =>
-          g.values.filter((v) => ids.includes(v.id)).map((v) => ({ g, v })),
-        );
-        const soldOut = chosen.filter(({ v }) => v.deletedAt || !v.isAvailable);
         if (soldOut.length) {
-          for (const { v } of soldOut)
+          for (const optionValueId of soldOut)
             unavailable.push({
               line,
               itemType: "PRODUCT",
               id: p.id,
-              optionValueId: v.id,
+              optionValueId,
               reason: "OPTION_UNAVAILABLE",
             });
           continue;
         }
-        const problems = checkSelection(groups, ids);
         if (problems.length) {
           for (const pr of problems)
             invalid.push({ line, itemType: "PRODUCT", id: p.id, ...pr });
           continue;
         }
-        const options = chosen.map(({ g, v }) => ({
-          optionValueId: v.id,
-          optionGroupId: g.id,
-          groupName: g.name,
-          valueName: v.name,
-          priceDelta: v.priceDelta,
-          costDelta: v.costDelta,
-        }));
         // BR-17: deltas are part of the price the customer saw (BR-22)
         const unitPrice = options.reduce((s, o) => s + o.priceDelta, p.price);
         if (unitPrice !== item.unitPrice)
@@ -323,12 +347,77 @@ export const orderService = {
           });
           continue;
         }
-        if (c.price !== item.unitPrice)
+
+        // FR-37: options per unit, numbered over every unit of the combo
+        const units = expandCombo(c.items);
+        const comps = item.components ?? [];
+        const badNo = comps.filter(
+          (x, i) =>
+            !Number.isInteger(x.no) ||
+            x.no < 1 ||
+            x.no > units.length ||
+            comps.findIndex((y) => y.no === x.no) !== i,
+        );
+        if (badNo.length) {
+          for (const x of badNo)
+            invalid.push({
+              line,
+              itemType: "COMBO",
+              id: c.id,
+              groupId: 0,
+              componentNo: x.no,
+              message: "Combo không có ly này",
+            });
+          continue;
+        }
+        const options: OrderItemOptionRow[] = [];
+        let unitOk = true;
+        for (const [i, productId] of units.entries()) {
+          const no = i + 1;
+          const p = db.products.find((x) => x.id === productId)!;
+          // A unit that was not sent counts as an empty choice, so a required
+          // group on it still fails (BR-18).
+          const r = resolveOptions(
+            p,
+            comps.find((x) => x.no === no)?.optionValueIds ?? [],
+          );
+          for (const optionValueId of r.soldOut)
+            unavailable.push({
+              line,
+              itemType: "COMBO",
+              id: c.id,
+              optionValueId,
+              componentNo: no,
+              reason: "OPTION_UNAVAILABLE",
+            });
+          for (const pr of r.problems)
+            invalid.push({
+              line,
+              itemType: "COMBO",
+              id: c.id,
+              componentNo: no,
+              ...pr,
+            });
+          if (r.soldOut.length || r.problems.length) unitOk = false;
+          options.push(
+            ...r.options.map((o) => ({
+              ...o,
+              componentNo: no,
+              componentName: p.name,
+              componentProductId: p.id,
+            })),
+          );
+        }
+        if (!unitOk) continue;
+
+        // BR-17: combo price plus the deltas of every unit
+        const unitPrice = options.reduce((s, o) => s + o.priceDelta, c.price);
+        if (unitPrice !== item.unitPrice)
           priceChanged.push({
             line,
             itemType: "COMBO",
             id: c.id,
-            currentPrice: c.price,
+            currentPrice: unitPrice,
           });
         // BR-51: combo cost = sum of component costs at the time of sale
         const unitCost = c.items.reduce(
@@ -336,18 +425,18 @@ export const orderService = {
             s +
             (db.products.find((p) => p.id === i.productId)?.costPrice ?? 0) *
               i.quantity,
-          0,
+          options.reduce((s, o) => s + o.costDelta, 0),
         );
         lines.push({
           type: "COMBO",
           id: c.id,
           name: c.name,
           categoryId: null,
-          unitPrice: c.price,
+          unitPrice,
           unitCost,
           quantity: item.quantity,
-          lineTotal: c.price * item.quantity,
-          options: [],
+          lineTotal: unitPrice * item.quantity,
+          options,
         });
       }
     }

@@ -9,7 +9,7 @@ import { orderService } from "@/lib/services";
 import type { Order } from "@/lib/types";
 import { formatVND } from "@/lib/utils/currency";
 import { errorCode, errorMessage } from "@/lib/utils/errors";
-import { describeOptions } from "@/lib/utils/options";
+import { optionLines } from "@/lib/utils/options";
 import { ORDER_STATUS, formatDateTime, secondsUntil } from "@/lib/utils/order";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -267,11 +267,14 @@ export default function OrderPage() {
             >
               <span>
                 {item.quantity} × {item.name}
-                {item.options.length > 0 && (
-                  <span className="block text-xs text-(--color-text-muted)">
-                    {describeOptions(item.options)}
+                {optionLines(item.options).map((text) => (
+                  <span
+                    key={text}
+                    className="block text-xs text-(--color-text-muted)"
+                  >
+                    {text}
                   </span>
-                )}
+                ))}
               </span>
               <span className="font-medium">{formatVND(item.lineTotal)}</span>
             </li>

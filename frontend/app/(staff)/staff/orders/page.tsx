@@ -14,7 +14,7 @@ import type {
 } from "@/lib/types";
 import { formatVND } from "@/lib/utils/currency";
 import { errorMessage } from "@/lib/utils/errors";
-import { describeOptions } from "@/lib/utils/options";
+import { optionLines } from "@/lib/utils/options";
 import { ORDER_STATUS, formatDateTime } from "@/lib/utils/order";
 import { useCallback, useEffect, useState } from "react";
 
@@ -242,11 +242,14 @@ function OrderCard({
         {order.items.map((i, idx) => (
           <li key={idx}>
             {i.quantity} × {i.name}
-            {i.options.length > 0 && (
-              <span className="block pl-4 text-xs text-(--color-text-muted)">
-                {describeOptions(i.options)}
+            {optionLines(i.options).map((text) => (
+              <span
+                key={text}
+                className="block pl-4 text-xs text-(--color-text-muted)"
+              >
+                {text}
               </span>
-            )}
+            ))}
           </li>
         ))}
       </ul>

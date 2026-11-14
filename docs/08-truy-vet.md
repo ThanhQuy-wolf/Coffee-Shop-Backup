@@ -11,7 +11,7 @@ Mã API lấy từ [05-api.md](05-api.md#2-bảng-endpoint). Hàm service nằm 
 | UC-01 Đăng ký | FR-01 | BR-01, BR-02 | A-3, A-4 | `/register` | `authService.requestOtp`, `authService.register` |
 | UC-02 Đăng nhập / đăng xuất | FR-02, FR-03, FR-04 | BR-04 | A-1, A-2, A-5, A-6, A-7 | `/login`, header | `authService.loginCustomer`, `loginStaff`, `refresh`, `logout`, `getMe` |
 | UC-04 Xem menu | FR-06 | BR-10, BR-13, BR-19 | S-2, S-6 | `/` | `shopService.get`, `catalogService.getMenu` |
-| UC-05 Giỏ hàng | FR-11, FR-35 | BR-16, BR-17, BR-19, BR-23 | S-6 (`optionGroups`), giỏ lưu trên thiết bị | `/` (hộp chọn tuỳ chọn), `/checkout` | `catalogService.getMenu`, `CartContext` |
+| UC-05 Giỏ hàng | FR-11, FR-35, FR-37 | BR-16, BR-17, BR-18, BR-19, BR-23 | S-6 (`optionGroups`), giỏ lưu trên thiết bị | `/` (hộp chọn tuỳ chọn), `/checkout` | `catalogService.getMenu`, `CartContext` |
 | UC-06 Tìm món | FR-06 | — | S-6 (`?q=`) | `/` | `catalogService.getMenu` |
 | UC-07 Đặt món | FR-12, FR-13, FR-36 | BR-17, BR-18, BR-21 → BR-25 | O-1 | `/checkout` | `orderService.create` |
 | UC-08 Theo dõi đơn | FR-14, FR-36 | — | O-2 | `/orders/[orderId]` | `orderService.get` |

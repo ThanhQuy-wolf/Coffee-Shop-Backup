@@ -9,6 +9,15 @@ export interface SelectionProblem {
   message: string;
 }
 
+/** One unit of a combo that carries option groups (FR-37). */
+export interface ComboUnit {
+  /** Position in the combo, from 1, counting every unit (BR-18) */
+  no: number;
+  productId: number;
+  productName: string;
+  groups: OptionGroup[];
+}
+
 /** A chosen value with the group it belongs to. */
 export interface SelectedOption {
   group: OptionGroup;
@@ -30,6 +39,45 @@ export function groupsOf<G extends { id: number }>(
   return product.optionGroupIds.flatMap((id) => {
     const g = groups.find((x) => x.id === id);
     return g ? [g] : [];
+  });
+}
+
+/**
+ * Lists a combo unit by unit: a combo of 2 Trà Đào and 1 Matcha gives
+ * product ids at positions 1, 2 and 3. Server and client must number units
+ * the same way, so both use this.
+ *
+ * @param items - the combo's items, in their stored order
+ * @returns one product id per unit; `no` is the index + 1
+ */
+export function expandCombo(
+  items: { productId: number; quantity: number }[],
+): number[] {
+  return items.flatMap((i) => Array<number>(i.quantity).fill(i.productId));
+}
+
+/**
+ * The units of a combo the customer can choose options for.
+ *
+ * @param combo - anything with `items`
+ * @param products - products to look the units up in
+ * @param groups - all option groups
+ * @returns units whose product has at least one group, with `no` counted
+ *   over every unit so it matches `expandCombo`
+ */
+export function comboUnits<
+  P extends { id: number; name: string; optionGroupIds: number[] },
+>(
+  combo: { items: { productId: number; quantity: number }[] },
+  products: P[],
+  groups: OptionGroup[],
+): ComboUnit[] {
+  return expandCombo(combo.items).flatMap((productId, i) => {
+    const p = products.find((x) => x.id === productId);
+    const g = p ? groupsOf(p, groups) : [];
+    return p && g.length
+      ? [{ no: i + 1, productId, productName: p.name, groups: g }]
+      : [];
   });
 }
 
@@ -117,25 +165,6 @@ export function selectedOptions(
 }
 
 /**
- * Unit price with options (BR-17).
- *
- * @param basePrice - the product's price, in đồng
- * @param groups - the product's groups
- * @param valueIds - chosen value ids
- * @returns base price plus the `priceDelta` of each chosen value
- */
-export function priceWithOptions(
-  basePrice: number,
-  groups: OptionGroup[],
-  valueIds: number[],
-): number {
-  return selectedOptions(groups, valueIds).reduce(
-    (sum, { value }) => sum + value.priceDelta,
-    basePrice,
-  );
-}
-
-/**
  * Whether the product can still be ordered with its options (BR-19).
  *
  * @param groups - the product's groups
@@ -149,11 +178,31 @@ export function optionsSellable(groups: OptionGroup[]): boolean {
 }
 
 /**
- * One-line summary of the options on a cart or order line.
+ * Summary of the options on a cart or order line, one entry per row to show.
  *
- * @param options - chosen options
- * @returns e.g. "Size L, 50% đường, Trân châu đen"
+ * @param options - chosen options; combo options carry `componentNo`
+ * @returns `["Size L, 50% đường"]` for a product line, or one entry per
+ *   combo unit such as `"Ly 1 · Trà Đào Cam Sả: Size L, Ít đá"`
  */
-export function describeOptions(options: { valueName: string }[]): string {
-  return options.map((o) => o.valueName).join(", ");
+export function optionLines(
+  options: {
+    valueName: string;
+    componentNo?: number;
+    componentName?: string;
+  }[],
+): string[] {
+  const byUnit = new Map<number, { name?: string; values: string[] }>();
+  for (const o of options) {
+    const no = o.componentNo ?? 0;
+    const unit = byUnit.get(no) ?? { name: o.componentName, values: [] };
+    unit.values.push(o.valueName);
+    byUnit.set(no, unit);
+  }
+  return [...byUnit.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([no, u]) =>
+      no === 0
+        ? u.values.join(", ")
+        : `Ly ${no} · ${u.name}: ${u.values.join(", ")}`,
+    );
 }

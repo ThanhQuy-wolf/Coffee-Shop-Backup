@@ -107,7 +107,7 @@ Các endpoint `GET` ở đây trả cả món đang tắt bán, khác với S-6.
 
 | # | Method | Đường dẫn | Quyền | Mô tả | FR / BR | Hàm frontend |
 |---|---|---|---|---|---|---|
-| O-1 | POST | `/orders` | Public, C | Tạo đơn. Header `Idempotency-Key` | FR-12, FR-13, FR-36, BR-18, BR-21 → BR-25 | `orderService.create` |
+| O-1 | POST | `/orders` | Public, C | Tạo đơn. Header `Idempotency-Key` | FR-12, FR-13, FR-36, FR-37, BR-18, BR-21 → BR-25 | `orderService.create` |
 | O-2 | GET | `/orders/{orderId}` | Guest, C, S/M | Chi tiết đơn, kèm thanh toán và đánh giá (nếu có). Màn hình khách gọi lại mỗi P-07 giây | FR-14 | `orderService.get` |
 | O-3 | GET | `/me/orders` | C | Lịch sử đơn của khách, mới nhất trước | FR-15 | `orderService.listMine` |
 | O-4 | GET | `/orders?status=&q=&date=` | S/M | Hàng đợi đơn của quán. `q` tìm theo mã đơn. Số điện thoại khách chỉ trả 3 số cuối (NFR-07) | FR-16 | `orderService.listQueue` |
@@ -143,12 +143,15 @@ Authorization: Bearer eyJ...      (không bắt buộc)
   "items": [
     { "type": "PRODUCT", "id": 101, "quantity": 2, "unitPrice": 35000, "optionValueIds": [] },
     { "type": "PRODUCT", "id": 104, "quantity": 1, "unitPrice": 46000, "optionValueIds": [2, 7, 11] },
-    { "type": "COMBO", "id": 7, "quantity": 1, "unitPrice": 79000 }
+    {
+      "type": "COMBO", "id": 7, "quantity": 1, "unitPrice": 85000,
+      "components": [{ "no": 1, "optionValueIds": [2, 7, 9] }]
+    }
   ]
 }
 ```
 
-`unitPrice` là giá khách đang thấy, đã cộng giá chênh của các tuỳ chọn. Backend dùng nó để kiểm BR-22, không dùng để tính tiền. `optionValueIds` chỉ có ở dòng `PRODUCT` (BR-18).
+`unitPrice` là giá khách đang thấy, đã cộng giá chênh của các tuỳ chọn. Backend dùng nó để kiểm BR-22, không dùng để tính tiền. `optionValueIds` chỉ có ở dòng `PRODUCT`. Dòng `COMBO` gửi `components`: mỗi phần tử là lựa chọn của một ly, `no` đếm từ 1 theo thứ tự món và số lượng trong combo. Ví dụ combo gồm 1 Bạc xỉu + 1 Bánh mì thì `no` 1 là Bạc xỉu, `no` 2 là Bánh mì. Ly không có nhóm tuỳ chọn thì bỏ qua (BR-18, FR-37).
 
 **O-1 — response 201**
 
@@ -157,11 +160,11 @@ Authorization: Bearer eyJ...      (không bắt buộc)
   "id": 5521,
   "code": "DH-260410-0042",
   "status": "PENDING_PAYMENT",
-  "total": 195000,
+  "total": 201000,
   "version": 1,
   "guestToken": "gt_9QhX...",
   "paymentDeadline": "2026-04-10T09:30:00+07:00",
-  "payment": { "method": "QR", "status": "PENDING", "amount": 195000, "transferContent": "DH-260410-0042" },
+  "payment": { "method": "QR", "status": "PENDING", "amount": 201000, "transferContent": "DH-260410-0042" },
   "items": [
     { "type": "PRODUCT", "id": 101, "name": "Bạc xỉu", "unitPrice": 35000, "quantity": 2, "lineTotal": 70000, "options": [] },
     {
@@ -172,7 +175,14 @@ Authorization: Bearer eyJ...      (không bắt buộc)
         { "optionValueId": 11, "groupName": "Topping", "valueName": "Trân châu đen", "priceDelta": 5000 }
       ]
     },
-    { "type": "COMBO", "id": 7, "name": "Combo sáng", "unitPrice": 79000, "quantity": 1, "lineTotal": 79000 }
+    {
+      "type": "COMBO", "id": 7, "name": "Combo sáng", "unitPrice": 85000, "quantity": 1, "lineTotal": 85000,
+      "options": [
+        { "componentNo": 1, "componentName": "Bạc xỉu", "optionValueId": 2, "groupName": "Size", "valueName": "Size L", "priceDelta": 6000 },
+        { "componentNo": 1, "componentName": "Bạc xỉu", "optionValueId": 7, "groupName": "Mức đường", "valueName": "50% đường", "priceDelta": 0 },
+        { "componentNo": 1, "componentName": "Bạc xỉu", "optionValueId": 9, "groupName": "Mức đá", "valueName": "Ít đá", "priceDelta": 0 }
+      ]
+    }
   ],
   "createdAt": "2026-04-10T09:15:00+07:00"
 }
@@ -258,7 +268,7 @@ Mọi lỗi trả `Content-Type: application/problem+json` (RFC 9457, NFR-04):
 }
 ```
 
-Với lỗi của O-1 (`BR-18`, `BR-21`, `BR-22`), mỗi phần tử trong `errors[]` có `line` là vị trí dòng trong `items` của request. Một món có thể nằm ở nhiều dòng với tuỳ chọn khác nhau, nên `itemType` và `id` không đủ để chỉ ra dòng nào. Lỗi `BR-18` có thêm `groupId` (0 nếu không thuộc nhóm nào) và `message`.
+Với lỗi của O-1 (`BR-18`, `BR-21`, `BR-22`), mỗi phần tử trong `errors[]` có `line` là vị trí dòng trong `items` của request. Một món có thể nằm ở nhiều dòng với tuỳ chọn khác nhau, nên `itemType` và `id` không đủ để chỉ ra dòng nào. Lỗi `BR-18` có thêm `groupId` (0 nếu không thuộc nhóm nào) và `message`. Lỗi ở một ly trong combo có thêm `componentNo`.
 
 Frontend chọn thông báo theo `rule` (hoặc `code` khi không gắn với BR), không theo `title`.
 
