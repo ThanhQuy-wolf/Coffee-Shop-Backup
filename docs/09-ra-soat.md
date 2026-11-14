@@ -1,6 +1,6 @@
 # 09 — Biên bản rà soát đặc tả
 
-Rà soát toàn bộ tài liệu 01 → 08 sau khi viết xong, trước khi sửa frontend. Mục tiêu: các mã tham chiếu khớp nhau, dữ liệu đủ để thực thi từng rule, có đủ luồng ngoại lệ, và mọi sơ đồ Mermaid hiển thị được.
+Rà soát toàn bộ tài liệu 01 → 08 sau khi viết xong, trước khi sửa frontend. Lần 2 (mục 3) rà soát sau khi chuyển sang một quán. Mục tiêu: các mã tham chiếu khớp nhau, dữ liệu đủ để thực thi từng rule, có đủ luồng ngoại lệ, và mọi sơ đồ Mermaid hiển thị được.
 
 ## 1. Cách rà soát
 
@@ -33,11 +33,38 @@ Rà soát toàn bộ tài liệu 01 → 08 sau khi viết xong, trước khi s�
 | R-14 | 05 | NFR-07 (nhân viên chỉ thấy 3 số cuối điện thoại khách) và NFR-01 (thời gian phản hồi) chưa được nhắc ở tầng API | Bổ sung vào O-4 và bảng quy ước |
 | R-15 | 05 | Endpoint báo cáo đánh số `P-1` → `P-4`, trùng tiền tố với tham số nghiệp vụ `P-01` → `P-12` | Đổi thành `RP-1` → `RP-4` |
 
-## 3. Điểm còn mở
+## 3. Rà soát lần 2: chuyển sang một quán (2026-11-13)
+
+Hệ thống đổi từ nhiều quán sang **một quán duy nhất** (A-5). Sau khi sửa 01 → 08, rà soát lại toàn bộ theo cùng cách ở mục 1.
+
+| Hạng mục | Kết quả |
+|---|---|
+| Mã tham chiếu | 32 FR, 7 NFR, 34 BR, 12 P, 23 UC, 5 Q. Các mã đã bỏ (FR-05, BR-03, BR-05, BR-20, UC-03, Q-05, S-1) chỉ còn xuất hiện trong ghi chú "đã bỏ", không còn nơi nào trỏ tới như một rule đang hiệu lực |
+| `shop_id`, `{shopId}`, `/feed`, `/shops/` | 0 chỗ còn dùng, ngoài ghi chú lịch sử |
+| Cú pháp Mermaid | 20/20 khối render được |
+
+**Thay đổi chính**
+
+- ERD: bỏ bảng `shop`, `shop_setting` và cột `shop_id` ở mọi bảng. Thêm `shop_info` một dòng (`CHECK (id = 1)`) chứa thông tin quán và tham số.
+- API: bỏ `{shopId}` khỏi đường dẫn (`/shop`, `/menu`, `/orders`, `/reviews`, `/shifts`…), bỏ S-1 và bỏ `shopId` khỏi JWT.
+- Rule: bỏ BR-03 (phạm vi quán), BR-05 (quán phải đang hoạt động), BR-20 (giỏ chỉ chứa món của một quán). Mã đơn đổi từ `CF-` sang `DH-YYMMDD-NNNN`.
+- Màn hình: bỏ `/feed` và `/shops/[shopId]`. Trang chủ `/` hiện thông tin quán và menu.
+
+**Lỗi phát hiện và đã sửa**
+
+| # | Tài liệu | Vấn đề | Đã sửa |
+|---|---|---|---|
+| R-16 | 04 | Ghi chú `shop_info` nói chứa tham số P-06 → P-12, nhưng P-07 (chu kỳ polling) là tham số kỹ thuật, không có cột trong DDL | Ghi rõ P-06, P-08 → P-12. P-07 nằm trong cấu hình backend |
+| R-17 | 06 | Activity 6 (job huỷ đơn) vẫn bước "lấy danh sách quán đang hoạt động", không còn đúng khi chỉ có một quán và không còn cờ `is_active` | Đổi thành đọc `payment_timeout_minutes` từ `shop_info` |
+| R-18 | 05, 08 | Tên hàm `orderService.listByShop`, `reviewService.listByShop` không còn nghĩa | Đổi thành `orderService.listQueue`, `reviewService.list` |
+| R-19 | 01 | Bỏ FR-05 và Q-05 nhưng không ghi chú, người đọc sẽ tưởng đánh số bị thiếu | Thêm ghi chú "đã bỏ, không dùng lại" |
+| R-20 | 09 (R-05) | Khoá idempotency trước đây duy nhất trong quán | Nay duy nhất toàn hệ thống: `UNIQUE (idempotency_key)` |
+
+## 4. Điểm còn mở
 
 Những điểm sau không phải lỗi của đặc tả mà là quyết định nghiệp vụ. Thiết kế hiện dùng phương án mặc định, xem [01-dac-ta.md](01-dac-ta.md#10-câu-hỏi-mở):
 
-- Q-01 → Q-06 chưa được business chốt.
+- Q-01 → Q-04 và Q-06 chưa được business chốt.
 - Mọi tham số P-01 → P-12 là **gợi ý**.
 - Thông báo (BR-42) chỉ hiện trong ứng dụng. Nếu nhân viên ít khi mở ứng dụng, cần cân nhắc gửi SMS hoặc Zalo cho trường hợp huỷ ca sát giờ.
 - Backend cũ đang trả thẳng `user` cho `POST /api/customer/login`. Frontend chấp nhận cả hai dạng response trong giai đoạn chuyển tiếp ([05-api.md](05-api.md#21-xác-thực-và-tài-khoản)).

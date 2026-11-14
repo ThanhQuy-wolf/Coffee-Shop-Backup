@@ -19,8 +19,6 @@ export interface User {
   phone: string | null;
   username: string | null;
   avatarUrl: string | null;
-  /** null for CUSTOMER */
-  shopId: number | null;
   departmentId: number | null;
 }
 
@@ -46,17 +44,15 @@ export interface AppNotification {
   createdAt: string;
 }
 
-// ===== SHOP (shop, shop_setting) =====
+// ===== SHOP (shop_info, single row) =====
 export interface SocialLinks {
   facebook?: string;
   tiktok?: string;
   website?: string;
 }
 
-export interface Shop {
-  id: number;
-  /** Prefix of order codes, e.g. "CF" in CF-260410-0042 */
-  code: string;
+/** The one shop the system serves (A-5) */
+export interface ShopInfo {
   name: string;
   tagline: string;
   address: string;
@@ -68,10 +64,7 @@ export interface Shop {
   wifiName: string;
   wifiPassword: string;
   socialLinks: SocialLinks;
-  isActive: boolean;
 }
-
-export type ShopUpdate = Omit<Shop, "id" | "code" | "isActive">;
 
 export interface ShopSettings {
   paymentTimeoutMinutes: number; // P-06
@@ -85,7 +78,6 @@ export interface ShopSettings {
 // ===== MENU (category, product, combo, combo_item) =====
 export interface MenuCategory {
   id: number;
-  shopId: number;
   name: string;
   /** FontAwesome class, e.g. "fa-solid fa-mug-hot" */
   icon: string;
@@ -97,7 +89,6 @@ export type CategoryInput = Pick<MenuCategory, "name" | "icon" | "sortOrder">;
 
 export interface Product {
   id: number;
-  shopId: number;
   categoryId: number;
   name: string;
   description: string;
@@ -108,7 +99,7 @@ export interface Product {
   isAvailable: boolean;
 }
 
-export type ProductInput = Omit<Product, "id" | "shopId">;
+export type ProductInput = Omit<Product, "id">;
 
 export interface ComboItem {
   productId: number;
@@ -117,7 +108,6 @@ export interface ComboItem {
 
 export interface Combo {
   id: number;
-  shopId: number;
   name: string;
   description: string;
   price: number;
@@ -128,11 +118,10 @@ export interface Combo {
   sellable: boolean;
 }
 
-export type ComboInput = Omit<Combo, "id" | "shopId" | "sellable">;
+export type ComboInput = Omit<Combo, "id" | "sellable">;
 
-/** GET /shops/{shopId}/menu — only what is on sale */
+/** GET /menu — only what is on sale */
 export interface Menu {
-  shop: Shop;
   categories: MenuCategory[];
   products: Product[];
   combos: Combo[];
@@ -172,8 +161,6 @@ export interface Payment {
 export interface Order {
   id: number;
   code: string;
-  shopId: number;
-  shopName: string;
   status: OrderStatus;
   total: number;
   version: number;
@@ -213,7 +200,6 @@ export interface Review {
   id: number;
   orderId: number;
   orderCode: string;
-  shopId: number;
   customerName: string;
   rating: number;
   comment: string | null;
@@ -228,7 +214,6 @@ export interface ReviewList extends Page<Review> {
 // ===== SHIFT (department, shift, shift_assignment) =====
 export interface Department {
   id: number;
-  shopId: number;
   code: string;
   name: string;
   icon: string;
@@ -262,7 +247,6 @@ export interface ShiftAssignment {
 
 export interface Shift {
   id: number;
-  shopId: number;
   departmentId: number;
   /** "YYYY-MM-DD" */
   date: string;

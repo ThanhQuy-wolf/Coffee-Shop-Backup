@@ -14,28 +14,18 @@ export interface CartLine {
   quantity: number;
 }
 
-/** FR-11 / BR-20: a cart belongs to exactly one shop */
+/** FR-11: the cart lives on the device until the order is placed */
 export interface Cart {
-  shopId: number;
-  shopName: string;
   lines: CartLine[];
   /** Kept with the cart so a retry after a network error reuses it (BR-24) */
   idempotencyKey: string;
-}
-
-export interface CartAddInput {
-  shopId: number;
-  shopName: string;
-  line: Omit<CartLine, "quantity">;
 }
 
 interface CartContextValue {
   cart: Cart | null;
   totalItems: number;
   totalPrice: number;
-  /** false when the cart holds another shop's items; call replaceCart to confirm */
-  addToCart: (input: CartAddInput) => boolean;
-  replaceCart: (input: CartAddInput) => void;
+  addToCart: (line: Omit<CartLine, "quantity">) => void;
   /** Reorder after an expired order (UC-11, BR-28): replaces the whole cart */
   loadCart: (cart: Omit<Cart, "idempotencyKey">) => void;
   setQuantity: (type: OrderItemType, id: number, quantity: number) => void;
@@ -48,13 +38,14 @@ interface CartContextValue {
   toOrderItems: () => CreateOrderRequest["items"];
 }
 
-const STORAGE_KEY = "coffee-shop-cart-v2";
+// v3: carts without shopId (single shop). Older carts are dropped.
+const STORAGE_KEY = "coffee-shop-cart-v3";
 const CartContext = createContext<CartContextValue | null>(null);
 
 function parseCart(v: unknown): Cart | null {
   if (!v || typeof v !== "object") return null;
   const c = v as Cart;
-  if (typeof c.shopId !== "number" || !Array.isArray(c.lines)) return null;
+  if (!Array.isArray(c.lines)) return null;
   return { ...c, lines: c.lines.filter((l) => l && l.quantity > 0) };
 }
 
@@ -80,29 +71,20 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       return lines.length ? { ...prev, lines, idempotencyKey: newKey() } : null;
     });
 
-  const replaceCart = ({ shopId, shopName, line }: CartAddInput) =>
-    setCart({
-      shopId,
-      shopName,
-      lines: [{ ...line, quantity: 1 }],
-      idempotencyKey: newKey(),
-    });
-
-  const addToCart = (input: CartAddInput) => {
-    if (cart && cart.shopId !== input.shopId) return false;
+  const addToCart = (line: Omit<CartLine, "quantity">) => {
     if (!cart) {
-      replaceCart(input);
-      return true;
+      setCart({ lines: [{ ...line, quantity: 1 }], idempotencyKey: newKey() });
+      return;
     }
-    const { type, id } = input.line;
     update((lines) =>
-      lines.some((l) => same(l, type, id))
+      lines.some((l) => same(l, line.type, line.id))
         ? lines.map((l) =>
-            same(l, type, id) ? { ...l, quantity: l.quantity + 1 } : l,
+            same(l, line.type, line.id)
+              ? { ...l, quantity: l.quantity + 1 }
+              : l,
           )
-        : [...lines, { ...input.line, quantity: 1 }],
+        : [...lines, { ...line, quantity: 1 }],
     );
-    return true;
   };
 
   const setQuantity = (type: OrderItemType, id: number, quantity: number) => {
@@ -137,7 +119,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     cart,
     ...totals,
     addToCart,
-    replaceCart,
     loadCart: (c) =>
       setCart(c.lines.length ? { ...c, idempotencyKey: newKey() } : null),
     setQuantity,

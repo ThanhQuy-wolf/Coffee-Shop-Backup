@@ -1,6 +1,5 @@
 "use client";
 
-import { useCatalog } from "@/lib/contexts/catalog-context";
 import { ALL_CATEGORY_ID, analyticsService } from "@/lib/services";
 import type {
   AnalyticsPeriod,
@@ -16,7 +15,6 @@ import { CATEGORY_COLORS } from "./constants";
 
 /** Loads RP-1 → RP-3 for one period and derives the numbers the sections show. */
 export function useAnalytics(period: AnalyticsPeriod, categoryFilter: number) {
-  const { shopId } = useCatalog();
   const [summary, setSummary] = useState<ReportSummary | null>(null);
   const [revenue, setRevenue] = useState<RevenueReport | null>(null);
   const [sales, setSales] = useState<ProductSalesStats[]>([]);
@@ -25,8 +23,8 @@ export function useAnalytics(period: AnalyticsPeriod, categoryFilter: number) {
   useEffect(() => {
     let alive = true;
     Promise.all([
-      analyticsService.getSummary(shopId, period),
-      analyticsService.getRevenue(shopId, period),
+      analyticsService.getSummary(period),
+      analyticsService.getRevenue(period),
     ]).then(
       ([s, r]) => {
         if (!alive) return;
@@ -38,13 +36,12 @@ export function useAnalytics(period: AnalyticsPeriod, categoryFilter: number) {
     return () => {
       alive = false;
     };
-  }, [shopId, period]);
+  }, [period]);
 
   useEffect(() => {
     let alive = true;
     analyticsService
       .getProductSales(
-        shopId,
         categoryFilter === ALL_CATEGORY_ID ? undefined : categoryFilter,
       )
       .then(
@@ -54,7 +51,7 @@ export function useAnalytics(period: AnalyticsPeriod, categoryFilter: number) {
     return () => {
       alive = false;
     };
-  }, [shopId, categoryFilter]);
+  }, [categoryFilter]);
 
   const pieData = useMemo(
     (): PieSlice[] =>

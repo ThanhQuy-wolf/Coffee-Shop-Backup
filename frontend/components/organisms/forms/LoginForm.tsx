@@ -151,7 +151,7 @@ export default function LoginForm() {
             </Link>
           )}
           <Link
-            href="/feed"
+            href="/"
             className="block text-center text-sm text-(--color-text-muted) hover:text-(--color-primary)"
           >
             Đặt món không cần đăng nhập

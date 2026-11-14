@@ -12,14 +12,18 @@ import type {
   OrderItemType,
   Product,
   Review,
-  Shop,
+  ShopInfo,
   ShopSettings,
   User,
   UserRole,
 } from "../types";
 import { MENU_CATEGORIES, MOCK_COMBOS, MOCK_PRODUCTS } from "./menu";
 import { type AssignmentRow, MOCK_SHIFT_SEED, type ShiftRow } from "./shifts";
-import { DEFAULT_SHOP_SETTINGS, MOCK_DEPARTMENTS, MOCK_SHOPS } from "./shops";
+import {
+  DEFAULT_SHOP_SETTINGS,
+  MOCK_DEPARTMENTS,
+  MOCK_SHOP_INFO,
+} from "./shops";
 import { MOCK_ACCOUNTS, type MockAccount } from "./users";
 
 // ─── Clock ──────────────────────────────────────────────────────────────────
@@ -91,7 +95,7 @@ export interface OrderItemRow {
 
 export interface OrderRow extends Omit<
   Order,
-  "items" | "review" | "shopName" | "customerPhone"
+  "items" | "review" | "customerPhone"
 > {
   guestToken?: string;
   idempotencyKey: string;
@@ -119,32 +123,18 @@ export interface OtpRow {
 
 // ─── Seed ───────────────────────────────────────────────────────────────────
 
-function copyMenuForShop(shopId: number) {
-  const offset = (shopId - 1) * 100;
-  const categories: CategoryRow[] = MENU_CATEGORIES.map((c) => ({
-    ...c,
-    id: c.id + offset,
-    shopId,
-    deletedAt: null,
-  }));
-  const products: ProductRow[] = MOCK_PRODUCTS.map((p) => ({
-    ...p,
-    id: p.id + offset,
-    shopId,
-    categoryId: p.categoryId + offset,
-    deletedAt: null,
-  }));
-  const combos: ComboRow[] = MOCK_COMBOS.map(({ sellable: _, ...c }) => ({
-    ...c,
-    id: c.id + offset,
-    shopId,
-    items: c.items.map((i) => ({ ...i, productId: i.productId + offset })),
-    deletedAt: null,
-  }));
-  return { categories, products, combos };
-}
-
-const menus = MOCK_SHOPS.map((s) => copyMenuForShop(s.id));
+const categories: CategoryRow[] = MENU_CATEGORIES.map((c) => ({
+  ...c,
+  deletedAt: null,
+}));
+const products: ProductRow[] = MOCK_PRODUCTS.map((p) => ({
+  ...p,
+  deletedAt: null,
+}));
+const combos: ComboRow[] = MOCK_COMBOS.map(({ sellable: _, ...c }) => ({
+  ...c,
+  deletedAt: null,
+}));
 
 function seedOrder(
   id: number,
@@ -170,11 +160,10 @@ function seedOrder(
   });
   const total = items.reduce((s, i) => s + i.lineTotal, 0);
   const paid = status !== "PENDING_PAYMENT" && status !== "CANCELLED";
-  const code = `CF-260410-${seq.toString().padStart(4, "0")}`;
+  const code = `DH-260410-${seq.toString().padStart(4, "0")}`;
   return {
     id,
     code,
-    shopId: 1,
     status,
     total,
     version: 1,
@@ -251,7 +240,7 @@ function seedOrders(): OrderRow[] {
         method: "QR",
         status: "PENDING",
         amount: 64000,
-        transferContent: "CF-260410-0005",
+        transferContent: "DH-260410-0005",
         confirmedAt: null,
       },
     }),
@@ -285,8 +274,7 @@ const seedReviews: Review[] = [
   {
     id: 1,
     orderId: 1,
-    orderCode: "CF-260410-0001",
-    shopId: 1,
+    orderCode: "DH-260410-0001",
     customerName: "Khách hàng demo",
     rating: 5,
     comment: "Cà phê đậm, phục vụ nhanh.",
@@ -295,8 +283,7 @@ const seedReviews: Review[] = [
   {
     id: 2,
     orderId: 900,
-    orderCode: "CF-260405-0012",
-    shopId: 1,
+    orderCode: "DH-260405-0012",
     customerName: "Minh Thư",
     rating: 4,
     comment: "Trà đào ngon, hơi ngọt.",
@@ -305,8 +292,7 @@ const seedReviews: Review[] = [
   {
     id: 3,
     orderId: 901,
-    orderCode: "CF-260402-0031",
-    shopId: 1,
+    orderCode: "DH-260402-0031",
     customerName: "Hoàng Nam",
     rating: 3,
     comment: null,
@@ -317,22 +303,20 @@ const seedReviews: Review[] = [
 // ─── State ──────────────────────────────────────────────────────────────────
 
 export const db = {
-  shops: clone(MOCK_SHOPS) as Shop[],
-  settings: new Map<number, ShopSettings>(
-    MOCK_SHOPS.map((s) => [s.id, { ...DEFAULT_SHOP_SETTINGS }]),
-  ),
+  shop: clone(MOCK_SHOP_INFO) as ShopInfo,
+  settings: { ...DEFAULT_SHOP_SETTINGS } as ShopSettings,
   departments: clone(MOCK_DEPARTMENTS) as Department[],
   accounts: clone(MOCK_ACCOUNTS) as MockAccount[],
-  categories: menus.flatMap((m) => m.categories),
-  products: menus.flatMap((m) => m.products),
-  combos: menus.flatMap((m) => m.combos),
+  categories,
+  products,
+  combos,
   orders: seedOrders(),
   reviews: clone(seedReviews),
   shifts: clone(MOCK_SHIFT_SEED.shifts) as ShiftRow[],
   assignments: clone(MOCK_SHIFT_SEED.assignments) as AssignmentRow[],
   notifications: [] as NotificationRow[],
   otps: new Map<string, OtpRow>(),
-  dailyCounter: new Map<string, number>([["1:2026-04-10", 8]]),
+  dailyCounter: new Map<string, number>([["2026-04-10", 8]]),
   failedLogins: new Map<number, { count: number; lockedUntil: number }>(),
 };
 
@@ -354,24 +338,9 @@ export function requireActor(roles?: UserRole[]): MockAccount {
   return actor;
 }
 
-/** BR-03: staff and managers only act inside their own shop. */
-export function requireShopStaff(
-  shopId: number,
-  roles: UserRole[] = ["STAFF", "MANAGER"],
-) {
-  const actor = requireActor(roles);
-  if (actor.shopId !== shopId)
-    fail(403, "BR-03", "Bạn chỉ thao tác được trên dữ liệu của quán mình");
-  return actor;
-}
-
 export function toUser(a: MockAccount): User {
   const { password: _, ...user } = a;
   return user;
-}
-
-export function settingsOf(shopId: number): ShopSettings {
-  return db.settings.get(shopId) ?? DEFAULT_SHOP_SETTINGS;
 }
 
 export function notify(

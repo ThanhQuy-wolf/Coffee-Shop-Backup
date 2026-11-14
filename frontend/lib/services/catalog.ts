@@ -8,7 +8,7 @@ import {
   iso,
   mockNow,
   nextId,
-  requireShopStaff,
+  requireActor,
 } from "../mock-data/db";
 import type {
   CategoryInput,
@@ -23,10 +23,12 @@ import type {
 /** "Tất cả" pseudo-category used by the menu filters */
 export const ALL_CATEGORY_ID = 0;
 
-const liveProducts = (shopId: number) =>
-  db.products.filter((p) => p.shopId === shopId && !p.deletedAt);
-const liveCombos = (shopId: number) =>
-  db.combos.filter((c) => c.shopId === shopId && !c.deletedAt);
+const liveProducts = () => db.products.filter((p) => !p.deletedAt);
+const liveCombos = () => db.combos.filter((c) => !c.deletedAt);
+const liveCategories = () =>
+  db.categories
+    .filter((c) => !c.deletedAt)
+    .sort((a, b) => a.sortOrder - b.sortOrder);
 
 function stripDeleted<T extends { deletedAt: string | null }>(row: T) {
   const { deletedAt: _, ...rest } = row;
@@ -67,89 +69,69 @@ function findCombo(id: number) {
 }
 
 /** BR-10, BR-12 */
-function validateProduct(shopId: number, input: ProductInput, selfId?: number) {
+function validateProduct(input: ProductInput, selfId?: number) {
   if (!input.name.trim())
     fail(400, "VALIDATION", "Tên món không được để trống");
   if (!Number.isInteger(input.price) || input.price <= 0)
     fail(422, "BR-10", "Giá bán phải là số nguyên lớn hơn 0");
   if (!Number.isInteger(input.costPrice) || input.costPrice < 0)
     fail(422, "BR-10", "Giá vốn phải là số nguyên không âm");
-  const category = findCategory(input.categoryId);
-  if (category.shopId !== shopId)
-    fail(403, "BR-03", "Danh mục không thuộc quán");
+  findCategory(input.categoryId);
   const name = input.name.trim().toLowerCase();
   if (
-    liveProducts(shopId).some(
-      (p) => p.id !== selfId && p.name.toLowerCase() === name,
-    )
+    liveProducts().some((p) => p.id !== selfId && p.name.toLowerCase() === name)
   )
-    fail(409, "BR-12", "Tên món đã tồn tại trong quán");
+    fail(409, "BR-12", "Tên món đã tồn tại");
 }
 
 /** BR-13 */
-function validateCombo(shopId: number, input: ComboInput) {
+function validateCombo(input: ComboInput) {
   if (!input.name.trim())
     fail(400, "VALIDATION", "Tên combo không được để trống");
   if (!Number.isInteger(input.price) || input.price <= 0)
     fail(422, "BR-10", "Giá combo phải là số nguyên lớn hơn 0");
   const totalQty = input.items.reduce((s, i) => s + i.quantity, 0);
   if (totalQty < 2) fail(422, "BR-13", "Combo phải có ít nhất 2 món");
-  for (const item of input.items) {
-    if (findProduct(item.productId).shopId !== shopId)
-      fail(422, "BR-13", "Món trong combo phải thuộc cùng quán");
-  }
+  for (const item of input.items) findProduct(item.productId);
 }
 
 export const catalogService = {
-  /** S-6 — what customers see: only items on sale (BR-05, BR-13) */
-  async getMenu(shopId: number, q?: string): Promise<Menu> {
+  /** S-6 — what customers see: only items on sale (BR-13) */
+  async getMenu(q?: string): Promise<Menu> {
     await delay();
-    const shop = db.shops.find((s) => s.id === shopId && s.isActive);
-    if (!shop) fail(404, "NOT_FOUND", "Quán không tồn tại hoặc đang tạm đóng");
     const query = q?.trim().toLowerCase() ?? "";
     const match = (x: { name: string; description: string }) =>
       !query ||
       x.name.toLowerCase().includes(query) ||
       x.description.toLowerCase().includes(query);
     return {
-      shop: clone(shop),
-      categories: db.categories
-        .filter((c) => c.shopId === shopId && !c.deletedAt)
-        .sort((a, b) => a.sortOrder - b.sortOrder)
-        .map(stripDeleted),
-      products: liveProducts(shopId)
+      categories: liveCategories().map(stripDeleted),
+      products: liveProducts()
         .filter((p) => p.isAvailable && match(p))
         .map(stripDeleted),
-      combos: liveCombos(shopId)
+      combos: liveCombos()
         .map(toCombo)
         .filter((c) => c.sellable && match(c)),
     };
   },
 
   /** C-1 */
-  async listCategories(shopId: number): Promise<MenuCategory[]> {
+  async listCategories(): Promise<MenuCategory[]> {
     await delay();
-    requireShopStaff(shopId);
-    return db.categories
-      .filter((c) => c.shopId === shopId && !c.deletedAt)
-      .sort((a, b) => a.sortOrder - b.sortOrder)
-      .map((c) => ({
-        ...stripDeleted(c),
-        productCount: liveProducts(shopId).filter((p) => p.categoryId === c.id)
-          .length,
-      }));
+    requireActor(["STAFF", "MANAGER"]);
+    return liveCategories().map((c) => ({
+      ...stripDeleted(c),
+      productCount: liveProducts().filter((p) => p.categoryId === c.id).length,
+    }));
   },
 
   /** C-2 */
-  async createCategory(
-    shopId: number,
-    input: CategoryInput,
-  ): Promise<MenuCategory> {
+  async createCategory(input: CategoryInput): Promise<MenuCategory> {
     await delay();
-    requireShopStaff(shopId, ["MANAGER"]);
+    requireActor(["MANAGER"]);
     if (!input.name.trim())
       fail(400, "VALIDATION", "Tên danh mục không được để trống");
-    const row = { ...input, id: nextId(), shopId, deletedAt: null };
+    const row = { ...input, id: nextId(), deletedAt: null };
     db.categories.push(row);
     return { ...stripDeleted(row), productCount: 0 };
   },
@@ -161,7 +143,7 @@ export const catalogService = {
   ): Promise<MenuCategory> {
     await delay();
     const c = findCategory(id);
-    requireShopStaff(c.shopId, ["MANAGER"]);
+    requireActor(["MANAGER"]);
     Object.assign(c, input);
     return stripDeleted(c);
   },
@@ -170,10 +152,8 @@ export const catalogService = {
   async deleteCategory(id: number): Promise<void> {
     await delay();
     const c = findCategory(id);
-    requireShopStaff(c.shopId, ["MANAGER"]);
-    const count = liveProducts(c.shopId).filter(
-      (p) => p.categoryId === id,
-    ).length;
+    requireActor(["MANAGER"]);
+    const count = liveProducts().filter((p) => p.categoryId === id).length;
     if (count > 0)
       fail(
         422,
@@ -184,24 +164,23 @@ export const catalogService = {
   },
 
   /** C-5 */
-  async listProducts(shopId: number, categoryId?: number): Promise<Product[]> {
+  async listProducts(categoryId?: number): Promise<Product[]> {
     await delay();
-    requireShopStaff(shopId);
-    return liveProducts(shopId)
+    requireActor(["STAFF", "MANAGER"]);
+    return liveProducts()
       .filter((p) => !categoryId || p.categoryId === categoryId)
       .map(stripDeleted);
   },
 
   /** C-6 */
-  async createProduct(shopId: number, input: ProductInput): Promise<Product> {
+  async createProduct(input: ProductInput): Promise<Product> {
     await delay();
-    requireShopStaff(shopId, ["MANAGER"]);
-    validateProduct(shopId, input);
+    requireActor(["MANAGER"]);
+    validateProduct(input);
     const row = {
       ...input,
       name: input.name.trim(),
       id: nextId(),
-      shopId,
       deletedAt: null,
     };
     db.products.push(row);
@@ -212,8 +191,8 @@ export const catalogService = {
   async updateProduct(id: number, input: ProductInput): Promise<Product> {
     await delay();
     const p = findProduct(id);
-    requireShopStaff(p.shopId, ["MANAGER"]);
-    validateProduct(p.shopId, input, id);
+    requireActor(["MANAGER"]);
+    validateProduct(input, id);
     Object.assign(p, input, { name: input.name.trim() });
     return stripDeleted(p);
   },
@@ -225,7 +204,7 @@ export const catalogService = {
   ): Promise<Product> {
     await delay();
     const p = findProduct(id);
-    requireShopStaff(p.shopId);
+    requireActor(["STAFF", "MANAGER"]);
     p.isAvailable = isAvailable;
     return stripDeleted(p);
   },
@@ -234,31 +213,28 @@ export const catalogService = {
   async deleteProduct(id: number): Promise<void> {
     await delay();
     const p = findProduct(id);
-    requireShopStaff(p.shopId, ["MANAGER"]);
-    if (
-      liveCombos(p.shopId).some((c) => c.items.some((i) => i.productId === id))
-    )
+    requireActor(["MANAGER"]);
+    if (liveCombos().some((c) => c.items.some((i) => i.productId === id)))
       fail(422, "BR-13", "Món đang nằm trong combo, hãy gỡ khỏi combo trước");
     if (wasSold("PRODUCT", id)) p.deletedAt = iso(mockNow());
     else db.products.splice(db.products.indexOf(p), 1);
   },
 
   /** C-10 */
-  async listCombos(shopId: number): Promise<Combo[]> {
+  async listCombos(): Promise<Combo[]> {
     await delay();
-    requireShopStaff(shopId);
-    return liveCombos(shopId).map(toCombo);
+    requireActor(["STAFF", "MANAGER"]);
+    return liveCombos().map(toCombo);
   },
 
   /** C-11 */
-  async createCombo(shopId: number, input: ComboInput): Promise<Combo> {
+  async createCombo(input: ComboInput): Promise<Combo> {
     await delay();
-    requireShopStaff(shopId, ["MANAGER"]);
-    validateCombo(shopId, input);
+    requireActor(["MANAGER"]);
+    validateCombo(input);
     const row: ComboRow = {
       ...clone(input),
       id: nextId(),
-      shopId,
       deletedAt: null,
     };
     db.combos.push(row);
@@ -269,8 +245,8 @@ export const catalogService = {
   async updateCombo(id: number, input: ComboInput): Promise<Combo> {
     await delay();
     const c = findCombo(id);
-    requireShopStaff(c.shopId, ["MANAGER"]);
-    validateCombo(c.shopId, input);
+    requireActor(["MANAGER"]);
+    validateCombo(input);
     Object.assign(c, clone(input));
     return toCombo(c);
   },
@@ -279,7 +255,7 @@ export const catalogService = {
   async setComboAvailability(id: number, isAvailable: boolean): Promise<Combo> {
     await delay();
     const c = findCombo(id);
-    requireShopStaff(c.shopId, ["MANAGER"]);
+    requireActor(["MANAGER"]);
     c.isAvailable = isAvailable;
     return toCombo(c);
   },
@@ -288,7 +264,7 @@ export const catalogService = {
   async deleteCombo(id: number): Promise<void> {
     await delay();
     const c = findCombo(id);
-    requireShopStaff(c.shopId, ["MANAGER"]);
+    requireActor(["MANAGER"]);
     if (wasSold("COMBO", id)) c.deletedAt = iso(mockNow());
     else db.combos.splice(db.combos.indexOf(c), 1);
   },

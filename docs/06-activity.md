@@ -7,21 +7,16 @@ Mermaid chưa có loại sơ đồ activity riêng, nên các sơ đồ dưới 
 ```mermaid
 flowchart TD
     subgraph KH["Khách"]
-        A0(("Bắt đầu")) --> A1["Mở /feed, chọn quán"]
+        A0(("Bắt đầu")) --> A1["Mở trang chủ /"]
         A1 --> A2["Xem menu, thêm món vào giỏ"]
-        A2 --> A3{"Giỏ đang chứa món<br/>của quán khác?"}
-        A3 -- "Có" --> A4{"Đồng ý xoá giỏ cũ?"}
-        A4 -- "Không" --> A2
-        A4 -- "Có" --> A5["Xoá giỏ cũ, thêm món mới"]
-        A3 -- "Không" --> A6["Mở /checkout"]
-        A5 --> A6
+        A2 --> A6["Mở /checkout"]
         A6 --> A7["Chọn Tiền mặt hoặc QR,<br/>nhập số bàn, ghi chú"]
         A7 --> A8["Bấm Đặt món"]
         A15["Sửa giỏ theo thông báo"] --> A8
     end
 
     subgraph HT["Hệ thống"]
-        B1{"Quán đang hoạt động<br/>và mọi món đang bán?<br/>(BR-05, BR-21)"}
+        B1{"Mọi món và combo<br/>đang bán?<br/>(BR-21)"}
         B2{"Giá khớp giá hiện tại?<br/>(BR-22)"}
         B3{"Số lượng hợp lệ?<br/>(BR-23)"}
         B4["Tạo đơn PENDING_PAYMENT,<br/>chụp giá vào order_item,<br/>sinh mã đơn (BR-25),<br/>tạo payment PENDING"]
@@ -106,7 +101,7 @@ flowchart TD
     R11 -- "Chưa" --> R8
     R11 -- "Rồi" --> R12["Vô hiệu OTP,<br/>yêu cầu gửi mã mới"] --> R5
     R10 -- "Đúng" --> R13["Tạo app_user CUSTOMER,<br/>đánh dấu OTP đã dùng,<br/>cấp token"]
-    R13 --> R14["Chuyển tới /feed (FR-04)"] --> R99
+    R13 --> R14["Chuyển tới trang chủ / (FR-04)"] --> R99
 ```
 
 ## 4. Đăng ký ca và huỷ đăng ký (UC-20)
@@ -187,7 +182,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    T0(("Mỗi phút")) --> T1["Lấy danh sách quán đang hoạt động<br/>và payment_timeout_minutes"]
+    T0(("Mỗi phút")) --> T1["Đọc payment_timeout_minutes<br/>từ shop_info"]
     T1 --> T2["UPDATE customer_order<br/>SET status = CANCELLED,<br/>cancel_reason = PAYMENT_TIMEOUT,<br/>version = version + 1<br/>WHERE status = PENDING_PAYMENT<br/>AND created_at < now() - timeout<br/>RETURNING id"]
     T2 --> T3{"Có đơn bị huỷ?"}
     T3 -- "Không" --> T9(("Kết thúc"))

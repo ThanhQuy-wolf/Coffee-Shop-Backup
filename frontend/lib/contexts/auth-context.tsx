@@ -28,7 +28,7 @@ const STORAGE_KEY = "coffee-shop-session";
 export function homePathFor(role: UserRole): string {
   if (role === "MANAGER") return "/manager";
   if (role === "STAFF") return "/staff/orders";
-  return "/feed";
+  return "/";
 }
 
 function parseSession(v: unknown): AuthSession | null {

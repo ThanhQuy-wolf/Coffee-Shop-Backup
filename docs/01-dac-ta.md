@@ -2,14 +2,15 @@
 
 ## 1. Tóm tắt
 
-Drinkool là nền tảng đặt đồ uống tại quán. Khách tìm quán, xem menu, tự đặt món trên điện thoại rồi thanh toán bằng tiền mặt hoặc QR. Nhân viên nhận và pha chế đơn, đồng thời tự đăng ký ca làm. Quản lý quán quản lý menu, xếp ca và xem doanh thu, lợi nhuận.
+Drinkool là hệ thống đặt đồ uống cho **một quán cà phê duy nhất**. Khách xem menu, tự đặt món trên điện thoại rồi thanh toán bằng tiền mặt hoặc QR. Nhân viên nhận và pha chế đơn, đồng thời tự đăng ký ca làm. Quản lý (chủ quán) quản lý menu, xếp ca và xem doanh thu, lợi nhuận.
 
-Frontend hiện tại đã có giao diện cho hầu hết các phần trên. Tuy vậy, khi đối chiếu với nghiệp vụ, có bốn lỗ hổng lớn mà tài liệu này phải lấp:
+Hệ thống không có khái niệm nhiều quán: không có danh sách quán, không có `shop_id`, mọi nhân viên và quản lý đều thuộc quán này.
+
+Frontend hiện tại đã có giao diện cho hầu hết các phần trên. Tuy vậy, khi đối chiếu với nghiệp vụ, có ba lỗ hổng lớn mà tài liệu này phải lấp:
 
 1. **Chưa có khái niệm "đơn hàng".** Nút "Tiền mặt" và "QR Code" ở trang thanh toán chỉ mở hộp thoại đánh giá. Không có bản ghi nào được tạo ra, nên trang thống kê doanh thu không có nguồn dữ liệu thật và nhân viên cũng không biết có đơn mới.
 2. **Trạng thái nghỉ phép và vắng mặt đang gắn ở ca, không gắn ở nhân viên.** Một ca có 3 người mà 1 người xin nghỉ thì hiện tại cả ca bị đánh dấu "nghỉ phép". Tài liệu tách thành bảng phân ca (`shift_assignment`).
-3. **Có nhiều quán nhưng chỉ có một menu.** Trang `/feed` liệt kê nhiều quán, nhưng nút "Xem menu" của quán nào cũng dẫn về cùng một menu. Menu, nhân viên, ca và doanh thu phải thuộc về từng quán.
-4. **Thống kê đọc giá nhập và lợi nhuận từ dữ liệu giả.** Muốn tính lợi nhuận đúng thì giá vốn phải được lưu vào từng dòng đơn tại thời điểm bán, vì giá nhập sẽ thay đổi theo thời gian.
+3. **Thống kê đọc giá nhập và lợi nhuận từ dữ liệu giả.** Muốn tính lợi nhuận đúng thì giá vốn phải được lưu vào từng dòng đơn tại thời điểm bán, vì giá nhập sẽ thay đổi theo thời gian.
 
 ## 2. Mục tiêu nghiệp vụ
 
@@ -24,7 +25,7 @@ Frontend hiện tại đã có giao diện cho hầu hết các phần trên. Tu
 
 **Trong phạm vi:**
 - Tài khoản: đăng ký khách bằng số điện thoại và OTP, đăng nhập cho khách, nhân viên và quản lý, đăng xuất.
-- Khám phá quán, xem menu theo quán (món, combo, danh mục), tìm kiếm món.
+- Xem menu của quán (món, combo, danh mục), tìm kiếm món.
 - Giỏ hàng, đặt món, chọn phương thức thanh toán (tiền mặt hoặc QR chuyển khoản), theo dõi trạng thái đơn, lịch sử đơn của khách.
 - Nhân viên xử lý đơn: xác nhận đã thu tiền, pha chế, báo món xong, hoàn tất, huỷ.
 - Đánh giá đơn (1–5 sao và bình luận).
@@ -38,7 +39,7 @@ Frontend hiện tại đã có giao diện cho hầu hết các phần trên. Tu
 - Giao hàng tận nơi.
 - Quản lý kho nguyên liệu.
 - Tính lương, bảo hiểm, thuế. Hệ thống chỉ tổng hợp chi phí ca theo mức lương mỗi ca.
-- Màn hình quản trị nền tảng để tạo quán mới. Quán được tạo bằng script hoặc trực tiếp trong DB (xem A-6).
+- Phục vụ nhiều quán hoặc chuỗi quán. Nếu sau này mở thêm chi nhánh thì phải thêm lại bảng quán và cột `shop_id` cho menu, nhân viên, ca, đơn.
 - Xuất hoá đơn điện tử.
 
 ## 4. Giả định
@@ -51,8 +52,7 @@ Mỗi giả định dưới đây, nếu sai, sẽ làm thay đổi thiết kế
 | A-2 | Khách vãng lai **được** đặt món. Muốn xem lịch sử đơn và đánh giá thì phải đăng nhập | Nếu bắt buộc đăng nhập thì UC-07 thêm bước đăng nhập và `customer_order.customer_id` thành bắt buộc |
 | A-3 | Thanh toán **trả trước**: đơn chỉ được pha chế sau khi nhân viên xác nhận đã thu tiền | Nếu cho trả sau thì máy trạng thái đơn đổi thứ tự (PREPARING trước PAID) |
 | A-4 | Tiền QR được nhân viên **xác nhận thủ công** khi thấy tiền về | Nếu tích hợp cổng thanh toán thì thêm webhook, đối soát và trạng thái PROCESSING |
-| A-5 | Mỗi nhân viên và mỗi quản lý thuộc **đúng một quán**. Một tài khoản khách dùng được ở mọi quán | Nếu một người làm nhiều quán thì cần bảng `shop_member` (nhiều–nhiều) |
-| A-6 | Quán do đội vận hành nền tảng tạo. Quản lý chỉ sửa thông tin quán của mình | Nếu chủ quán tự đăng ký thì thêm luồng onboarding và duyệt quán |
+| A-5 | Hệ thống chỉ phục vụ **một quán**. Thông tin quán là một bản ghi cấu hình duy nhất, được tạo sẵn lúc cài đặt | Nếu mở thêm chi nhánh thì phải thêm bảng `shop` và `shop_id` cho gần như mọi bảng |
 | A-7 | Không có tồn kho: món đang bật bán thì đặt được, không giới hạn số lượng | Nếu cần trừ tồn thì thêm bảng tồn kho và rule giữ chỗ |
 | A-8 | Tiền tệ duy nhất là VND, lưu bằng số nguyên (đồng), không có số lẻ | — |
 | A-9 | Lương ca là **mức cố định mỗi ca** (như frontend hiện tại), không tính theo giờ | Nếu tính theo giờ thì `wage` đổi thành đơn giá giờ và phải chấm giờ vào, giờ ra |
@@ -63,24 +63,22 @@ Mỗi giả định dưới đây, nếu sai, sẽ làm thay đổi thiết kế
 |---|---|
 | Khách vãng lai (Guest) | Chưa đăng nhập |
 | Khách hàng (Customer) | Đã đăng ký bằng số điện thoại |
-| Nhân viên (Staff) | Thuộc một quán, đăng nhập bằng tên đăng nhập |
-| Quản lý (Manager) | Quản lý một quán. Có mọi quyền của nhân viên trong quán đó |
+| Nhân viên (Staff) | Nhân viên của quán, đăng nhập bằng tên đăng nhập |
+| Quản lý (Manager) | Chủ quán hoặc người được giao quản lý quán. Có mọi quyền của nhân viên |
 | Hệ thống (System) | Job nền: huỷ đơn quá hạn thanh toán (BR-28), trả yêu cầu nghỉ chưa duyệt về `REGISTERED` khi ca bắt đầu (BR-48), dọn OTP hết hạn |
 
 | Chức năng | Guest | Customer | Staff | Manager |
 |---|:-:|:-:|:-:|:-:|
-| Xem quán, xem menu | ✓ | ✓ | ✓ | ✓ |
+| Xem thông tin quán, xem menu | ✓ | ✓ | ✓ | ✓ |
 | Đặt món, theo dõi đơn vừa đặt | ✓ | ✓ | – | – |
 | Xem lịch sử đơn của mình, đánh giá | – | ✓ | – | – |
-| Xem và xử lý đơn của quán | – | – | ✓ | ✓ |
+| Xem và xử lý đơn | – | – | ✓ | ✓ |
 | Tạm tắt bán một món khi hết nguyên liệu | – | – | ✓ | ✓ |
 | Huỷ đơn đã thanh toán (hoàn tiền) | – | – | – | ✓ |
 | CRUD danh mục, món, combo; sửa thông tin quán | – | – | – | ✓ |
 | Xem lịch ca, đăng ký ca, xin nghỉ | – | – | ✓ | ✓ |
 | Tạo, sửa, huỷ ca; duyệt nghỉ; chấm công | – | – | – | ✓ |
 | Xem báo cáo doanh thu, lợi nhuận, chi phí ca | – | – | – | ✓ |
-
-Mọi quyền của Staff và Manager chỉ có hiệu lực **trong quán của họ** (BR-03).
 
 ## 6. Yêu cầu chức năng
 
@@ -93,29 +91,30 @@ Mỗi FR truy vết về use case trong [03-usecase.md](03-usecase.md) và về 
 | FR-01 | Khách nhập số điện thoại Việt Nam hợp lệ, nhận OTP và đặt mật khẩu để tạo tài khoản | UC-01 | BR-01, BR-02 |
 | FR-02 | Đăng nhập: khách dùng số điện thoại, nhân viên và quản lý dùng tên đăng nhập. Sai quá P-04 lần thì khoá tạm thời | UC-02 | BR-04 |
 | FR-03 | Đăng xuất, thu hồi phiên | UC-02 | — |
-| FR-04 | Sau khi đăng nhập, mỗi role được đưa về trang chính của mình: Customer về `/feed`, Staff về `/staff/orders`, Manager về `/manager` | UC-02 | — |
+| FR-04 | Sau khi đăng nhập, mỗi role được đưa về trang chính của mình: Customer về trang chủ `/` (menu), Staff về `/staff/orders`, Manager về `/manager` | UC-02 | — |
 
 ### 6.2 Quán và menu
 
 | ID | Yêu cầu | UC | BR |
 |---|---|---|---|
-| FR-05 | Liệt kê các quán đang hoạt động, lọc theo tên và địa chỉ | UC-03 | BR-05 |
-| FR-06 | Xem menu một quán theo danh mục. Chỉ hiện món và combo đang bán, có tìm kiếm theo tên và mô tả | UC-04, UC-06 | BR-10, BR-13 |
+| FR-06 | Xem thông tin quán và menu theo danh mục ngay ở trang chủ. Chỉ hiện món và combo đang bán, có tìm kiếm theo tên và mô tả | UC-04, UC-06 | BR-10, BR-13 |
 | FR-07 | Quản lý thêm, sửa, xoá danh mục (tên, icon, thứ tự) | UC-12 | BR-11 |
 | FR-08 | Quản lý thêm, sửa, xoá món (tên, danh mục, giá bán, giá vốn, ảnh, mô tả) và bật/tắt bán | UC-13 | BR-10, BR-12, BR-14 |
 | FR-09 | Quản lý thêm, sửa, xoá combo gồm ≥ 2 món kèm số lượng, có giá riêng, bật/tắt bán | UC-14 | BR-13, BR-14 |
 | FR-10 | Quản lý sửa thông tin quán: tên, khẩu hiệu, địa chỉ, giờ mở cửa, wifi, mạng xã hội | UC-15 | — |
 
+FR-05 (tìm quán) đã bỏ khi hệ thống chuyển sang một quán. Mã không dùng lại.
+
 ### 6.3 Đặt món và thanh toán
 
 | ID | Yêu cầu | UC | BR |
 |---|---|---|---|
-| FR-11 | Giỏ hàng lưu trên thiết bị, gắn với **một quán**. Thêm món của quán khác thì hệ thống hỏi có xoá giỏ cũ không | UC-05 | BR-20 |
+| FR-11 | Giỏ hàng lưu trên thiết bị: thêm, bớt, đổi số lượng, xoá món | UC-05 | BR-23 |
 | FR-12 | Đặt món: gửi giỏ hàng, phương thức thanh toán và số bàn (tuỳ chọn). Hệ thống kiểm lại giá và tình trạng bán, đóng băng giá vào đơn, rồi trả về mã đơn | UC-07 | BR-21, BR-22, BR-23, BR-24 |
 | FR-13 | Nếu chọn QR, hiện mã QR chuyển khoản kèm số tiền và nội dung là mã đơn | UC-07 | BR-25 |
 | FR-14 | Khách xem trạng thái đơn của mình theo thời gian thực (polling mỗi P-07 giây) | UC-08 | — |
 | FR-15 | Khách đã đăng nhập xem lịch sử đơn | UC-09 | — |
-| FR-16 | Nhân viên xem hàng đợi đơn của quán theo trạng thái | UC-10 | BR-03 |
+| FR-16 | Nhân viên xem hàng đợi đơn theo trạng thái | UC-10 | — |
 | FR-17 | Nhân viên xác nhận đã thu tiền, bắt đầu pha chế, báo xong, hoàn tất đơn | UC-10 | BR-26, BR-27 |
 | FR-18 | Huỷ đơn: khách tự huỷ khi đơn chưa thanh toán. Nhân viên huỷ đơn chưa thanh toán. Chỉ quản lý huỷ được đơn đã thanh toán, kèm lý do | UC-11 | BR-28, BR-29 |
 | FR-19 | Hệ thống tự huỷ đơn chưa thanh toán sau P-06 phút | UC-11 | BR-28 |
@@ -125,7 +124,7 @@ Mỗi FR truy vết về use case trong [03-usecase.md](03-usecase.md) và về 
 | ID | Yêu cầu | UC | BR |
 |---|---|---|---|
 | FR-20 | Khách đánh giá đơn đã hoàn tất của mình: 1–5 sao và bình luận tuỳ chọn, mỗi đơn một lần | UC-16 | BR-30, BR-31 |
-| FR-21 | Quản lý xem danh sách đánh giá và điểm trung bình của quán | UC-17 | — |
+| FR-21 | Quản lý xem danh sách đánh giá và điểm trung bình | UC-17 | — |
 
 ### 6.5 Ca làm
 
@@ -267,9 +266,10 @@ Phân ca ở trạng thái `CANCELLED` hoặc `LEAVE_APPROVED` **trả lại ch�
 
 Xếp theo mức ảnh hưởng tới thiết kế. Trong lúc chờ chốt, thiết kế dùng phương án in đậm.
 
+Q-05 đã bỏ cùng khái niệm nhiều quán. Mã không dùng lại.
+
 1. **Q-01 — Khách có bắt buộc đăng nhập khi đặt món không?** Ảnh hưởng tới UC-07, tới việc `customer_id` có được để trống không, và tới chống spam đơn ảo. *(a) **Không bắt buộc** — (b) Bắt buộc — (c) Bắt buộc từ đơn thứ 2*
 2. **Q-02 — Thanh toán trước hay sau khi pha chế?** Quyết định thứ tự trạng thái đơn. *(a) **Trả trước** — (b) Trả sau, tại bàn — (c) Cả hai, quán tự cấu hình*
 3. **Q-03 — Có cần tích hợp cổng thanh toán QR tự động ở giai đoạn 1 không?** Nếu có thì thêm webhook, đối soát và trạng thái `PROCESSING`. *(a) **Không, xác nhận thủ công** — (b) VietQR kèm webhook ngân hàng — (c) VNPay hoặc MoMo*
 4. **Q-04 — Lương ca tính cố định theo ca hay theo giờ?** Ảnh hưởng tới `shift.wage` và chi phí nhân công. *(a) **Cố định theo ca** — (b) Theo giờ, chấm giờ vào/ra*
-5. **Q-05 — Một nhân viên có làm ở nhiều quán không?** Ảnh hưởng tới `app_user.shop_id`. *(a) **Không** — (b) Có, cần bảng thành viên quán*
-6. **Q-06 — Có cho sửa món trong đơn sau khi đã thanh toán không (đổi món vì hết nguyên liệu)?** Nếu có, cần lệnh sửa dòng đơn, tính chênh lệch và hoàn tiền một phần. *(a) **Không, huỷ đơn rồi đặt lại** — (b) Cho đổi sang món cùng giá — (c) Cho đổi tuỳ ý, xử lý chênh lệch*
+5. **Q-06 — Có cho sửa món trong đơn sau khi đã thanh toán không (đổi món vì hết nguyên liệu)?** Nếu có, cần lệnh sửa dòng đơn, tính chênh lệch và hoàn tiền một phần. *(a) **Không, huỷ đơn rồi đặt lại** — (b) Cho đổi sang món cùng giá — (c) Cho đổi tuỳ ý, xử lý chênh lệch*

@@ -1,6 +1,6 @@
 # Drinkool
 
-Nền tảng đặt đồ uống tại quán: khách tìm quán, đặt món, thanh toán tiền mặt
+Hệ thống đặt đồ uống cho một quán: khách xem menu, đặt món, thanh toán tiền mặt
 hoặc QR; nhân viên xử lý đơn và đăng ký ca; quản lý vận hành thực đơn, ca làm
 và xem báo cáo.
 

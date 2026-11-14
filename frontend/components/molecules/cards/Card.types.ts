@@ -8,11 +8,3 @@ export interface ProductCardProps {
   badge?: string;
   onBuy?: () => void;
 }
-
-export interface ShopCardProps {
-  id: number;
-  name: string;
-  address: string;
-  image: string;
-  onClick?: () => void;
-}

@@ -1,6 +1,5 @@
 "use client";
 
-import { useManager } from "@/lib/contexts/manager-context";
 import { reviewService } from "@/lib/services";
 import type { ReviewList } from "@/lib/types";
 import { errorMessage } from "@/lib/utils/errors";
@@ -9,9 +8,8 @@ import { useEffect, useState } from "react";
 
 const PAGE_SIZE = 10;
 
-/** UC-17: R-2 xem đánh giá của quán */
+/** UC-17: R-2 xem đánh giá */
 export default function ReviewsTab() {
-  const { shopId } = useManager();
   const [rating, setRating] = useState(0);
   const [page, setPage] = useState(1);
   const [data, setData] = useState<ReviewList | null>(null);
@@ -19,13 +17,13 @@ export default function ReviewsTab() {
 
   useEffect(() => {
     reviewService
-      .listByShop(shopId, {
+      .list({
         rating: rating || undefined,
         page,
         size: PAGE_SIZE,
       })
       .then(setData, (err) => setError(errorMessage(err)));
-  }, [shopId, rating, page]);
+  }, [rating, page]);
 
   if (error)
     return (

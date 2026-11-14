@@ -6,7 +6,7 @@ import { ALL_CATEGORY_ID } from "../services/catalog";
 import type { MenuCategory } from "../types";
 
 interface MenuContextType {
-  /** Categories of the shop being viewed, "Tất cả" first */
+  /** Menu categories, "Tất cả" first */
   menuCategories: MenuCategory[];
   activeCategory: number;
   setActiveCategory: (id: number) => void;
@@ -18,10 +18,9 @@ const MenuContext = createContext<MenuContextType>({
   setActiveCategory: () => {},
 });
 
-export function allCategory(shopId: number): MenuCategory {
+export function allCategory(): MenuCategory {
   return {
     id: ALL_CATEGORY_ID,
-    shopId,
     name: "Tất cả",
     icon: "fa-solid fa-border-all",
     sortOrder: 0,
@@ -30,7 +29,7 @@ export function allCategory(shopId: number): MenuCategory {
 
 /**
  * Shares the selected category between the desktop sidebar and the mobile
- * tabs of one shop's menu page.
+ * tabs of the menu page.
  */
 export function MenuProvider({
   categories,
@@ -41,7 +40,7 @@ export function MenuProvider({
 }) {
   const [activeCategory, setActiveCategory] = useState(ALL_CATEGORY_ID);
   const menuCategories = categories.length
-    ? [allCategory(categories[0].shopId), ...categories]
+    ? [allCategory(), ...categories]
     : [];
 
   return (

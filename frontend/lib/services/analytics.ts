@@ -7,7 +7,7 @@ import {
   MOCK_REVENUE_WEEKLY,
   MOCK_REVENUE_YEARLY,
 } from "../mock-data/analytics";
-import { clone, db, delay, requireShopStaff } from "../mock-data/db";
+import { clone, db, delay, requireActor } from "../mock-data/db";
 import type {
   AnalyticsPeriod,
   AssignmentStatus,
@@ -65,12 +65,9 @@ function marginRatio() {
 
 export const analyticsService = {
   /** RP-1 — BR-50, BR-51, BR-53 */
-  async getSummary(
-    shopId: number,
-    period: AnalyticsPeriod,
-  ): Promise<ReportSummary> {
+  async getSummary(period: AnalyticsPeriod): Promise<ReportSummary> {
     await delay();
-    requireShopStaff(shopId, ["MANAGER"]);
+    requireActor(["MANAGER"]);
     const { currentHalf, previousHalf } = halves(period);
     const ratio = marginRatio();
     const revenue = compare(
@@ -93,12 +90,9 @@ export const analyticsService = {
   },
 
   /** RP-2 */
-  async getRevenue(
-    shopId: number,
-    period: AnalyticsPeriod,
-  ): Promise<RevenueReport> {
+  async getRevenue(period: AnalyticsPeriod): Promise<RevenueReport> {
     await delay();
-    requireShopStaff(shopId, ["MANAGER"]);
+    requireActor(["MANAGER"]);
     const byCategory = new Map<number, number>();
     MOCK_PRODUCT_SALES.forEach((p) =>
       byCategory.set(
@@ -119,12 +113,9 @@ export const analyticsService = {
   },
 
   /** RP-3 */
-  async getProductSales(
-    shopId: number,
-    categoryId?: number,
-  ): Promise<ProductSalesStats[]> {
+  async getProductSales(categoryId?: number): Promise<ProductSalesStats[]> {
     await delay();
-    requireShopStaff(shopId, ["MANAGER"]);
+    requireActor(["MANAGER"]);
     return clone(
       MOCK_PRODUCT_SALES.filter(
         (p) => !categoryId || p.categoryId === categoryId,
@@ -133,12 +124,9 @@ export const analyticsService = {
   },
 
   /** RP-4 — BR-52 */
-  async getLaborCost(
-    shopId: number,
-    weekStart: Date,
-  ): Promise<LaborCostReport> {
+  async getLaborCost(weekStart: Date): Promise<LaborCostReport> {
     await delay(60);
-    requireShopStaff(shopId, ["MANAGER"]);
+    requireActor(["MANAGER"]);
     const dates = Array.from({ length: 7 }, (_, i) => {
       const d = new Date(weekStart);
       d.setDate(d.getDate() + i);
@@ -146,8 +134,7 @@ export const analyticsService = {
     });
     const byDepartment = new Map<number, number>();
     for (const s of db.shifts) {
-      if (s.shopId !== shopId || s.status !== "OPEN" || !dates.includes(s.date))
-        continue;
+      if (s.status !== "OPEN" || !dates.includes(s.date)) continue;
       const paid = db.assignments.filter(
         (a) => a.shiftId === s.id && PAID_STATUSES.includes(a.status),
       ).length;
@@ -156,13 +143,11 @@ export const analyticsService = {
         (byDepartment.get(s.departmentId) ?? 0) + s.wage * paid,
       );
     }
-    const rows = db.departments
-      .filter((d) => d.shopId === shopId)
-      .map((d) => ({
-        departmentId: d.id,
-        name: d.name,
-        total: byDepartment.get(d.id) ?? 0,
-      }));
+    const rows = db.departments.map((d) => ({
+      departmentId: d.id,
+      name: d.name,
+      total: byDepartment.get(d.id) ?? 0,
+    }));
     return {
       weekStart: dates[0],
       total: rows.reduce((s, r) => s + r.total, 0),

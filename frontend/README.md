@@ -7,7 +7,8 @@ React 19, TypeScript và Tailwind CSS v4.
 
 ## Mô Tả Dự Án
 
-Frontend của Drinkool, nền tảng đặt đồ uống tại quán. Đặc tả nghiệp vụ, ERD,
+Frontend của Drinkool, hệ thống đặt đồ uống cho **một quán duy nhất** (không có
+`shopId`, mọi nhân viên và quản lý thuộc quán này). Đặc tả nghiệp vụ, ERD,
 bảng API và sơ đồ nằm ở `../docs/`. Frontend bám theo đặc tả đó:
 
 - `lib/types.ts` khớp ERD (`docs/04-erd.md`).
@@ -19,7 +20,7 @@ bảng API và sơ đồ nằm ở `../docs/`. Frontend bám theo đặc tả đ
 
 | Vai trò | Màn hình | Chức năng |
 |---|---|---|
-| Khách (không cần tài khoản) | `/feed`, `/shops/[id]`, `/checkout`, `/orders/[id]` | Tìm quán, xem menu, giỏ hàng một quán, đặt món tiền mặt hoặc QR, theo dõi đơn, huỷ đơn chưa thanh toán, đặt lại khi đơn hết hạn |
+| Khách (không cần tài khoản) | `/`, `/checkout`, `/orders/[id]` | Xem thông tin quán và menu ở trang chủ, giỏ hàng, đặt món tiền mặt hoặc QR, theo dõi đơn, huỷ đơn chưa thanh toán, đặt lại khi đơn hết hạn |
 | Khách có tài khoản | thêm `/register`, `/orders` | Đăng ký bằng OTP, lịch sử đơn, đánh giá đơn đã hoàn tất |
 | Nhân viên | `/staff/orders`, `/staff/schedule` | Xác nhận thanh toán, pha chế, giao món, huỷ đơn chưa thanh toán; đăng ký ca, huỷ ca, xin nghỉ |
 | Quản lý | thêm `/manager`, `/manager/analytics` | CRUD món, combo, danh mục; thông tin quán và tham số; xem đánh giá; tạo, sửa, huỷ ca, duyệt nghỉ, chấm công; huỷ đơn đã thanh toán; thống kê doanh thu, lợi nhuận |
@@ -89,8 +90,7 @@ pnpm release
 ```
 frontend/
 +-- app/            # Route (bảng đầy đủ: app/APP.md)
-|   +-- (main)/     # /, /shops/[shopId], /checkout, /orders, /orders/[orderId], /login, /register
-|   +-- (feed)/     # /feed
+|   +-- (main)/     # / (menu), /checkout, /orders, /orders/[orderId], /login, /register
 |   +-- (staff)/    # /staff/orders, /staff/schedule
 |   +-- (manager)/  # /manager, /manager/analytics
 +-- components/     # Atomic Design: atoms, molecules, organisms, templates (COMPONENTS.md)
@@ -143,11 +143,11 @@ frontend/
 Dự án tuân theo **Atomic Design** pattern — chi tiết tại `Atomic.md`:
 
 - **Atoms** - Nguyên tố cơ bản: Button, Input, Badge, Text, Heading, Divider
-- **Molecules** - Nhóm atoms: ProductCard, ShopCard, ShiftCard, SearchBar,
+- **Molecules** - Nhóm atoms: ProductCard, ShiftCard, SearchBar,
   Modal, NotificationBell
 - **Organisms** - Phần UI phức tạp: CategorySidebar, CartFab, ProductGrid,
-  ShopGrid, ReviewModal, analytics charts, manager tabs/modals
-- **Templates** - Bố cục trang: MainLayout, AuthLayout, FeedLayout,
+  ReviewModal, analytics charts, manager tabs/modals
+- **Templates** - Bố cục trang: MainLayout, AuthLayout,
   ManagerLayout
 
 ### Data & Integration

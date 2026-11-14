@@ -2,13 +2,13 @@
 
 ```
 layouts/
-├── header.tsx   # Sticky top bar: platform brand, role links, notifications, account
-└── footer.tsx   # Platform info and social links
+├── header.tsx   # Sticky top bar: brand, role links, notifications, account
+└── footer.tsx   # Shop contact details and social links (S-2)
 ```
 
-Both show the **platform** (Drinkool, `PLATFORM_INFO` in `lib/constants.ts`).
-A shop's own name, address, opening hours and WiFi are shown on its menu page
-(`/shops/[shopId]`), because the platform hosts many shops.
+The system serves one shop. The header shows the app brand (`BRAND` in
+`lib/constants.ts`). The footer and the home page `/` show the shop's own
+name, address, opening hours and WiFi from `shopService.get()` (`shop_info`).
 
 ## Header
 
@@ -25,12 +25,12 @@ are hidden below `lg`, the name below `md`; icons stay.
 
 ## Footer
 
-Brand, support phone and email from `PLATFORM_INFO`, social links from
-`SOCIAL_LINKS`, and the copyright bar. It stacks to one column on mobile.
+Shop name, tagline, address, opening hours, phone, email and social links from
+`shopService.get()`, and the copyright bar. Until the data loads it shows only
+the brand. It stacks to one column on mobile.
 
 ## Where they are mounted
 
 - `(main)` routes: `MainLayout` (Header, Footer, CartFab).
-- `(feed)` routes: `FeedLayout` (Header, CartFab).
 - `/staff/orders`: renders `Header` itself. The schedule and manager pages use
   their own sidebars and headers.

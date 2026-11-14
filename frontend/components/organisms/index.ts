@@ -15,8 +15,6 @@ export { ReviewModal } from "./modals";
 export type { ReviewModalProps } from "./modals";
 
 // Shop Grid
-export { ShopGrid } from "./shop-grid";
-export type { ShopGridProps } from "./shop-grid";
 
 // Manager
 export {

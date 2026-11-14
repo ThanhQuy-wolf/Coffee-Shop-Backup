@@ -2,7 +2,6 @@ import type { AssignmentStatus } from "../types";
 
 export interface ShiftRow {
   id: number;
-  shopId: number;
   departmentId: number;
   date: string;
   startTime: string;
@@ -37,7 +36,7 @@ const STAFF = [
 ];
 
 /**
- * Shifts of shop 1 from Mon 6/4 to Sun 26/4/2026, around the mock "today"
+ * Shifts from Mon 6/4 to Sun 26/4/2026, around the mock "today"
  * (10/04/2026). Each staff member is only placed in their own department, so
  * the seed never breaks BR-45 or BR-46.
  */
@@ -59,7 +58,6 @@ function generate() {
         shiftId++;
         shifts.push({
           id: shiftId,
-          shopId: 1,
           departmentId,
           date,
           startTime: slot.start,

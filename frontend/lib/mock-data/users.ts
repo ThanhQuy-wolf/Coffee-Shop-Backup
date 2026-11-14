@@ -14,7 +14,6 @@ export const MOCK_ACCOUNTS: MockAccount[] = [
     phone: null,
     password: "admin",
     avatarUrl: null,
-    shopId: 1,
     departmentId: null,
   },
   {
@@ -25,7 +24,6 @@ export const MOCK_ACCOUNTS: MockAccount[] = [
     phone: null,
     password: "123456",
     avatarUrl: null,
-    shopId: 1,
     departmentId: 1,
   },
   {
@@ -36,7 +34,6 @@ export const MOCK_ACCOUNTS: MockAccount[] = [
     phone: null,
     password: "123456",
     avatarUrl: null,
-    shopId: 1,
     departmentId: 3,
   },
   {
@@ -47,7 +44,6 @@ export const MOCK_ACCOUNTS: MockAccount[] = [
     phone: null,
     password: "123456",
     avatarUrl: null,
-    shopId: 1,
     departmentId: 2,
   },
   {
@@ -58,7 +54,6 @@ export const MOCK_ACCOUNTS: MockAccount[] = [
     phone: "0987654321",
     password: "user1",
     avatarUrl: null,
-    shopId: null,
     departmentId: null,
   },
 ];

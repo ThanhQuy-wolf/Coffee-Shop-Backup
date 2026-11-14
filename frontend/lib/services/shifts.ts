@@ -8,9 +8,7 @@ import {
   nextId,
   notify,
   requireActor,
-  requireShopStaff,
   runJobs,
-  settingsOf,
   shiftStart,
 } from "../mock-data/db";
 import type { AssignmentRow, ShiftRow } from "../mock-data/shifts";
@@ -96,7 +94,7 @@ function hasStarted(s: ShiftRow) {
 }
 
 /** BR-40, BR-41 */
-function validateShift(shopId: number, input: ShiftInput) {
+function validateShift(input: ShiftInput) {
   if (!input.date || !input.startTime || !input.endTime)
     fail(400, "VALIDATION", "Vui lòng điền đầy đủ ngày và giờ");
   if (timeToMinutes(input.endTime) <= timeToMinutes(input.startTime))
@@ -113,12 +111,8 @@ function validateShift(shopId: number, input: ShiftInput) {
     fail(422, "BR-41", "Số người tối đa từ 1 đến 20");
   if (!Number.isInteger(input.wage) || input.wage <= 0)
     fail(422, "BR-41", "Lương mỗi ca phải lớn hơn 0");
-  if (
-    !db.departments.some(
-      (d) => d.id === input.departmentId && d.shopId === shopId,
-    )
-  )
-    fail(422, "VALIDATION", "Bộ phận không thuộc quán");
+  if (!db.departments.some((d) => d.id === input.departmentId))
+    fail(422, "VALIDATION", "Bộ phận không tồn tại");
 }
 
 export const shiftService = {
@@ -128,18 +122,18 @@ export const shiftService = {
   },
 
   /** W-1 */
-  async listDepartments(shopId: number): Promise<Department[]> {
+  async listDepartments(): Promise<Department[]> {
     await delay(60);
-    requireShopStaff(shopId);
-    return clone(db.departments.filter((d) => d.shopId === shopId));
+    requireActor(["STAFF", "MANAGER"]);
+    return clone(db.departments);
   },
 
   /** W-2 */
-  async listStaff(shopId: number): Promise<StaffMember[]> {
+  async listStaff(): Promise<StaffMember[]> {
     await delay(60);
-    requireShopStaff(shopId, ["MANAGER"]);
+    requireActor(["MANAGER"]);
     return db.accounts
-      .filter((a) => a.shopId === shopId)
+      .filter((a) => a.role !== "CUSTOMER")
       .map((a) => ({
         id: a.id,
         fullName: a.fullName,
@@ -149,17 +143,17 @@ export const shiftService = {
   },
 
   /** W-3 */
-  async listShifts(
-    shopId: number,
-    filter: { from: string; to: string; departmentId?: number },
-  ): Promise<Shift[]> {
+  async listShifts(filter: {
+    from: string;
+    to: string;
+    departmentId?: number;
+  }): Promise<Shift[]> {
     await delay();
     runJobs();
-    requireShopStaff(shopId);
+    requireActor(["STAFF", "MANAGER"]);
     return db.shifts
       .filter(
         (s) =>
-          s.shopId === shopId &&
           s.date >= filter.from &&
           s.date <= filter.to &&
           (!filter.departmentId || s.departmentId === filter.departmentId),
@@ -168,14 +162,13 @@ export const shiftService = {
   },
 
   /** W-4 */
-  async createShift(shopId: number, input: ShiftInput): Promise<Shift> {
+  async createShift(input: ShiftInput): Promise<Shift> {
     await delay();
-    requireShopStaff(shopId, ["MANAGER"]);
-    validateShift(shopId, input);
+    requireActor(["MANAGER"]);
+    validateShift(input);
     const row: ShiftRow = {
       ...input,
       id: nextId(),
-      shopId,
       status: "OPEN",
       version: 1,
     };
@@ -190,13 +183,13 @@ export const shiftService = {
   ): Promise<Shift> {
     await delay();
     const s = findShift(id);
-    requireShopStaff(s.shopId, ["MANAGER"]);
+    requireActor(["MANAGER"]);
     if (s.version !== input.version)
       fail(409, "BR-27", "Ca vừa được người khác cập nhật", {
         currentVersion: s.version,
       });
     if (s.status === "CANCELLED") fail(409, "ORDER_STATE", "Ca đã bị huỷ");
-    validateShift(s.shopId, input);
+    validateShift(input);
     const holders = db.assignments.filter(
       (a) => a.shiftId === id && occupies(a),
     );
@@ -230,7 +223,7 @@ export const shiftService = {
   ): Promise<Shift> {
     await delay();
     const s = findShift(id);
-    requireShopStaff(s.shopId, ["MANAGER"]);
+    requireActor(["MANAGER"]);
     if (s.version !== body.version)
       fail(409, "BR-27", "Ca vừa được người khác cập nhật", {
         currentVersion: s.version,
@@ -255,8 +248,8 @@ export const shiftService = {
   async register(shiftId: number): Promise<Shift> {
     await delay();
     const s = findShift(shiftId);
-    const actor = requireShopStaff(s.shopId);
-    const settings = settingsOf(s.shopId);
+    const actor = requireActor(["STAFF", "MANAGER"]);
+    const settings = db.settings;
     const startsIn = shiftStart(s).getTime() - mockNow().getTime();
     if (s.status !== "OPEN" || startsIn <= 0)
       fail(422, "BR-46", "Chỉ đăng ký được ca đang mở và chưa bắt đầu");
@@ -304,7 +297,7 @@ export const shiftService = {
   async unregister(shiftId: number): Promise<Shift> {
     await delay();
     const s = findShift(shiftId);
-    const actor = requireShopStaff(s.shopId);
+    const actor = requireActor(["STAFF", "MANAGER"]);
     const mine = db.assignments.find(
       (a) =>
         a.shiftId === shiftId &&
@@ -312,7 +305,7 @@ export const shiftService = {
         a.status === "REGISTERED",
     );
     if (!mine) fail(404, "NOT_FOUND", "Bạn chưa đăng ký ca này");
-    const hours = settingsOf(s.shopId).shiftCancelHours;
+    const hours = db.settings.shiftCancelHours;
     if (shiftStart(s).getTime() - mockNow().getTime() < hours * 3_600_000)
       fail(
         422,
@@ -342,7 +335,7 @@ export const shiftService = {
   async decideLeave(assignmentId: number, approve: boolean): Promise<Shift> {
     await delay();
     const { assignment, shift } = findAssignment(assignmentId);
-    requireShopStaff(shift.shopId, ["MANAGER"]);
+    requireActor(["MANAGER"]);
     if (assignment.status !== "LEAVE_REQUESTED" || hasStarted(shift))
       fail(422, "BR-48", "Yêu cầu nghỉ không còn chờ duyệt");
     assignment.status = approve ? "LEAVE_APPROVED" : "REGISTERED";
@@ -361,10 +354,10 @@ export const shiftService = {
   ): Promise<Shift> {
     await delay();
     const { assignment, shift } = findAssignment(assignmentId);
-    requireShopStaff(shift.shopId, ["MANAGER"]);
+    requireActor(["MANAGER"]);
     if (!hasStarted(shift))
       fail(422, "BR-49", "Chỉ chấm công được sau khi ca bắt đầu");
-    const days = settingsOf(shift.shopId).attendanceEditDays;
+    const days = db.settings.attendanceEditDays;
     if (mockNow().getTime() - shiftStart(shift).getTime() > days * 86_400_000)
       fail(422, "BR-49", `Chỉ sửa chấm công được trong ${days} ngày`);
     if (!["REGISTERED", "ATTENDED", "ABSENT"].includes(assignment.status))
@@ -377,7 +370,7 @@ export const shiftService = {
   async removeAssignment(assignmentId: number): Promise<Shift> {
     await delay();
     const { assignment, shift } = findAssignment(assignmentId);
-    requireShopStaff(shift.shopId, ["MANAGER"]);
+    requireActor(["MANAGER"]);
     if (!occupies(assignment) || hasStarted(shift))
       fail(422, "BR-42", "Chỉ gỡ được người khỏi ca chưa bắt đầu");
     assignment.status = "CANCELLED";

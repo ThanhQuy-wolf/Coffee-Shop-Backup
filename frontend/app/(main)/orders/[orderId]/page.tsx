@@ -73,7 +73,7 @@ export default function OrderPage() {
       <div className="mx-auto max-w-lg px-4 py-24 text-center">
         <i className="fa-solid fa-receipt mb-4 text-5xl text-(--color-border)"></i>
         <p className="text-foreground mb-4 font-semibold">{loadError}</p>
-        <Link href="/feed" className="text-(--color-primary) hover:underline">
+        <Link href="/" className="text-(--color-primary) hover:underline">
           Về trang chủ
         </Link>
       </div>
@@ -121,8 +121,6 @@ export default function OrderPage() {
 
   const reorder = () => {
     loadCart({
-      shopId: order.shopId,
-      shopName: order.shopName,
       lines: order.items.map(({ type, id, name, unitPrice, quantity }) => ({
         type,
         id,
@@ -141,9 +139,6 @@ export default function OrderPage() {
       <div className="bg-card rounded-2xl border border-(--color-border-light) p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-sm text-(--color-text-muted)">
-              {order.shopName}
-            </p>
             <h1 className="text-foreground text-2xl font-bold tracking-wide">
               {order.code}
             </h1>

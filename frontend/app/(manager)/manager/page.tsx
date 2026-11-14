@@ -148,7 +148,7 @@ export default function ManagerPage() {
           </div>
           <div className="mt-1 flex gap-2 px-1">
             <Link
-              href="/feed"
+              href="/"
               className="hover:bg-background flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-(--color-border-light) bg-transparent py-2 text-xs font-medium text-(--color-text-secondary) no-underline transition"
             >
               <i className="fa-solid fa-house"></i>
@@ -157,7 +157,7 @@ export default function ManagerPage() {
             <button
               onClick={() => {
                 logout();
-                router.push("/feed");
+                router.push("/");
               }}
               className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border-none bg-transparent py-2 text-xs font-medium text-red-500 transition hover:bg-red-50"
             >
@@ -219,7 +219,7 @@ export default function ManagerPage() {
               Thống kê tài chính
             </Link>
             <Link
-              href="/feed"
+              href="/"
               className="hover:bg-background flex items-center gap-1.5 rounded-xl border border-(--color-border-light) bg-transparent px-3 py-2 text-xs font-medium text-(--color-text-secondary) no-underline transition"
             >
               <i className="fa-solid fa-house"></i>

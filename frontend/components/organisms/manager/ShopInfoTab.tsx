@@ -1,15 +1,14 @@
 "use client";
 
-import { useManager } from "@/lib/contexts/manager-context";
 import { shopService } from "@/lib/services";
-import type { ShopSettings, ShopUpdate } from "@/lib/types";
+import type { ShopInfo, ShopSettings } from "@/lib/types";
 import { errorMessage } from "@/lib/utils/errors";
 import { type FormEvent, useEffect, useState } from "react";
 
 import { inputCls, labelCls } from "./useSaveForm";
 
 const SHOP_FIELDS: {
-  key: keyof Omit<ShopUpdate, "socialLinks">;
+  key: keyof Omit<ShopInfo, "socialLinks">;
   label: string;
   wide?: boolean;
 }[] = [
@@ -77,32 +76,28 @@ function StatusLine({ status }: { status: Status }) {
   );
 }
 
-/** UC-15: S-3/S-4 thông tin quán, S-5 tham số nghiệp vụ */
+/** UC-15: S-2/S-3 thông tin quán, S-4/S-5 tham số nghiệp vụ */
 export default function ShopInfoTab() {
-  const { shopId } = useManager();
-  const [shop, setShop] = useState<ShopUpdate | null>(null);
+  const [shop, setShop] = useState<ShopInfo | null>(null);
   const [settings, setSettings] = useState<ShopSettings | null>(null);
   const [shopStatus, setShopStatus] = useState<Status>(null);
   const [settingsStatus, setSettingsStatus] = useState<Status>(null);
 
   useEffect(() => {
-    Promise.all([
-      shopService.get(shopId),
-      shopService.getSettings(shopId),
-    ]).then(
-      ([{ id: _i, code: _c, isActive: _a, ...editable }, s]) => {
-        setShop(editable);
+    Promise.all([shopService.get(), shopService.getSettings()]).then(
+      ([info, s]) => {
+        setShop(info);
         setSettings(s);
       },
       (err) => setShopStatus({ tone: "error", text: errorMessage(err) }),
     );
-  }, [shopId]);
+  }, []);
 
   const saveShop = async (e: FormEvent) => {
     e.preventDefault();
     if (!shop) return;
     try {
-      await shopService.update(shopId, shop);
+      await shopService.update(shop);
       setShopStatus({ tone: "ok", text: "Đã lưu thông tin quán." });
     } catch (err) {
       setShopStatus({ tone: "error", text: errorMessage(err) });
@@ -113,7 +108,7 @@ export default function ShopInfoTab() {
     e.preventDefault();
     if (!settings) return;
     try {
-      await shopService.updateSettings(shopId, settings);
+      await shopService.updateSettings(settings);
       setSettingsStatus({
         tone: "ok",
         text: "Đã lưu. Tham số mới áp dụng cho đơn và ca tạo từ bây giờ.",

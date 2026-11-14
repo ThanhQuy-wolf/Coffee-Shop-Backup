@@ -31,10 +31,10 @@ Tất cả sơ đồ đều viết bằng [Mermaid](https://mermaid.js.org/), n�
 
 | Thuật ngữ | Nghĩa trong hệ thống |
 |---|---|
-| Quán (shop) | Một cửa hàng đồ uống trên nền tảng Drinkool. Mỗi quán có menu, nhân viên và quản lý riêng |
+| Quán (shop) | Cửa hàng đồ uống duy nhất mà hệ thống phục vụ. Thông tin quán nằm trong bảng `shop_info` một dòng |
 | Khách vãng lai | Người chưa đăng nhập. Được xem menu và đặt món, nhưng không xem được lịch sử đơn và không đánh giá được |
 | Món (product) | Một đồ uống hoặc đồ ăn bán lẻ, thuộc đúng một danh mục |
 | Combo | Gói nhiều món, có giá riêng |
-| Đơn (order) | Một lần đặt món tại một quán. Giá được "đóng băng" vào đơn tại thời điểm đặt |
+| Đơn (order) | Một lần đặt món tại quán. Giá được "đóng băng" vào đơn tại thời điểm đặt |
 | Ca (shift) | Một khung giờ làm việc của một bộ phận trong một ngày, có số người tối đa và mức lương mỗi ca |
 | Phân ca (shift assignment) | Việc một nhân viên đăng ký vào một ca. Trạng thái nghỉ phép và vắng mặt nằm ở đây, không nằm ở ca |

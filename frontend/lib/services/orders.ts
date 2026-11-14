@@ -12,9 +12,7 @@ import {
   nextId,
   randomToken,
   requireActor,
-  requireShopStaff,
   runJobs,
-  settingsOf,
 } from "../mock-data/db";
 import type { MockAccount } from "../mock-data/users";
 import type {
@@ -44,12 +42,10 @@ function toOrder(
     items,
     ...rest
   } = row;
-  const shop = db.shops.find((s) => s.id === row.shopId);
   const customer = db.accounts.find((a) => a.id === row.customerId);
   const isOwner = !!viewer && viewer.id === row.customerId;
   return clone({
     ...rest,
-    shopName: shop?.name ?? "",
     customerPhone: isOwner
       ? (customer?.phone ?? null)
       : maskPhone(customer?.phone ?? null),
@@ -67,17 +63,14 @@ function findOrder(id: number): OrderRow {
 }
 
 /**
- * Who may read an order: its customer, the guest holding its token, or staff
- * of its shop. A wrong guest token gets 404 so it does not reveal the order.
+ * Who may read an order: its customer, the guest holding its token, or any
+ * staff member. A wrong guest token gets 404 so it does not reveal the order.
  */
 function authorizeRead(o: OrderRow, guestToken?: string): MockAccount | null {
   const actor = currentActor();
   if (actor?.role === "CUSTOMER" && actor.id === o.customerId) return actor;
-  if (actor && actor.role !== "CUSTOMER" && actor.shopId === o.shopId)
-    return actor;
+  if (actor && actor.role !== "CUSTOMER") return actor;
   if (guestToken && o.guestToken === guestToken) return actor;
-  if (actor && actor.role !== "CUSTOMER")
-    fail(403, "BR-03", "Đơn không thuộc quán của bạn");
   fail(404, "NOT_FOUND", "Không tìm thấy đơn");
 }
 
@@ -98,16 +91,16 @@ function transition(
   o.version++;
 }
 
-function nextOrderCode(shopId: number) {
-  const shop = db.shops.find((s) => s.id === shopId)!;
+/** BR-25: DH-YYMMDD-NNNN, counted per business day */
+function nextOrderCode() {
   const now = mockNow();
   const y = now.getFullYear().toString().slice(2);
   const m = (now.getMonth() + 1).toString().padStart(2, "0");
   const d = now.getDate().toString().padStart(2, "0");
-  const key = `${shopId}:${now.getFullYear()}-${m}-${d}`;
+  const key = `${now.getFullYear()}-${m}-${d}`;
   const seq = (db.dailyCounter.get(key) ?? 0) + 1;
   db.dailyCounter.set(key, seq);
-  return `${shop.code}-${y}${m}${d}-${seq.toString().padStart(4, "0")}`;
+  return `DH-${y}${m}${d}-${seq.toString().padStart(4, "0")}`;
 }
 
 export const orderService = {
@@ -118,7 +111,6 @@ export const orderService = {
 
   /** O-1 — idempotent by Idempotency-Key (BR-24) */
   async create(
-    shopId: number,
     req: CreateOrderRequest,
     idempotencyKey: string,
   ): Promise<Order> {
@@ -133,18 +125,14 @@ export const orderService = {
       );
 
     const fingerprint = JSON.stringify(req);
-    const existing = db.orders.find(
-      (o) => o.shopId === shopId && o.idempotencyKey === idempotencyKey,
-    );
+    const existing = db.orders.find((o) => o.idempotencyKey === idempotencyKey);
     if (existing) {
       if (existing.requestFingerprint !== fingerprint)
         fail(422, "BR-24", "Khoá đặt món đã dùng cho một giỏ hàng khác");
       return toOrder(existing, actor, true);
     }
 
-    const shop = db.shops.find((s) => s.id === shopId);
-    if (!shop || !shop.isActive) fail(422, "BR-05", "Quán đang tạm đóng");
-    const settings = settingsOf(shopId);
+    const settings = db.settings;
     if (req.items.length === 0) fail(422, "BR-23", "Giỏ hàng đang trống");
 
     const unavailable: { itemType: string; id: number; reason: string }[] = [];
@@ -169,7 +157,7 @@ export const orderService = {
 
       if (item.type === "PRODUCT") {
         const p = db.products.find((x) => x.id === item.id && !x.deletedAt);
-        if (!p || p.shopId !== shopId || !p.isAvailable) {
+        if (!p || !p.isAvailable) {
           unavailable.push({
             itemType: "PRODUCT",
             id: item.id,
@@ -202,7 +190,7 @@ export const orderService = {
           !!c &&
           c.isAvailable &&
           !!parts?.every((p) => p && !p.deletedAt && p.isAvailable);
-        if (!c || c.shopId !== shopId || !sellable) {
+        if (!c || !sellable) {
           unavailable.push({
             itemType: "COMBO",
             id: item.id,
@@ -247,13 +235,12 @@ export const orderService = {
       });
 
     const now = mockNow();
-    const code = nextOrderCode(shopId);
+    const code = nextOrderCode();
     const total = lines.reduce((s, l) => s + l.lineTotal, 0);
     const isCustomer = actor?.role === "CUSTOMER";
     const row: OrderRow = {
       id: nextId(),
       code,
-      shopId,
       status: "PENDING_PAYMENT",
       total,
       version: 1,
@@ -303,18 +290,16 @@ export const orderService = {
   },
 
   /** O-4 */
-  async listByShop(
-    shopId: number,
+  async listQueue(
     filter: { status?: OrderStatus[]; q?: string } = {},
   ): Promise<Order[]> {
     await delay();
     runJobs();
-    const actor = requireShopStaff(shopId);
+    const actor = requireActor(["STAFF", "MANAGER"]);
     const q = filter.q?.trim().toUpperCase() ?? "";
     return db.orders
       .filter(
         (o) =>
-          o.shopId === shopId &&
           (!filter.status || filter.status.includes(o.status)) &&
           (!q || o.code.includes(q)),
       )
@@ -329,7 +314,7 @@ export const orderService = {
   ): Promise<Order> {
     await delay();
     const o = findOrder(orderId);
-    const actor = requireShopStaff(o.shopId);
+    const actor = requireActor(["STAFF", "MANAGER"]);
     if (o.version !== body.version)
       fail(409, "BR-27", "Đơn vừa được người khác cập nhật", {
         currentVersion: o.version,
@@ -354,7 +339,7 @@ export const orderService = {
   async start(orderId: number, version: number): Promise<Order> {
     await delay();
     const o = findOrder(orderId);
-    const actor = requireShopStaff(o.shopId);
+    const actor = requireActor(["STAFF", "MANAGER"]);
     transition(o, version, ["PAID"], "PREPARING");
     return toOrder(o, actor);
   },
@@ -363,7 +348,7 @@ export const orderService = {
   async markReady(orderId: number, version: number): Promise<Order> {
     await delay();
     const o = findOrder(orderId);
-    const actor = requireShopStaff(o.shopId);
+    const actor = requireActor(["STAFF", "MANAGER"]);
     transition(o, version, ["PREPARING"], "READY");
     return toOrder(o, actor);
   },
@@ -372,7 +357,7 @@ export const orderService = {
   async complete(orderId: number, version: number): Promise<Order> {
     await delay();
     const o = findOrder(orderId);
-    const actor = requireShopStaff(o.shopId);
+    const actor = requireActor(["STAFF", "MANAGER"]);
     transition(o, version, ["READY"], "COMPLETED");
     o.completedAt = iso(mockNow());
     return toOrder(o, actor);
@@ -420,7 +405,7 @@ export const reviewService = {
       fail(422, "BR-30", "Bạn chỉ đánh giá được đơn của mình");
     if (o.status !== "COMPLETED" || !o.completedAt)
       fail(422, "BR-30", "Chỉ đánh giá được đơn đã hoàn tất");
-    const days = settingsOf(o.shopId).reviewWindowDays;
+    const days = db.settings.reviewWindowDays;
     if (
       mockNow().getTime() - new Date(o.completedAt).getTime() >
       days * 86_400_000
@@ -437,7 +422,6 @@ export const reviewService = {
       id: nextId(),
       orderId,
       orderCode: o.code,
-      shopId: o.shopId,
       customerName: actor.fullName,
       rating: body.rating,
       comment,
@@ -448,13 +432,12 @@ export const reviewService = {
   },
 
   /** R-2 */
-  async listByShop(
-    shopId: number,
+  async list(
     filter: { rating?: number; page?: number; size?: number } = {},
   ): Promise<ReviewList> {
     await delay();
-    requireShopStaff(shopId, ["MANAGER"]);
-    const all = db.reviews.filter((r) => r.shopId === shopId);
+    requireActor(["MANAGER"]);
+    const all = db.reviews;
     const countByRating = {
       1: 0,
       2: 0,

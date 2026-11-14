@@ -10,7 +10,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-const MAX_QTY = 20; // P-08 default; the server checks the shop's own value
+const MAX_QTY = 20; // P-08 default; the server checks the configured value
 
 type ItemError = { itemType: OrderItemType; id: number; currentPrice?: number };
 
@@ -44,8 +44,8 @@ export default function CheckoutPage() {
         <p className="text-foreground mb-4 font-semibold">
           Giỏ hàng đang trống.
         </p>
-        <Link href="/feed" className="text-(--color-primary) hover:underline">
-          Chọn quán để đặt món
+        <Link href="/" className="text-(--color-primary) hover:underline">
+          Xem menu để đặt món
         </Link>
       </div>
     );
@@ -56,7 +56,6 @@ export default function CheckoutPage() {
     setError(null);
     try {
       const order = await orderService.create(
-        cart.shopId,
         { paymentMethod: method, tableLabel, note, items: toOrderItems() },
         cart.idempotencyKey,
       );
@@ -103,10 +102,10 @@ export default function CheckoutPage() {
           <div className="bg-card overflow-hidden rounded-2xl border border-(--color-border-light)">
             <div className="flex items-center justify-between border-b border-(--color-border-light) px-4 py-3">
               <h1 className="text-foreground text-lg font-bold md:text-xl">
-                Đặt món tại {cart.shopName}
+                Giỏ hàng của bạn
               </h1>
               <Link
-                href={`/shops/${cart.shopId}`}
+                href="/"
                 className="text-sm text-(--color-primary) hover:underline"
               >
                 Thêm món

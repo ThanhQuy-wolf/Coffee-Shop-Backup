@@ -9,18 +9,18 @@ column), and business rules are named `BR-xx` as in `docs/02-business-rules.md`.
 ```
 lib/
 +-- types.ts                 # Domain types, camelCase of the ERD columns
-+-- constants.ts             # PLATFORM_INFO, SOCIAL_LINKS (shop data comes from the API)
++-- constants.ts             # BRAND (shop data comes from the API)
 +-- contexts/                # React providers ("use client")
 |   +-- auth-context.tsx     # useAuth: user, isReady, loginCustomer, loginStaff, startSession, logout
-|   +-- cart-context.tsx     # useCart: one-shop cart + Idempotency-Key (BR-20, BR-24)
-|   +-- catalog-context.tsx  # useCatalog: a shop's products/combos/categories + async CRUD
+|   +-- cart-context.tsx     # useCart: cart on the device + Idempotency-Key (BR-24)
+|   +-- catalog-context.tsx  # useCatalog: products/combos/categories + async CRUD
 |   +-- manager-context.tsx  # useManager: catalog + active manager tab
-|   +-- menu-context.tsx     # useMenu: active category on the shop menu
+|   +-- menu-context.tsx     # useMenu: active category on the home page menu
 |   +-- shift-context.tsx    # useShift: shifts with a per-user view status + actions
 +-- services/                # The ONLY place that knows where data comes from
 |   +-- client.ts            # apiRequest/apiPost, ApiError(status, code, message, details)
 |   +-- auth.ts              # A-1..A-9 (authService, notificationService)
-|   +-- shops.ts             # S-1..S-6 (shopService)
+|   +-- shops.ts             # S-2..S-5 (shopService: shop_info, single row)
 |   +-- catalog.ts           # C-1..C-14 (catalogService)
 |   +-- orders.ts            # O-1..O-9, R-1..R-2 (orderService, reviewService)
 |   +-- shifts.ts            # W-1..W-12 (shiftService)
@@ -45,7 +45,7 @@ lib/
   `apiRequest(...)`. Callers stay the same.
 - Mount order: `AuthProvider > CartProvider` (root, `app/providers.tsx`).
   `CatalogProvider` + `ManagerProvider` are mounted by the manager layout,
-  `ShiftProvider` by the schedule page, `MenuProvider` by the shop page.
+  `ShiftProvider` by the schedule page, `MenuProvider` by the home page.
 
 ## Mock backend
 
@@ -56,11 +56,14 @@ lib/
 - `runJobs()` runs before each call: auto-cancel unpaid orders (BR-28) and
   revert undecided leave requests (BR-48).
 - Access tokens look like `mock.<userId>`.
+- There is one shop (A-5): `db.shop` and `db.settings` mirror the single
+  `shop_info` row, and no row carries a `shopId`. Order codes are
+  `DH-YYMMDD-NNNN` (BR-25).
 
 | Account | Login | Role |
 |---|---|---|
-| `admin` / `admin` | Tab "Nhân viên quán" | Manager, shop 1 |
-| `an`, `binh`, `cuong` / `123456` | Tab "Nhân viên quán" | Staff, shop 1 |
+| `admin` / `admin` | Tab "Nhân viên quán" | Manager |
+| `an`, `binh`, `cuong` / `123456` | Tab "Nhân viên quán" | Staff |
 | `0987654321` / `user1` | Tab "Khách hàng" (real backend, A-1) | Customer |
 | OTP for registration | `123456` | |
 

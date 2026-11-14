@@ -7,7 +7,6 @@ import { ApiError } from "../services/client";
 const MESSAGES: Record<string, string> = {
   UNAUTHENTICATED: "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.",
   FORBIDDEN: "Bạn không có quyền thực hiện thao tác này.",
-  "BR-03": "Bạn chỉ thao tác được trên dữ liệu của quán mình.",
   "BR-27": "Dữ liệu vừa được người khác cập nhật. Đã tải lại bản mới nhất.",
   "BR-43": "Ca đã đủ người.",
   "BR-44": "Bạn đã có trong ca này.",

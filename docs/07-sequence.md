@@ -22,10 +22,10 @@ sequenceDiagram
 
     K->>FE: Bấm "Đặt món" ở /checkout
     FE->>FE: Sinh Idempotency-Key (lưu cùng giỏ)
-    FE->>API: POST /shops/3/orders<br/>Idempotency-Key: k1
-    API->>DB: Tìm đơn theo (shop_id, idempotency_key = k1)
+    FE->>API: POST /orders<br/>Idempotency-Key: k1
+    API->>DB: Tìm đơn theo idempotency_key = k1
     DB-->>API: Không có
-    API->>DB: Đọc quán, món, combo trong giỏ
+    API->>DB: Đọc món, combo trong giỏ
     DB-->>API: Trạng thái bán, giá hiện tại
 
     alt Có món ngừng bán (BR-21)
@@ -38,7 +38,7 @@ sequenceDiagram
         API->>DB: BEGIN
         API->>DB: INSERT … ON CONFLICT order_daily_counter<br/>RETURNING last_seq
         DB-->>API: 42
-        API->>DB: INSERT customer_order (code CF-260410-0042)
+        API->>DB: INSERT customer_order (code DH-260410-0042)
         API->>DB: INSERT order_item (chụp tên, giá, giá vốn)
         API->>DB: INSERT payment (PENDING)
         API->>DB: COMMIT
@@ -46,8 +46,8 @@ sequenceDiagram
     end
 
     Note over FE: Hết thời gian chờ, thử lại với cùng khoá
-    FE->>API: POST /shops/3/orders<br/>Idempotency-Key: k1
-    API->>DB: Tìm đơn theo (shop_id, k1)
+    FE->>API: POST /orders<br/>Idempotency-Key: k1
+    API->>DB: Tìm đơn theo k1
     DB-->>API: Đơn 5521
     API-->>FE: 200 đơn 5521 (không tạo đơn mới)
     FE->>FE: Xoá giỏ, lưu guestToken
@@ -131,7 +131,7 @@ sequenceDiagram
     else Đúng mã
         API->>DB: BEGIN, INSERT app_user CUSTOMER,<br/>UPDATE otp consumed_at, INSERT refresh_token, COMMIT
         API-->>FE: 201 { accessToken, refreshToken, user }
-        FE-->>K: Chuyển tới /feed
+        FE-->>K: Chuyển tới trang chủ /
     end
 ```
 
@@ -162,12 +162,12 @@ sequenceDiagram
     end
 
     Note over FE,API: 15 phút sau, access token hết hạn
-    FE->>API: GET /shops/3/orders (token cũ)
+    FE->>API: GET /orders (token cũ)
     API-->>FE: 401 UNAUTHENTICATED
     FE->>API: POST /auth/refresh { refreshToken }
     API->>DB: Thu hồi token cũ, tạo token mới
     API-->>FE: 200 cặp token mới
-    FE->>API: Gửi lại GET /shops/3/orders
+    FE->>API: Gửi lại GET /orders
     API-->>FE: 200
 ```
 
@@ -223,7 +223,7 @@ sequenceDiagram
         API-->>NV: 200
     end
 
-    QL->>API: GET /shops/3/shifts?from=…&to=…
+    QL->>API: GET /shifts?from=…&to=…
     API-->>QL: Ca 88 có phân ca 301 LEAVE_REQUESTED
 
     alt Quản lý quyết định trước giờ ca
@@ -252,11 +252,11 @@ sequenceDiagram
 
     QL->>FE: Mở /manager/analytics, chọn "Tháng"
     par Gọi song song
-        FE->>API: GET /shops/3/reports/summary?period=month
+        FE->>API: GET /reports/summary?period=month
     and
-        FE->>API: GET /shops/3/reports/revenue?period=month
+        FE->>API: GET /reports/revenue?period=month
     and
-        FE->>API: GET /shops/3/reports/product-sales?period=month
+        FE->>API: GET /reports/product-sales?period=month
     end
 
     API->>DB: Tổng total, đếm đơn WHERE status IN<br/>(PAID, PREPARING, READY, COMPLETED)<br/>AND paid_at trong kỳ này và kỳ trước

@@ -1,7 +1,7 @@
 "use client";
 
 import LoginForm from "@/components/organisms/forms/LoginForm";
-import { PLATFORM_INFO } from "@/lib/constants";
+import { BRAND } from "@/lib/constants";
 import Image from "next/image";
 
 export default function LoginPage() {
@@ -13,8 +13,8 @@ export default function LoginPage() {
         <div className="mb-8 flex flex-col items-center">
           <div className="relative mb-4 h-20 w-20">
             <Image
-              src={PLATFORM_INFO.logo}
-              alt={`Logo ${PLATFORM_INFO.name}`}
+              src={BRAND.logo}
+              alt={`Logo ${BRAND.name}`}
               fill
               className="object-contain"
               sizes="80px"
@@ -22,7 +22,7 @@ export default function LoginPage() {
             />
           </div>
           <h1 className="mb-1 text-2xl font-bold text-(--color-primary-dark)">
-            {PLATFORM_INFO.name}
+            {BRAND.name}
           </h1>
           <p className="text-sm text-(--color-text-muted)">
             Đăng nhập vào hệ thống

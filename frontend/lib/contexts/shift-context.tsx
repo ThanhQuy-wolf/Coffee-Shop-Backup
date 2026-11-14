@@ -133,7 +133,6 @@ export function ShiftProvider({
   user: User;
   children: ReactNode;
 }) {
-  const shopId = user.shopId!;
   const isManager = user.role === "MANAGER";
   const [rawShifts, setRawShifts] = useState<Shift[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -151,15 +150,14 @@ export function ShiftProvider({
   const reload = useCallback(async () => {
     try {
       const [shifts, deps] = await Promise.all([
-        shiftService.listShifts(shopId, { from, to }),
-        shiftService.listDepartments(shopId),
+        shiftService.listShifts({ from, to }),
+        shiftService.listDepartments(),
       ]);
       setRawShifts(shifts);
       setDepartments(deps);
       setLoadError(null);
       if (isManager) {
         const report = await analyticsService.getLaborCost(
-          shopId,
           new Date(`${weekStartIso}T00:00:00`),
         );
         setWeeklyLaborCost(report.total);
@@ -169,7 +167,7 @@ export function ShiftProvider({
     } finally {
       setIsLoading(false);
     }
-  }, [shopId, from, to, isManager, weekStartIso]);
+  }, [from, to, isManager, weekStartIso]);
 
   useEffect(() => {
     void reload();
@@ -218,9 +216,7 @@ export function ShiftProvider({
     decideLeave: run(shiftService.decideLeave),
     markAttendance: run(shiftService.markAttendance),
     removeAssignment: run(shiftService.removeAssignment),
-    createShift: run((input: ShiftInput) =>
-      shiftService.createShift(shopId, input),
-    ),
+    createShift: run((input: ShiftInput) => shiftService.createShift(input)),
     updateShift: run((id: number, input: ShiftInput, version: number) =>
       shiftService.updateShift(id, { ...input, version }),
     ),

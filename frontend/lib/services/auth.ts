@@ -49,7 +49,6 @@ function fromLegacy(u: LegacyUser): User {
     phone: u.phone ?? null,
     username: null,
     avatarUrl: u.avatar ?? null,
-    shopId: null,
     departmentId: null,
   };
 }
@@ -166,7 +165,6 @@ export const authService = {
       phone: input.phone,
       username: null,
       avatarUrl: null,
-      shopId: null,
       departmentId: null,
     };
     db.accounts.push({ ...user, password: input.password });

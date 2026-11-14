@@ -70,7 +70,7 @@
 ### Backend Integration
 
 - [ ] Replace MOCK_PRODUCTS with API calls (GET /api/products)
-- [ ] Replace MOCK_SHOPS with API calls (GET /api/shops)
+- [ ] Replace the mock shop_info with API calls (GET /api/v1/shop)
 - [ ] Replace MOCK_USERS with real authentication (POST /api/auth/login)
 - [ ] Real product images (replace placeholder.jpg)
 - [ ] Image upload for products
@@ -89,7 +89,6 @@
 ### Performance & SEO
 
 - [ ] Dynamic route generation for products (app/(main)/product/[id]/page.tsx)
-- [ ] Dynamic route generation for shops (app/(feed)/shop/[id]/page.tsx)
 - [ ] Meta tags and Open Graph for SEO
 - [ ] Image optimization and lazy loading
 - [ ] Code splitting and dynamic imports

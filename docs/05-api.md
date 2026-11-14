@@ -8,19 +8,19 @@
 | Hiệu năng | API đọc menu và lịch ca dưới 300 ms, API ghi dưới 500 ms ở p95 (NFR-01) |
 | Định dạng | JSON, UTF-8. Tên trường dạng `camelCase` (DB dùng `snake_case`, backend tự ánh xạ) |
 | Xác thực | `Authorization: Bearer <accessToken>` (JWT, sống 15 phút). Làm mới bằng refresh token (sống 30 ngày, lưu bản băm trong `refresh_token`) |
-| Nội dung JWT | `sub` (user id), `role` (`CUSTOMER` / `STAFF` / `MANAGER`), `shopId` (null với Customer) |
+| Nội dung JWT | `sub` (user id), `role` (`CUSTOMER` / `STAFF` / `MANAGER`) |
 | Khách vãng lai | Không có JWT. Khi tạo đơn nhận `guestToken`, gửi lại qua header `X-Guest-Token` để xem hoặc huỷ đúng đơn đó |
 | Tiền | Số nguyên, đơn vị đồng (A-8) |
 | Thời gian | ISO-8601 có múi giờ, ví dụ `2026-04-10T09:15:00+07:00`. Ngày dạng `YYYY-MM-DD`, giờ dạng `HH:mm` (NFR-06) |
 | Phân trang | `?page=1&size=20`. Trả `{ items, page, size, total }` |
-| Idempotency | `POST /shops/{shopId}/orders` bắt buộc header `Idempotency-Key` (UUID v4), lưu cùng đơn (BR-24) |
+| Idempotency | `POST /orders` bắt buộc header `Idempotency-Key` (UUID v4), lưu cùng đơn (BR-24) |
 | Optimistic locking | Lệnh chuyển trạng thái đơn và sửa ca gửi `version` trong body. Lệch thì trả 409 (BR-27) |
 
-**Phạm vi quán.** Mọi đường dẫn có `{shopId}` mà cần đăng nhập Staff hoặc Manager đều kiểm `shopId` trong token trùng `{shopId}` (BR-03). Với các đường dẫn không có `{shopId}` (ví dụ `/orders/{orderId}`), backend đọc `shop_id` của tài nguyên rồi kiểm tương tự.
+**Một quán.** Hệ thống chỉ phục vụ một quán (A-5), nên đường dẫn không có `{shopId}` và token không mang `shopId`. Staff và Manager thấy toàn bộ dữ liệu vận hành, chỉ phân biệt theo role.
 
 ## 2. Bảng endpoint
 
-Ký hiệu cột **Quyền**: `Public` không cần đăng nhập, `Guest` là khách vãng lai có `X-Guest-Token` của đơn, `C` Customer, `S` Staff, `M` Manager. `S/M` nghĩa là Staff hoặc Manager của đúng quán.
+Ký hiệu cột **Quyền**: `Public` không cần đăng nhập, `Guest` là khách vãng lai có `X-Guest-Token` của đơn, `C` Customer, `S` Staff, `M` Manager. `S/M` nghĩa là Staff hoặc Manager.
 
 ### 2.1 Xác thực và tài khoản
 
@@ -43,7 +43,7 @@ A-1, A-2, A-4 và A-5 cùng trả:
   "accessToken": "eyJ...",
   "refreshToken": "rt_...",
   "expiresIn": 900,
-  "user": { "id": 12, "role": "CUSTOMER", "fullName": "Nguyễn An", "phone": "0901234567", "shopId": null }
+  "user": { "id": 12, "role": "CUSTOMER", "fullName": "Nguyễn An", "phone": "0901234567" }
 }
 ```
 
@@ -53,12 +53,13 @@ A-1, A-2, A-4 và A-5 cùng trả:
 
 | # | Method | Đường dẫn | Quyền | Mô tả | FR / BR | Hàm frontend |
 |---|---|---|---|---|---|---|
-| S-1 | GET | `/shops?q=&address=` | Public | Danh sách quán đang hoạt động, lọc theo tên và địa chỉ | FR-05, BR-05 | `shopService.list` |
-| S-2 | GET | `/shops/{shopId}` | Public | Thông tin một quán | FR-06 | `shopService.get` |
-| S-3 | PUT | `/shops/{shopId}` | M | Sửa thông tin quán | FR-10, BR-03 | `shopService.update` |
-| S-4 | GET | `/shops/{shopId}/settings` | M | Đọc tham số của quán (P-06, P-08 đến P-12) | — | `shopService.getSettings` |
-| S-5 | PUT | `/shops/{shopId}/settings` | M | Sửa tham số của quán | — | `shopService.updateSettings` |
-| S-6 | GET | `/shops/{shopId}/menu` | Public | Menu cho khách: danh mục, món và combo **đang bán**, có `?q=` để tìm theo tên và mô tả | FR-06, BR-05, BR-13 | `catalogService.getMenu` |
+| S-2 | GET | `/shop` | Public | Thông tin quán (tên, địa chỉ, giờ mở cửa, ảnh) | FR-06 | `shopService.get` |
+| S-3 | PUT | `/shop` | M | Sửa thông tin quán | FR-10 | `shopService.update` |
+| S-4 | GET | `/shop/settings` | M | Đọc tham số của quán (P-06, P-08 đến P-12) | — | `shopService.getSettings` |
+| S-5 | PUT | `/shop/settings` | M | Sửa tham số của quán | — | `shopService.updateSettings` |
+| S-6 | GET | `/menu` | Public | Menu cho khách: danh mục, món và combo **đang bán**, có `?q=` để tìm theo tên và mô tả | FR-06, BR-13 | `catalogService.getMenu` |
+
+S-1 (danh sách quán) đã bỏ khi hệ thống chuyển sang một quán. Mã S-1 không dùng lại.
 
 ### 2.3 Quản lý danh mục, món, combo
 
@@ -66,17 +67,17 @@ Các endpoint `GET` ở đây trả cả món đang tắt bán, khác với S-6.
 
 | # | Method | Đường dẫn | Quyền | Mô tả | FR / BR | Hàm frontend |
 |---|---|---|---|---|---|---|
-| C-1 | GET | `/shops/{shopId}/categories` | S/M | Danh sách danh mục, kèm số món | FR-07 | `catalogService.listCategories` |
-| C-2 | POST | `/shops/{shopId}/categories` | M | Tạo danh mục `{ name, icon, sortOrder }` | FR-07 | `catalogService.createCategory` |
+| C-1 | GET | `/categories` | S/M | Danh sách danh mục, kèm số món | FR-07 | `catalogService.listCategories` |
+| C-2 | POST | `/categories` | M | Tạo danh mục `{ name, icon, sortOrder }` | FR-07 | `catalogService.createCategory` |
 | C-3 | PUT | `/categories/{categoryId}` | M | Sửa danh mục | FR-07 | `catalogService.updateCategory` |
 | C-4 | DELETE | `/categories/{categoryId}` | M | Xoá mềm danh mục rỗng | FR-07, BR-11 | `catalogService.deleteCategory` |
-| C-5 | GET | `/shops/{shopId}/products?categoryId=` | S/M | Danh sách món | FR-08 | `catalogService.listProducts` |
-| C-6 | POST | `/shops/{shopId}/products` | M | Tạo món | FR-08, BR-10, BR-12 | `catalogService.createProduct` |
+| C-5 | GET | `/products?categoryId=` | S/M | Danh sách món | FR-08 | `catalogService.listProducts` |
+| C-6 | POST | `/products` | M | Tạo món | FR-08, BR-10, BR-12 | `catalogService.createProduct` |
 | C-7 | PUT | `/products/{productId}` | M | Sửa món. Đổi giá thì ghi `audit_log` | FR-08, BR-10, BR-12, BR-15 | `catalogService.updateProduct` |
 | C-8 | PATCH | `/products/{productId}/availability` | S/M | Bật/tắt bán `{ isAvailable }`. Nhân viên được tắt khi hết nguyên liệu | FR-08, BR-13 | `catalogService.setProductAvailability` |
 | C-9 | DELETE | `/products/{productId}` | M | Xoá món (mềm nếu đã bán) | FR-08, BR-14 | `catalogService.deleteProduct` |
-| C-10 | GET | `/shops/{shopId}/combos` | S/M | Danh sách combo, kèm cờ `sellable` tính từ món thành phần | FR-09, BR-13 | `catalogService.listCombos` |
-| C-11 | POST | `/shops/{shopId}/combos` | M | Tạo combo `{ name, price, items: [{ productId, quantity }] }` | FR-09, BR-13 | `catalogService.createCombo` |
+| C-10 | GET | `/combos` | S/M | Danh sách combo, kèm cờ `sellable` tính từ món thành phần | FR-09, BR-13 | `catalogService.listCombos` |
+| C-11 | POST | `/combos` | M | Tạo combo `{ name, price, items: [{ productId, quantity }] }` | FR-09, BR-13 | `catalogService.createCombo` |
 | C-12 | PUT | `/combos/{comboId}` | M | Sửa combo | FR-09, BR-13, BR-15 | `catalogService.updateCombo` |
 | C-13 | PATCH | `/combos/{comboId}/availability` | M | Bật/tắt bán combo | FR-09 | `catalogService.setComboAvailability` |
 | C-14 | DELETE | `/combos/{comboId}` | M | Xoá combo (mềm nếu đã bán) | FR-09, BR-14 | `catalogService.deleteCombo` |
@@ -85,10 +86,10 @@ Các endpoint `GET` ở đây trả cả món đang tắt bán, khác với S-6.
 
 | # | Method | Đường dẫn | Quyền | Mô tả | FR / BR | Hàm frontend |
 |---|---|---|---|---|---|---|
-| O-1 | POST | `/shops/{shopId}/orders` | Public, C | Tạo đơn. Header `Idempotency-Key` | FR-12, FR-13, BR-20 → BR-25 | `orderService.create` |
+| O-1 | POST | `/orders` | Public, C | Tạo đơn. Header `Idempotency-Key` | FR-12, FR-13, BR-21 → BR-25 | `orderService.create` |
 | O-2 | GET | `/orders/{orderId}` | Guest, C, S/M | Chi tiết đơn, kèm thanh toán và đánh giá (nếu có). Màn hình khách gọi lại mỗi P-07 giây | FR-14 | `orderService.get` |
 | O-3 | GET | `/me/orders` | C | Lịch sử đơn của khách, mới nhất trước | FR-15 | `orderService.listMine` |
-| O-4 | GET | `/shops/{shopId}/orders?status=&q=&date=` | S/M | Hàng đợi đơn của quán. `q` tìm theo mã đơn. Số điện thoại khách chỉ trả 3 số cuối (NFR-07) | FR-16, BR-03 | `orderService.listByShop` |
+| O-4 | GET | `/orders?status=&q=&date=` | S/M | Hàng đợi đơn của quán. `q` tìm theo mã đơn. Số điện thoại khách chỉ trả 3 số cuối (NFR-07) | FR-16 | `orderService.listQueue` |
 | O-5 | POST | `/orders/{orderId}/payment/confirm` | S/M | `{ method, amount, version }`. Đơn sang `PAID`, thanh toán sang `CONFIRMED` | FR-17, BR-26, BR-27 | `orderService.confirmPayment` |
 | O-6 | POST | `/orders/{orderId}/start` | S/M | `{ version }`. `PAID` → `PREPARING` | FR-17, BR-27 | `orderService.start` |
 | O-7 | POST | `/orders/{orderId}/ready` | S/M | `{ version }`. `PREPARING` → `READY` | FR-17, BR-27 | `orderService.markReady` |
@@ -108,7 +109,7 @@ Trường hợp không được huỷ trả 403 `BR-29` nếu sai role, 409 `ORD
 **O-1 — request**
 
 ```http
-POST /api/v1/shops/3/orders
+POST /api/v1/orders
 Idempotency-Key: 6f1c2a8e-6b1d-4c55-9a0e-3d7f2b9e1c44
 Authorization: Bearer eyJ...      (không bắt buộc)
 ```
@@ -132,14 +133,13 @@ Authorization: Bearer eyJ...      (không bắt buộc)
 ```json
 {
   "id": 5521,
-  "code": "CF-260410-0042",
-  "shopId": 3,
+  "code": "DH-260410-0042",
   "status": "PENDING_PAYMENT",
   "total": 149000,
   "version": 1,
   "guestToken": "gt_9QhX...",
   "paymentDeadline": "2026-04-10T09:30:00+07:00",
-  "payment": { "method": "QR", "status": "PENDING", "amount": 149000, "transferContent": "CF-260410-0042" },
+  "payment": { "method": "QR", "status": "PENDING", "amount": 149000, "transferContent": "DH-260410-0042" },
   "items": [
     { "type": "PRODUCT", "id": 101, "name": "Bạc xỉu", "unitPrice": 35000, "quantity": 2, "lineTotal": 70000 },
     { "type": "COMBO", "id": 7, "name": "Combo sáng", "unitPrice": 79000, "quantity": 1, "lineTotal": 79000 }
@@ -155,16 +155,16 @@ Authorization: Bearer eyJ...      (không bắt buộc)
 | # | Method | Đường dẫn | Quyền | Mô tả | FR / BR | Hàm frontend |
 |---|---|---|---|---|---|---|
 | R-1 | POST | `/orders/{orderId}/review` | C | `{ rating, comment }` | FR-20, BR-30, BR-31 | `reviewService.create` |
-| R-2 | GET | `/shops/{shopId}/reviews?rating=&page=` | M | Danh sách đánh giá, kèm `average` và số lượng theo từng mức sao | FR-21 | `reviewService.listByShop` |
+| R-2 | GET | `/reviews?rating=&page=` | M | Danh sách đánh giá, kèm `average` và số lượng theo từng mức sao | FR-21 | `reviewService.list` |
 
 ### 2.6 Ca làm
 
 | # | Method | Đường dẫn | Quyền | Mô tả | FR / BR | Hàm frontend |
 |---|---|---|---|---|---|---|
-| W-1 | GET | `/shops/{shopId}/departments` | S/M | Danh sách bộ phận | FR-22 | `shiftService.listDepartments` |
-| W-2 | GET | `/shops/{shopId}/staff` | M | Nhân viên của quán (để chấm công, gỡ khỏi ca) | FR-28, FR-29 | `shiftService.listStaff` |
-| W-3 | GET | `/shops/{shopId}/shifts?from=&to=&departmentId=` | S/M | Ca trong khoảng ngày, kèm danh sách phân ca, `occupied` và `remaining` | FR-22 | `shiftService.listShifts` |
-| W-4 | POST | `/shops/{shopId}/shifts` | M | Tạo ca `{ departmentId, date, startTime, endTime, wage, maxStaff, allowCrossDepartment }` | FR-23, BR-40, BR-41 | `shiftService.createShift` |
+| W-1 | GET | `/departments` | S/M | Danh sách bộ phận | FR-22 | `shiftService.listDepartments` |
+| W-2 | GET | `/staff` | M | Nhân viên của quán (để chấm công, gỡ khỏi ca) | FR-28, FR-29 | `shiftService.listStaff` |
+| W-3 | GET | `/shifts?from=&to=&departmentId=` | S/M | Ca trong khoảng ngày, kèm danh sách phân ca, `occupied` và `remaining` | FR-22 | `shiftService.listShifts` |
+| W-4 | POST | `/shifts` | M | Tạo ca `{ departmentId, date, startTime, endTime, wage, maxStaff, allowCrossDepartment }` | FR-23, BR-40, BR-41 | `shiftService.createShift` |
 | W-5 | PUT | `/shifts/{shiftId}` | M | Sửa ca `{ ..., version }` | FR-24, BR-40, BR-41, BR-42 | `shiftService.updateShift` |
 | W-6 | POST | `/shifts/{shiftId}/cancel` | M | Huỷ ca `{ reason, version }`. Mọi phân ca sang `CANCELLED`, gửi thông báo | FR-24, BR-42 | `shiftService.cancelShift` |
 | W-7 | POST | `/shifts/{shiftId}/registrations` | S/M | Đăng ký ca cho chính mình | FR-25, BR-43 → BR-46 | `shiftService.register` |
@@ -205,10 +205,10 @@ Tất cả chỉ dành cho Manager của quán. `period` nhận `day`, `week`, `
 
 | # | Method | Đường dẫn | Mô tả | FR / BR | Hàm frontend |
 |---|---|---|---|---|---|
-| RP-1 | GET | `/shops/{shopId}/reports/summary?period=&date=` | Doanh thu, số đơn, lợi nhuận gộp, giá trị đơn trung bình, và `% so với kỳ trước` (null nếu kỳ trước bằng 0) | FR-30, BR-50, BR-51, BR-53 | `analyticsService.getSummary` |
-| RP-2 | GET | `/shops/{shopId}/reports/revenue?period=&date=` | Chuỗi doanh thu theo mốc thời gian, so sánh hai nửa kỳ, tỷ trọng theo danh mục | FR-31, BR-50 | `analyticsService.getRevenue` |
-| RP-3 | GET | `/shops/{shopId}/reports/product-sales?period=&date=&categoryId=` | Bảng theo món: số lượng, doanh thu, giá vốn, lợi nhuận, biên. Món chưa có giá vốn có cờ `missingCost` | FR-32, BR-51, BR-10 | `analyticsService.getProductSales` |
-| RP-4 | GET | `/shops/{shopId}/reports/labor-cost?weekStart=` | Chi phí nhân công theo tuần, tách theo bộ phận | FR-33, BR-52 | `analyticsService.getLaborCost` |
+| RP-1 | GET | `/reports/summary?period=&date=` | Doanh thu, số đơn, lợi nhuận gộp, giá trị đơn trung bình, và `% so với kỳ trước` (null nếu kỳ trước bằng 0) | FR-30, BR-50, BR-51, BR-53 | `analyticsService.getSummary` |
+| RP-2 | GET | `/reports/revenue?period=&date=` | Chuỗi doanh thu theo mốc thời gian, so sánh hai nửa kỳ, tỷ trọng theo danh mục | FR-31, BR-50 | `analyticsService.getRevenue` |
+| RP-3 | GET | `/reports/product-sales?period=&date=&categoryId=` | Bảng theo món: số lượng, doanh thu, giá vốn, lợi nhuận, biên. Món chưa có giá vốn có cờ `missingCost` | FR-32, BR-51, BR-10 | `analyticsService.getProductSales` |
+| RP-4 | GET | `/reports/labor-cost?weekStart=` | Chi phí nhân công theo tuần, tách theo bộ phận | FR-33, BR-52 | `analyticsService.getLaborCost` |
 
 ## 3. Lỗi
 
@@ -235,7 +235,6 @@ Frontend chọn thông báo theo `rule` (hoặc `code` khi không gắn với BR
 | 401 | `UNAUTHENTICATED` | Thiếu hoặc hết hạn token. Frontend thử A-5 một lần rồi mới đưa về `/login` |
 | 401 | `BR-04` | Sai mật khẩu. Body có `remainingAttempts` |
 | 423 | `BR-04` | Tài khoản đang bị khoá. Body có `lockedUntil` |
-| 403 | `BR-03` | Thao tác trên dữ liệu quán khác |
 | 403 | `FORBIDDEN` | Sai role |
 | 404 | `NOT_FOUND` | Không có tài nguyên, hoặc khách vãng lai gửi sai `X-Guest-Token` (không lộ việc đơn tồn tại) |
 | 409 | `BR-22` | Giá đã đổi. `errors[]` có `currentPrice` từng mục |
@@ -244,7 +243,7 @@ Frontend chọn thông báo theo `rule` (hoặc `code` khi không gắn với BR
 | 409 | `BR-43` | Ca đã đủ người |
 | 409 | `BR-44` | Đã có phân ca hiệu lực trong ca này |
 | 409 | `BR-26` | Xác nhận thanh toán cho đơn không còn `PENDING_PAYMENT` (đã huỷ hoặc đã có người xác nhận) |
-| 409 | `BR-12` | Trùng tên món trong quán |
+| 409 | `BR-12` | Trùng tên món |
 | 422 | `BR-xx` khác | Vi phạm rule nghiệp vụ còn lại (BR-01, 02, 10, 11, 13, 21, 23, 24, 26 khi số tiền lệch, 30, 31, 40–42, 45–49) |
 | 429 | `BR-02` | Yêu cầu OTP quá sớm. Header `Retry-After` |
 | 500 | `INTERNAL` | Lỗi hệ thống. Body có `traceId`, không lộ chi tiết |
@@ -253,6 +252,6 @@ Frontend chọn thông báo theo `rule` (hoặc `code` khi không gắn với BR
 
 - **Đếm chỗ khi đăng ký ca (W-7).** Trong cùng transaction: `SELECT … FROM shift WHERE id = ? FOR UPDATE`, đếm phân ca chiếm chỗ, kiểm trùng giờ của nhân viên, rồi `INSERT`. Unique index một phần `uq_assignment_active` là lưới an toàn cuối cho BR-44.
 - **Chuyển trạng thái đơn.** `UPDATE customer_order SET status = ?, version = version + 1 WHERE id = ? AND version = ? AND status = ?`. Không có dòng nào bị ảnh hưởng thì đọc lại đơn để phân biệt `BR-27` (lệch version) với `ORDER_STATE` (sai trạng thái).
-- **Job huỷ đơn quá hạn (BR-28).** Chạy mỗi phút với câu lệnh có điều kiện `status = 'PENDING_PAYMENT' AND created_at < now() - interval`. Chạy hai lần cũng không sao vì lần sau không còn dòng nào thoả. Thời hạn đọc từ `shop_setting.payment_timeout_minutes` của từng quán.
+- **Job huỷ đơn quá hạn (BR-28).** Chạy mỗi phút với câu lệnh có điều kiện `status = 'PENDING_PAYMENT' AND created_at < now() - interval`. Chạy hai lần cũng không sao vì lần sau không còn dòng nào thoả. Thời hạn đọc từ `shop_info.payment_timeout_minutes`.
 - **Job trả phân ca về `REGISTERED` (BR-48).** Cũng chạy mỗi phút, chuyển các phân ca `LEAVE_REQUESTED` của ca đã bắt đầu.
 - **Polling (FR-14).** O-2 trả header `ETag` theo `version`. Frontend gửi `If-None-Match`, không đổi thì nhận 304, nhẹ cho cả hai phía.

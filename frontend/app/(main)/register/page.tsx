@@ -1,7 +1,7 @@
 "use client";
 
 import Button from "@/components/atoms/buttons/Button";
-import { PLATFORM_INFO } from "@/lib/constants";
+import { BRAND } from "@/lib/constants";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { ApiError, VN_PHONE_REGEX, authService } from "@/lib/services";
 import { errorMessage } from "@/lib/utils/errors";
@@ -91,7 +91,7 @@ export default function RegisterPage() {
         password,
       });
       startSession(session);
-      router.push("/feed");
+      router.push("/");
     } catch (err) {
       setErrors({ otp: errorMessage(err) });
       setSending(false);
@@ -104,8 +104,8 @@ export default function RegisterPage() {
         <div className="mb-8 flex flex-col items-center">
           <div className="relative mb-4 h-20 w-20">
             <Image
-              src={PLATFORM_INFO.logo}
-              alt={`Logo ${PLATFORM_INFO.name}`}
+              src={BRAND.logo}
+              alt={`Logo ${BRAND.name}`}
               fill
               className="object-contain"
               sizes="80px"
@@ -113,7 +113,7 @@ export default function RegisterPage() {
             />
           </div>
           <h1 className="mb-1 text-2xl font-bold text-(--color-primary-dark)">
-            {PLATFORM_INFO.name}
+            {BRAND.name}
           </h1>
           <p className="text-sm text-(--color-text-muted)">
             {step === "phone"

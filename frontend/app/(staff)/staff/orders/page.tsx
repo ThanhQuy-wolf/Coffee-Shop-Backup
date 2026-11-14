@@ -22,7 +22,6 @@ type Action =
 /** UC-10 xử lý đơn (O-4 → O-8), UC-11 huỷ đơn (O-9) */
 export default function StaffOrdersPage() {
   const { user } = useAuth();
-  const shopId = user!.shopId!;
   const isManager = user!.role === "MANAGER";
 
   const [orders, setOrders] = useState<Order[]>([]);
@@ -38,7 +37,7 @@ export default function StaffOrdersPage() {
   const load = useCallback(async () => {
     try {
       setOrders(
-        await orderService.listByShop(shopId, {
+        await orderService.listQueue({
           status: showDone ? ["COMPLETED", "CANCELLED"] : QUEUE,
           q: query,
         }),
@@ -46,7 +45,7 @@ export default function StaffOrdersPage() {
     } catch (err) {
       setMessage({ tone: "error", text: errorMessage(err) });
     }
-  }, [shopId, showDone, query]);
+  }, [showDone, query]);
 
   useEffect(() => {
     const first = setTimeout(load, query ? 250 : 0);

@@ -25,11 +25,6 @@ parent grid (w-full).
 
 **Atomic level:** Molecule (composed of Button, Caption, Text atoms)
 
-### ShopCard (`molecules/cards/ShopCard.tsx`)
-
-**Description:** Shop discovery card. Displays shop image, name, address, and a
-link to the menu.
-
 ### SearchBar (`molecules/search-bar/SearchBar.tsx`)
 
 **Description:** Search input with clear button. Controlled component — value
@@ -53,11 +48,6 @@ header, full viewport height minus header.
 
 **Description:** Full product grid organism with mobile category tabs,
 filtering, and empty state. Uses useCart and useMenu contexts.
-
-### ShopGrid (`organisms/shop-grid/ShopGrid.tsx`)
-
-**Description:** Responsive grid of ShopCard molecules for the feed/discovery
-page.
 
 ### ReviewModal (`organisms/modals/ReviewModal.tsx`)
 
@@ -92,10 +82,6 @@ CartFab. Used by (main) route group.
 
 **Description:** Auth layout template — centers content in screen. Used by
 login/register pages.
-
-### FeedLayout (`templates/feed-layout/FeedLayout.tsx`)
-
-**Description:** Feed layout template. Used by the feed/discovery route group.
 
 ### ManagerLayout (`templates/manager-layout/ManagerLayout.tsx`)
 

@@ -12,9 +12,7 @@ Cột **Cấu hình** cho biết rule có tham số chủ quán đổi được 
 |---|---|---|---|
 | BR-01 | Số điện thoại khách là số di động Việt Nam 10 số, đầu `03`, `05`, `07`, `08`, `09`. Mỗi số chỉ gắn với một tài khoản | Không | Regex hiện có ở frontend: `^0[35789][0-9]{8}$` |
 | BR-02 | OTP gồm 6 chữ số, hết hạn sau P-03 phút, nhập sai tối đa P-02 lần. Mỗi số điện thoại chỉ được yêu cầu OTP mới sau P-01 giây | Có | Chỉ lưu bản băm của OTP |
-| BR-03 | Staff và Manager chỉ thao tác được trên dữ liệu của quán mình (`shop_id` trong token trùng `shop_id` của tài nguyên) | Không | Trả 403 kèm `rule: BR-03` |
 | BR-04 | Đăng nhập sai P-04 lần liên tiếp thì khoá đăng nhập P-05 phút | Có | Đếm theo tài khoản, không theo IP |
-| BR-05 | Chỉ quán có `is_active = true` mới hiện ở `/feed` và nhận đơn | Không | Quán tạm đóng vẫn giữ dữ liệu |
 
 ### 1.2 Menu
 
@@ -22,7 +20,7 @@ Cột **Cấu hình** cho biết rule có tham số chủ quán đổi được 
 |---|---|---|---|
 | BR-10 | Giá bán và giá vốn là số nguyên ≥ 0 (đồng). Giá bán > 0 | Không | Giá vốn = 0 nghĩa là chưa khai báo; báo cáo đánh dấu "chưa có giá vốn" |
 | BR-11 | Không xoá được danh mục còn món (kể cả món đang tắt bán). Phải chuyển món sang danh mục khác trước | Không | Món đã xoá mềm thì không tính. Bản thân danh mục cũng chỉ xoá mềm |
-| BR-12 | Tên món là duy nhất trong một quán, không phân biệt hoa thường, không tính món đã xoá | Không | |
+| BR-12 | Tên món là duy nhất, không phân biệt hoa thường, không tính món đã xoá | Không | |
 | BR-13 | Combo phải có ít nhất 2 món, hoặc 1 món với số lượng ≥ 2. Combo chỉ bán được khi mọi món thành phần đang bán; tắt một món thì các combo chứa món đó tự ẩn khỏi menu | Không | Khi tính tình trạng bán, combo đọc trạng thái của món thành phần |
 | BR-14 | Món và combo đã xuất hiện trong ít nhất một đơn thì chỉ được xoá mềm (`deleted_at`). Món chưa từng bán thì xoá cứng được. Món đang nằm trong combo thì phải gỡ khỏi combo trước | Không | Giữ toàn vẹn lịch sử đơn |
 | BR-15 | Mọi thay đổi giá bán hoặc giá vốn đều ghi `audit_log` (giá cũ, giá mới, người sửa) | Không | |
@@ -31,12 +29,11 @@ Cột **Cấu hình** cho biết rule có tham số chủ quán đổi được 
 
 | ID | Rule | Cấu hình | Ghi chú |
 |---|---|---|---|
-| BR-20 | Một giỏ hàng chỉ chứa món của **một** quán | Không | Áp dụng ở frontend; backend kiểm bằng `shop_id` của từng món |
-| BR-21 | Chỉ đặt được món và combo đang bán, thuộc đúng quán, và quán đang hoạt động | Không | Lỗi trả danh sách mục không hợp lệ |
+| BR-21 | Chỉ đặt được món và combo đang bán, chưa bị xoá | Không | Lỗi trả danh sách mục không hợp lệ |
 | BR-22 | Đơn bị từ chối nếu giá trong giỏ khác giá hiện tại. Backend trả giá mới để khách xác nhận lại | Không | Không tự sửa giá thầm lặng |
 | BR-23 | Mỗi dòng có số lượng từ 1 đến P-08. Đơn có ít nhất 1 dòng, tổng tiền > 0 | Có (P-08) | Chặn đơn nhầm kiểu "999 ly" |
-| BR-24 | Tạo đơn là thao tác idempotent theo header `Idempotency-Key`: gửi lại cùng khoá thì trả về đúng đơn đã tạo. Cùng khoá mà nội dung giỏ khác thì bị từ chối | Không | Chống bấm hai lần hoặc gửi lại khi mạng lỗi. Khoá lưu cùng đơn, duy nhất trong quán |
-| BR-25 | Mã đơn có dạng `<SHOP>-<YYMMDD>-<số thứ tự trong ngày, 4 chữ số>`, ví dụ `CF-260410-0042`. Nội dung chuyển khoản QR là mã đơn | Không | Số thứ tự trong ngày giúp nhân viên gọi khách |
+| BR-24 | Tạo đơn là thao tác idempotent theo header `Idempotency-Key`: gửi lại cùng khoá thì trả về đúng đơn đã tạo. Cùng khoá mà nội dung giỏ khác thì bị từ chối | Không | Chống bấm hai lần hoặc gửi lại khi mạng lỗi. Khoá lưu cùng đơn, duy nhất toàn hệ thống |
+| BR-25 | Mã đơn có dạng `DH-<YYMMDD>-<số thứ tự trong ngày, 4 chữ số>`, ví dụ `DH-260410-0042`. Nội dung chuyển khoản QR là mã đơn | Không | Số thứ tự trong ngày giúp nhân viên gọi khách |
 | BR-26 | Chỉ xác nhận thanh toán được cho đơn `PENDING_PAYMENT`. Số tiền xác nhận phải bằng `total` của đơn | Không | Không hỗ trợ trả thiếu hoặc trả nhiều lần |
 | BR-27 | Mọi lệnh chuyển trạng thái đơn đều gửi kèm `version` hiện tại (optimistic locking). Lệch version thì trả 409 | Không | Hai nhân viên cùng thao tác một đơn |
 | BR-28 | Đơn `PENDING_PAYMENT` quá P-06 phút thì hệ thống tự huỷ, ghi lý do `PAYMENT_TIMEOUT` | Có | Job chạy mỗi phút, phải idempotent |
@@ -90,4 +87,6 @@ Cột **Cấu hình** cho biết rule có tham số chủ quán đổi được 
 | P-11 | Thời hạn được sửa chấm công | 3 ngày | Chủ quán |
 | P-12 | Số ngày tối đa được đăng ký ca trước | 14 ngày | Chủ quán |
 
-Tham số do chủ quán chốt được lưu theo từng quán trong bảng `shop_setting` (xem [04-erd.md](04-erd.md)). Tham số vận hành lưu trong cấu hình backend.
+Tham số do chủ quán chốt được lưu trong bản ghi cấu hình duy nhất `shop_info` (xem [04-erd.md](04-erd.md)). Tham số vận hành lưu trong cấu hình backend.
+
+Các mã BR-03, BR-05, BR-20 đã bỏ khi hệ thống chuyển sang phục vụ một quán. Mã đã bỏ không dùng lại cho rule khác.

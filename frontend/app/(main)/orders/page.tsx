@@ -37,8 +37,8 @@ function OrderHistory() {
       {orders?.length === 0 && (
         <p className="text-(--color-text-muted)">
           Bạn chưa có đơn nào.{" "}
-          <Link href="/feed" className="text-(--color-primary) hover:underline">
-            Chọn quán
+          <Link href="/" className="text-(--color-primary) hover:underline">
+            Xem menu
           </Link>
         </p>
       )}
@@ -54,7 +54,7 @@ function OrderHistory() {
                 <div>
                   <p className="text-foreground font-semibold">{o.code}</p>
                   <p className="text-xs text-(--color-text-muted)">
-                    {o.shopName} · {formatDateTime(o.createdAt)}
+                    {formatDateTime(o.createdAt)}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">

@@ -1,6 +1,6 @@
 // Cards
 export { ProductCard } from "./cards";
-export type { ProductCardProps, ShopCardProps } from "./cards";
+export type { ProductCardProps } from "./cards";
 
 // Search Bar
 export { SearchBar } from "./search-bar";

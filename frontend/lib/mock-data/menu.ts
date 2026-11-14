@@ -1,41 +1,36 @@
-// Seed menu of shop 1. lib/mock-data/db.ts copies it for the other shops.
+// Seed menu of the shop.
 import type { Combo, MenuCategory, Product } from "../types";
 
 // ===== MENU CATEGORIES =====
 export const MENU_CATEGORIES: MenuCategory[] = [
   {
     id: 1,
-    shopId: 1,
     name: "Cà Phê",
     icon: "fa-solid fa-mug-hot",
     sortOrder: 1,
   },
-  { id: 2, shopId: 1, name: "Trà", icon: "fa-solid fa-leaf", sortOrder: 2 },
-  { id: 3, shopId: 1, name: "Sữa Chua", icon: "fa-solid fa-jar", sortOrder: 3 },
+  { id: 2, name: "Trà", icon: "fa-solid fa-leaf", sortOrder: 2 },
+  { id: 3, name: "Sữa Chua", icon: "fa-solid fa-jar", sortOrder: 3 },
   {
     id: 4,
-    shopId: 1,
     name: "Nước Ép",
     icon: "fa-solid fa-blender",
     sortOrder: 4,
   },
   {
     id: 5,
-    shopId: 1,
     name: "Latte",
     icon: "fa-solid fa-mug-saucer",
     sortOrder: 5,
   },
   {
     id: 6,
-    shopId: 1,
     name: "Giải Khát / Ăn Vặt",
     icon: "fa-solid fa-ice-cream",
     sortOrder: 6,
   },
   {
     id: 7,
-    shopId: 1,
     name: "Topping",
     icon: "fa-solid fa-layer-group",
     sortOrder: 7,
@@ -46,7 +41,6 @@ export const MENU_CATEGORIES: MenuCategory[] = [
 export const MOCK_PRODUCTS: Product[] = [
   {
     id: 1,
-    shopId: 1,
     name: "Cà Phê Đen",
     categoryId: 1,
     price: 25000,
@@ -58,7 +52,6 @@ export const MOCK_PRODUCTS: Product[] = [
   },
   {
     id: 2,
-    shopId: 1,
     name: "Cà Phê Sữa",
     categoryId: 1,
     price: 30000,
@@ -70,7 +63,6 @@ export const MOCK_PRODUCTS: Product[] = [
   },
   {
     id: 3,
-    shopId: 1,
     name: "Bạc Xỉu",
     categoryId: 1,
     price: 32000,
@@ -82,7 +74,6 @@ export const MOCK_PRODUCTS: Product[] = [
   },
   {
     id: 4,
-    shopId: 1,
     name: "Cà Phê Trứng",
     categoryId: 1,
     price: 45000,
@@ -94,7 +85,6 @@ export const MOCK_PRODUCTS: Product[] = [
   },
   {
     id: 5,
-    shopId: 1,
     name: "Trà Đào Cam Sả",
     categoryId: 2,
     price: 35000,
@@ -106,7 +96,6 @@ export const MOCK_PRODUCTS: Product[] = [
   },
   {
     id: 6,
-    shopId: 1,
     name: "Trà Xanh Matcha",
     categoryId: 2,
     price: 40000,
@@ -118,7 +107,6 @@ export const MOCK_PRODUCTS: Product[] = [
   },
   {
     id: 7,
-    shopId: 1,
     name: "Trà Vải Hoa Nhài",
     categoryId: 2,
     price: 38000,
@@ -130,7 +118,6 @@ export const MOCK_PRODUCTS: Product[] = [
   },
   {
     id: 8,
-    shopId: 1,
     name: "Sữa Chua Trân Châu",
     categoryId: 3,
     price: 38000,
@@ -142,7 +129,6 @@ export const MOCK_PRODUCTS: Product[] = [
   },
   {
     id: 9,
-    shopId: 1,
     name: "Sữa Chua Dâu",
     categoryId: 3,
     price: 40000,
@@ -154,7 +140,6 @@ export const MOCK_PRODUCTS: Product[] = [
   },
   {
     id: 10,
-    shopId: 1,
     name: "Nước Ép Cam",
     categoryId: 4,
     price: 35000,
@@ -166,7 +151,6 @@ export const MOCK_PRODUCTS: Product[] = [
   },
   {
     id: 11,
-    shopId: 1,
     name: "Nước Ép Dưa Hấu",
     categoryId: 4,
     price: 30000,
@@ -178,7 +162,6 @@ export const MOCK_PRODUCTS: Product[] = [
   },
   {
     id: 12,
-    shopId: 1,
     name: "Latte Caramel",
     categoryId: 5,
     price: 45000,
@@ -190,7 +173,6 @@ export const MOCK_PRODUCTS: Product[] = [
   },
   {
     id: 13,
-    shopId: 1,
     name: "Latte Vanilla",
     categoryId: 5,
     price: 45000,
@@ -202,7 +184,6 @@ export const MOCK_PRODUCTS: Product[] = [
   },
   {
     id: 14,
-    shopId: 1,
     name: "Bánh Mì Nướng Bơ",
     categoryId: 6,
     price: 20000,
@@ -214,7 +195,6 @@ export const MOCK_PRODUCTS: Product[] = [
   },
   {
     id: 15,
-    shopId: 1,
     name: "Bánh Flan",
     categoryId: 6,
     price: 25000,
@@ -226,7 +206,6 @@ export const MOCK_PRODUCTS: Product[] = [
   },
   {
     id: 16,
-    shopId: 1,
     name: "Trân Châu Đen",
     categoryId: 7,
     price: 10000,
@@ -238,7 +217,6 @@ export const MOCK_PRODUCTS: Product[] = [
   },
   {
     id: 17,
-    shopId: 1,
     name: "Thạch Cà Phê",
     categoryId: 7,
     price: 10000,
@@ -250,7 +228,6 @@ export const MOCK_PRODUCTS: Product[] = [
   },
   {
     id: 18,
-    shopId: 1,
     name: "Trân Châu Trắng",
     categoryId: 7,
     price: 10000,
@@ -266,7 +243,6 @@ export const MOCK_PRODUCTS: Product[] = [
 export const MOCK_COMBOS: Combo[] = [
   {
     id: 1,
-    shopId: 1,
     name: "Combo Cà Phê Đôi",
     description: "2 ly cà phê đen + 2 bánh mì nướng bơ, tiết kiệm 15%.",
     price: 75000,
@@ -280,7 +256,6 @@ export const MOCK_COMBOS: Combo[] = [
   },
   {
     id: 2,
-    shopId: 1,
     name: "Combo Trà Sữa Nhóm",
     description: "2 trà đào cam sả + 2 trà xanh matcha, dành cho nhóm bạn.",
     price: 130000,
@@ -294,7 +269,6 @@ export const MOCK_COMBOS: Combo[] = [
   },
   {
     id: 3,
-    shopId: 1,
     name: "Combo Buổi Sáng",
     description: "1 cà phê sữa + 1 bánh flan, khởi đầu ngày mới ngọt ngào.",
     price: 48000,

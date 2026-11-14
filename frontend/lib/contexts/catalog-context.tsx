@@ -21,7 +21,6 @@ import type {
 import { errorMessage } from "../utils/errors";
 
 export interface CatalogContextType {
-  shopId: number;
   products: Product[];
   combos: Combo[];
   categories: MenuCategory[];
@@ -43,14 +42,8 @@ export interface CatalogContextType {
 
 const CatalogContext = createContext<CatalogContextType | undefined>(undefined);
 
-/** Catalog of one shop as seen by its staff (includes items not on sale). */
-export function CatalogProvider({
-  shopId,
-  children,
-}: {
-  shopId: number;
-  children: ReactNode;
-}) {
+/** Catalog as seen by staff (includes items not on sale). */
+export function CatalogProvider({ children }: { children: ReactNode }) {
   const [products, setProducts] = useState<Product[]>([]);
   const [combos, setCombos] = useState<Combo[]>([]);
   const [categories, setCategories] = useState<MenuCategory[]>([]);
@@ -60,9 +53,9 @@ export function CatalogProvider({
   const reload = useCallback(async () => {
     try {
       const [p, c, cat] = await Promise.all([
-        catalogService.listProducts(shopId),
-        catalogService.listCombos(shopId),
-        catalogService.listCategories(shopId),
+        catalogService.listProducts(),
+        catalogService.listCombos(),
+        catalogService.listCategories(),
       ]);
       setProducts(p);
       setCombos(c);
@@ -73,7 +66,7 @@ export function CatalogProvider({
     } finally {
       setIsLoading(false);
     }
-  }, [shopId]);
+  }, []);
 
   useEffect(() => {
     void reload();
@@ -87,7 +80,6 @@ export function CatalogProvider({
     };
 
   const value: CatalogContextType = {
-    shopId,
     products,
     combos,
     categories,
@@ -97,21 +89,21 @@ export function CatalogProvider({
     saveProduct: run((input: ProductInput, id?: number) =>
       id
         ? catalogService.updateProduct(id, input)
-        : catalogService.createProduct(shopId, input),
+        : catalogService.createProduct(input),
     ),
     deleteProduct: run(catalogService.deleteProduct),
     setProductAvailability: run(catalogService.setProductAvailability),
     saveCombo: run((input: ComboInput, id?: number) =>
       id
         ? catalogService.updateCombo(id, input)
-        : catalogService.createCombo(shopId, input),
+        : catalogService.createCombo(input),
     ),
     deleteCombo: run(catalogService.deleteCombo),
     setComboAvailability: run(catalogService.setComboAvailability),
     saveCategory: run((input: CategoryInput, id?: number) =>
       id
         ? catalogService.updateCategory(id, input)
-        : catalogService.createCategory(shopId, input),
+        : catalogService.createCategory(input),
     ),
     deleteCategory: run(catalogService.deleteCategory),
   };

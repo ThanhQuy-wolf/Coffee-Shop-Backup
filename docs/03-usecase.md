@@ -2,7 +2,9 @@
 
 ## 1. Sơ đồ use case
 
-Mermaid chưa có kiểu sơ đồ use case riêng. Sơ đồ dưới đây dùng `flowchart`: hình tròn là actor, hình bo tròn là use case, mũi tên nét liền là actor thực hiện use case. Quan hệ kế thừa giữa các actor không vẽ để sơ đồ đỡ rối: Customer làm được mọi việc của Guest, và Manager làm được mọi việc của Staff trong quán mình.
+Mermaid chưa có kiểu sơ đồ use case riêng. Sơ đồ dưới đây dùng `flowchart`: hình tròn là actor, hình bo tròn là use case, mũi tên nét liền là actor thực hiện use case. Quan hệ kế thừa giữa các actor không vẽ để sơ đồ đỡ rối: Customer làm được mọi việc của Guest, và Manager làm được mọi việc của Staff.
+
+Mã UC-03 (Tìm quán) đã bỏ khi hệ thống chuyển sang phục vụ một quán. Các mã khác giữ nguyên để không phải đánh số lại tài liệu.
 
 ### 1.1 Phía khách
 
@@ -15,8 +17,7 @@ flowchart LR
     subgraph KH[Khách]
         UC01([UC-01 Đăng ký tài khoản])
         UC02([UC-02 Đăng nhập / đăng xuất])
-        UC03([UC-03 Tìm quán])
-        UC04([UC-04 Xem menu quán])
+        UC04([UC-04 Xem menu])
         UC06([UC-06 Tìm kiếm món])
         UC05([UC-05 Quản lý giỏ hàng])
         UC07([UC-07 Đặt món và thanh toán])
@@ -28,7 +29,6 @@ flowchart LR
 
     guest --> UC01
     guest --> UC02
-    guest --> UC03
     guest --> UC04
     guest --> UC06
     guest --> UC05
@@ -96,10 +96,9 @@ flowchart LR
 |---|---|---|---|---|
 | UC-01 | Đăng ký tài khoản | Guest | FR-01 | `/register` |
 | UC-02 | Đăng nhập / đăng xuất | Mọi actor | FR-02, FR-03, FR-04 | `/login`, header |
-| UC-03 | Tìm quán | Guest | FR-05 | `/feed` |
-| UC-04 | Xem menu quán | Guest | FR-06 | `/shops/[shopId]` |
-| UC-05 | Quản lý giỏ hàng | Guest | FR-11 | `/shops/[shopId]`, `/checkout` |
-| UC-06 | Tìm kiếm món | Guest | FR-06 | `/shops/[shopId]` |
+| UC-04 | Xem menu | Guest | FR-06 | `/` (trang chủ) |
+| UC-05 | Quản lý giỏ hàng | Guest | FR-11 | `/`, `/checkout` |
+| UC-06 | Tìm kiếm món | Guest | FR-06 | `/` |
 | UC-07 | Đặt món và thanh toán | Guest | FR-12, FR-13 | `/checkout` |
 | UC-08 | Theo dõi đơn | Guest | FR-14 | `/orders/[orderId]` |
 | UC-09 | Xem lịch sử đơn | Customer | FR-15 | `/orders` |
@@ -126,16 +125,16 @@ flowchart LR
 | Mục | Nội dung |
 |---|---|
 | Actor | Khách vãng lai, Khách hàng |
-| Mục tiêu | Tạo đơn tại một quán và trả tiền để quán pha chế |
-| Tiền điều kiện | Giỏ hàng có ít nhất 1 món của một quán đang hoạt động |
+| Mục tiêu | Tạo đơn và trả tiền để quán pha chế |
+| Tiền điều kiện | Giỏ hàng có ít nhất 1 món |
 | Hậu điều kiện thành công | Có đơn `PENDING_PAYMENT` kèm thanh toán `PENDING`. Khách thấy mã đơn và (nếu chọn QR) mã QR |
 | Kích hoạt | Khách bấm "Đặt món" ở trang thanh toán |
 
 **Luồng chính**
-1. Khách mở `/checkout`. Hệ thống hiển thị các dòng trong giỏ, tổng tiền và tên quán.
+1. Khách mở `/checkout`. Hệ thống hiển thị các dòng trong giỏ và tổng tiền.
 2. Khách chọn phương thức thanh toán (Tiền mặt hoặc QR), có thể nhập số bàn và ghi chú.
-3. Khách bấm "Đặt món". Frontend sinh `Idempotency-Key` cho lần đặt này và gửi `POST /api/v1/shops/{shopId}/orders`.
-4. Hệ thống kiểm tra: quán hoạt động (BR-05), từng món đang bán (BR-21), giá khớp (BR-22), số lượng hợp lệ (BR-23).
+3. Khách bấm "Đặt món". Frontend sinh `Idempotency-Key` cho lần đặt này và gửi `POST /api/v1/orders`.
+4. Hệ thống kiểm tra: từng món đang bán (BR-21), giá khớp (BR-22), số lượng hợp lệ (BR-23).
 5. Hệ thống tạo đơn, chụp tên, giá bán và giá vốn vào `order_item`, sinh mã đơn (BR-25), tạo thanh toán `PENDING`.
 6. Frontend xoá giỏ và chuyển sang `/orders/{orderId}`.
 7. Nếu chọn QR: hiện mã QR với số tiền và nội dung là mã đơn. Nếu chọn tiền mặt: hiện hướng dẫn "Đọc mã đơn cho nhân viên tại quầy".
@@ -157,7 +156,7 @@ flowchart LR
 |---|---|
 | Actor | Nhân viên, Quản lý |
 | Mục tiêu | Thu tiền, pha chế và giao món đúng đơn |
-| Tiền điều kiện | Đã đăng nhập với role Staff hoặc Manager của quán |
+| Tiền điều kiện | Đã đăng nhập với role Staff hoặc Manager |
 | Hậu điều kiện thành công | Đơn `COMPLETED`, thanh toán `CONFIRMED` |
 
 **Luồng chính**
