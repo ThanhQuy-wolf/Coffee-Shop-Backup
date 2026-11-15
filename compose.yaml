@@ -1,0 +1,42 @@
+# Máy dev: `docker compose up -d --build` chạy PostgreSQL và backend (http://localhost:8080),
+# rồi chạy frontend bằng `cd frontend && npm run dev` (http://localhost:3000).
+# Chỉ cần database (để chạy backend bằng ./mvnw): `docker compose up -d postgres`.
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: drinkool
+      POSTGRES_USER: drinkool
+      POSTGRES_PASSWORD: drinkool
+      TZ: Asia/Ho_Chi_Minh
+    ports:
+      - "5432:5432"
+    volumes:
+      - drinkool-pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U drinkool -d drinkool"]
+      interval: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/drinkool
+      DB_USERNAME: drinkool
+      DB_PASSWORD: drinkool
+      # Profile dev nạp tài khoản và menu demo, OTP luôn là 123456. Không dùng cho production.
+      SPRING_PROFILES_ACTIVE: dev
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q UP"]
+      interval: 10s
+      start_period: 40s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  drinkool-pg:
