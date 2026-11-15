@@ -4,9 +4,10 @@ import type { NextConfig } from "next";
  * Next.js configuration.
  *
  * - output "standalone": used by the Docker image (see dockerfile).
- * - rewrites: in development, /api/* is proxied to the backend. Set
- *   API_PROXY_URL to point at another backend (default: the backend on the
- *   Docker host, port 32080).
+ * - rewrites: /api/* is proxied to the Spring Boot backend. Rewrites are
+ *   fixed at build time, so set API_PROXY_URL before `next build` when the
+ *   backend is not on http://localhost:8080 (e.g. http://backend:8080 in
+ *   Docker).
  *
  * Docs: https://nextjs.org/docs/app/api-reference/next-config-js
  */
@@ -21,16 +22,12 @@ const nextConfig: NextConfig = {
     ],
   },
   async rewrites() {
-    const rewrites = [];
-
-    if (process.env.NODE_ENV !== "production") {
-      rewrites.push({
+    return [
+      {
         source: "/api/:path*",
-        destination: `${process.env.API_PROXY_URL ?? "http://host.docker.internal:32080"}/api/:path*`,
-      });
-    }
-
-    return rewrites;
+        destination: `${process.env.API_PROXY_URL ?? "http://localhost:8080"}/api/:path*`,
+      },
+    ];
   },
 };
 

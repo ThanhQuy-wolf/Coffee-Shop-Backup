@@ -1,65 +1,46 @@
 // S-2 → S-5 in docs/05-api.md. There is only one shop (A-5).
-import { clone, db, delay, fail, requireActor } from "../mock-data/db";
 import type { ShopInfo, ShopSettings } from "../types";
+import { apiRequest } from "./client";
 
 export const shopService = {
   /**
-   * S-2: reads the shop's public info (name, address, hours, WiFi...).
+   * S-2: reads the shop's public information.
    *
-   * @returns the `shop_info` row
+   * @returns name, address, opening hours, wifi and social links
    */
-  async get(): Promise<ShopInfo> {
-    await delay();
-    return clone(db.shop);
+  get(): Promise<ShopInfo> {
+    return apiRequest<ShopInfo>("GET", "/v1/shop");
   },
 
   /**
-   * S-3: updates the shop's info. Managers only.
+   * S-3: replaces the shop's information.
    *
-   * @param data - all info fields
-   * @returns the saved info
-   * @throws {ApiError} 400 `VALIDATION` for an empty name, 403 for other roles
+   * @param data - every field of the shop
+   * @returns the saved information
+   * @throws {ApiError} 400 `VALIDATION` for an empty name; 403 for non-managers
    */
-  async update(data: ShopInfo): Promise<ShopInfo> {
-    await delay();
-    requireActor(["MANAGER"]);
-    if (!data.name.trim())
-      fail(400, "VALIDATION", "Tên quán không được để trống");
-    db.shop = clone(data);
-    return clone(db.shop);
+  update(data: ShopInfo): Promise<ShopInfo> {
+    return apiRequest<ShopInfo>("PUT", "/v1/shop", data);
   },
 
   /**
-   * S-4: reads the business parameters P-06, P-08 → P-12. Managers only.
+   * S-4: reads the parameters P-06, P-08 → P-12.
    *
-   * @returns current parameters
+   * @returns the current settings
+   * @throws {ApiError} 403 for non-managers
    */
-  async getSettings(): Promise<ShopSettings> {
-    await delay();
-    requireActor(["MANAGER"]);
-    return { ...db.settings };
+  getSettings(): Promise<ShopSettings> {
+    return apiRequest<ShopSettings>("GET", "/v1/shop/settings");
   },
 
   /**
-   * S-5: updates the business parameters. New values apply to orders and
-   * shifts created afterwards. Managers only.
+   * S-5: changes the parameters.
    *
-   * @param data - all parameters, non-negative integers
-   * @returns the saved parameters
-   * @throws {ApiError} 400 `VALIDATION` for invalid numbers
+   * @param data - all six parameters
+   * @returns the saved settings
+   * @throws {ApiError} 400 `VALIDATION` when a value is out of range
    */
-  async updateSettings(data: ShopSettings): Promise<ShopSettings> {
-    await delay();
-    requireActor(["MANAGER"]);
-    if (Object.values(data).some((v) => !Number.isInteger(v) || v < 0))
-      fail(400, "VALIDATION", "Tham số phải là số nguyên không âm");
-    if (data.paymentTimeoutMinutes < 1 || data.maxItemQuantity < 1)
-      fail(
-        400,
-        "VALIDATION",
-        "Thời hạn thanh toán và số lượng tối đa phải lớn hơn 0",
-      );
-    db.settings = { ...data };
-    return { ...data };
+  updateSettings(data: ShopSettings): Promise<ShopSettings> {
+    return apiRequest<ShopSettings>("PUT", "/v1/shop/settings", data);
   },
 };

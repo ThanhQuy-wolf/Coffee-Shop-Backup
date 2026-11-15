@@ -16,7 +16,7 @@ import { CATEGORY_COLORS } from "./constants";
 /**
  * Loads RP-1 → RP-3 for one period and derives the numbers the analytics
  * sections show. Reloads when the period changes; the category filter only
- * changes the derived numbers.
+ * reloads RP-3.
  * @param period Reporting period.
  * @param categoryFilter Category id, or `ALL_CATEGORY_ID`.
  * @returns Loading and error state, the raw reports and the derived figures
@@ -51,6 +51,7 @@ export function useAnalytics(period: AnalyticsPeriod, categoryFilter: number) {
     analyticsService
       .getProductSales(
         categoryFilter === ALL_CATEGORY_ID ? undefined : categoryFilter,
+        period,
       )
       .then(
         (rows) => alive && setSales(rows),
@@ -59,7 +60,7 @@ export function useAnalytics(period: AnalyticsPeriod, categoryFilter: number) {
     return () => {
       alive = false;
     };
-  }, [categoryFilter]);
+  }, [categoryFilter, period]);
 
   const pieData = useMemo(
     (): PieSlice[] =>

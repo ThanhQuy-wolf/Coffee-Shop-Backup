@@ -1,9 +1,5 @@
-/**
- * "Today" used by the shift schedule while it runs on mock data.
- * The mock shifts are generated around this date, so keep them in sync.
- * Switch to `new Date()` once shifts come from the backend.
- */
-export const SCHEDULE_TODAY = new Date(2026, 3, 10); // 10/04/2026
+/** Midnight of the day the app was opened, used as "today" by the shift schedule. */
+export const SCHEDULE_TODAY = new Date(new Date().setHours(0, 0, 0, 0));
 
 /**
  * Pads a number to two digits.

@@ -25,7 +25,7 @@ export function SummarySection({ period, summary }: SummarySectionProps) {
           icon="sack-dollar"
           title="Doanh thu"
           value={formatVNDShort(summary.revenue.current)}
-          subtitle={`${PERIOD_LABELS[period]} · chỉ tính đơn hoàn tất`}
+          subtitle={`${PERIOD_LABELS[period]} · tính theo lúc thu tiền`}
           comparison={summary.revenue}
           formatDelta={formatVNDShort}
         />
@@ -33,7 +33,7 @@ export function SummarySection({ period, summary }: SummarySectionProps) {
           icon="receipt"
           title="Số đơn hàng"
           value={formatNumber(summary.orders.current)}
-          subtitle="Đơn hoàn tất trong kỳ"
+          subtitle="Đơn đã thanh toán, chưa bị huỷ"
           comparison={summary.orders}
           formatDelta={formatNumber}
         />

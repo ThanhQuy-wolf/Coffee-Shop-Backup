@@ -3,7 +3,13 @@
 import { ReactNode, createContext, useContext } from "react";
 
 import { useHydrated, useLocalStorage } from "../hooks/use-local-storage";
-import { authService, setAccessToken } from "../services";
+import {
+  authService,
+  setAccessToken,
+  setRefreshToken,
+  setSessionHooks,
+  setSessionLoaded,
+} from "../services";
 import type { AuthSession, User, UserRole } from "../types";
 
 interface AuthContextType {
@@ -87,9 +93,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Set during render, not in an effect, so children's effects already send
   // the token on their first request.
   setAccessToken(session?.accessToken ?? null);
+  setRefreshToken(session?.refreshToken ?? null);
+  setSessionHooks({
+    refreshToken: () => session?.refreshToken ?? null,
+    onRefreshed: (next) => setSession(next),
+    onExpired: () => setSession(null),
+  });
+  if (isReady) setSessionLoaded();
 
   const startSession = (next: AuthSession) => {
     setAccessToken(next.accessToken);
+    setRefreshToken(next.refreshToken);
     setSession(next);
   };
 
@@ -108,6 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     void authService.logout();
     setAccessToken(null);
+    setRefreshToken(null);
     setSession(null);
   };
 

@@ -1,5 +1,5 @@
-// Option rules shared by the option picker and the mock backend, so the UI
-// blocks exactly what the server would reject (BR-16 → BR-19).
+// Option rules the option picker checks before O-1, mirroring the backend so
+// the UI blocks what the server would reject (BR-16 → BR-19).
 import type { OptionGroup, OptionValue } from "../types";
 
 /** One reason a selection breaks BR-18. */

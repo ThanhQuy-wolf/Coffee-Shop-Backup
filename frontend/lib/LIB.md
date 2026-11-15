@@ -18,16 +18,13 @@ lib/
 |   +-- menu-context.tsx     # useMenu: active category on the home page menu
 |   +-- shift-context.tsx    # useShift: shifts with a per-user view status + actions
 +-- services/                # The ONLY place that knows where data comes from
-|   +-- client.ts            # apiRequest/apiPost, ApiError(status, code, message, details)
+|   +-- client.ts            # apiFetch/apiRequest/apiPost/query, ApiError, token refresh (A-5)
 |   +-- auth.ts              # A-1..A-9 (authService, notificationService)
 |   +-- shops.ts             # S-2..S-5 (shopService: shop_info, single row)
-|   +-- catalog.ts           # C-1..C-14 (catalogService)
+|   +-- catalog.ts           # S-6, C-1..C-19 (catalogService)
 |   +-- orders.ts            # O-1..O-9, R-1..R-2 (orderService, reviewService)
 |   +-- shifts.ts            # W-1..W-12 (shiftService)
 |   +-- analytics.ts         # RP-1..RP-4 (analyticsService)
-+-- mock-data/               # In-memory backend, imported only by services/
-|   +-- db.ts                # state, mock clock, auth helpers, background jobs
-|   +-- users.ts | shops.ts | menu.ts | shifts.ts | analytics.ts
 +-- hooks/
 |   +-- use-local-storage.ts # useLocalStorage (hydration-safe), useHydrated
 |   +-- use-guest-orders.ts  # guest tokens of orders placed on this device
@@ -46,38 +43,33 @@ lib/
 - Every exported function, context member and service method has JSDoc with
   `@param`, `@returns` and, for services, `@throws {ApiError}` with the code and
   the endpoint (`O-1`, `W-7`...). Keep it updated when the behaviour changes.
-- **Components never import `lib/mock-data`.** They use a context or a service.
-- Every service function is `async` and throws `ApiError`. Choose the message
-  from `err.code` (`BR-xx`, `NOT_FOUND`...), never from `err.message`.
-- To connect a real endpoint, replace the body of its service function with
-  `apiRequest(...)`. Callers stay the same.
+- **Components never call `fetch` themselves.** They use a context or a service.
+- Every service function returns a promise and throws `ApiError`. Choose the
+  message from `err.code` (`BR-xx`, `NOT_FOUND`...), never from `err.message`.
 - Mount order: `AuthProvider > CartProvider` (root, `app/providers.tsx`).
   `CatalogProvider` + `ManagerProvider` are mounted by the manager layout,
   `ShiftProvider` by the schedule page, `MenuProvider` by the home page.
 
-## Mock backend
-
-- State lives in memory and **resets on page reload**. Client-side navigation
-  keeps it, so a flow should be tested without reloading.
-- Mock time starts at 10/04/2026 09:00 and runs in real time
-  (`orderService.now()`, `shiftService.now()`).
-- `runJobs()` runs before each call: auto-cancel unpaid orders (BR-28) and
-  revert undecided leave requests (BR-48).
-- Access tokens look like `mock.<userId>`.
-- There is one shop (A-5): `db.shop` and `db.settings` mirror the single
-  `shop_info` row, and no row carries a `shopId`. Order codes are
-  `DH-YYMMDD-NNNN` (BR-25).
-
-| Account                          | Login                                | Role     |
-| -------------------------------- | ------------------------------------ | -------- |
-| `admin` / `admin`                | Tab "Nhân viên quán"                 | Manager  |
-| `an`, `binh`, `cuong` / `123456` | Tab "Nhân viên quán"                 | Staff    |
-| `0987654321` / `user1`           | Tab "Khách hàng" (real backend, A-1) | Customer |
-| OTP for registration             | `123456`                             |          |
-
 ## Backend
 
-`/api/*` is proxied to the backend in development by `next.config.ts` (default
-`http://host.docker.internal:32080`, override with `API_PROXY_URL`). Only
-`POST /api/customer/login` is real today. Its user is mirrored into the mock so
-the other mocked endpoints recognise the customer.
+Every service calls the Spring Boot backend in `../backend` through `/api/*`.
+`next.config.ts` rewrites it to `API_PROXY_URL` (default
+`http://localhost:8080`); the value is fixed at build time.
+
+- `AuthProvider` stores the session in localStorage and hands the tokens to
+  `client.ts`. A call that gets 401 refreshes once with A-5 and is retried;
+  calls made at the same time share that refresh, because reusing a refresh
+  token revokes every session. A failed refresh logs the user out.
+- O-2 sends `If-None-Match`, so polling an unchanged order gets a 304 and the
+  cached order.
+- `orderService.now()` and `shiftService.now()` are the browser clock.
+- O-4 shows one business day, today when no date is given.
+
+Demo accounts come from `backend/src/main/resources/db/dev` (profile `dev`):
+
+| Account                          | Login                | Role     |
+| -------------------------------- | -------------------- | -------- |
+| `admin` / `admin`                | Tab "Nhân viên quán" | Manager  |
+| `an`, `binh`, `cuong` / `123456` | Tab "Nhân viên quán" | Staff    |
+| `0987654321` / `user1`           | Tab "Khách hàng"     | Customer |
+| OTP for registration             | `123456`             |          |

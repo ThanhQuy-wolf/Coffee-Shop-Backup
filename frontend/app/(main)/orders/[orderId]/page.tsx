@@ -37,7 +37,7 @@ export default function OrderPage() {
   const { orderId } = useParams<{ orderId: string }>();
   const id = Number(orderId);
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isReady } = useAuth();
   const { loadCart } = useCart();
   const guestOrders = useGuestOrders();
   const guestToken = guestOrders.tokenFor(id);
@@ -66,6 +66,8 @@ export default function OrderPage() {
   const isFinal = !!order && FINAL.has(order.status);
 
   useEffect(() => {
+    // The guest token is read from localStorage, which the first render cannot see yet
+    if (!isReady) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect -- state is set only after the service call resolves
     load();
     if (isFinal) return;
@@ -75,7 +77,7 @@ export default function OrderPage() {
       clearInterval(poll);
       clearInterval(tick);
     };
-  }, [load, isFinal]);
+  }, [load, isFinal, isReady]);
 
   if (loadError && !order) {
     return (

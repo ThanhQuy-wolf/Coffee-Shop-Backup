@@ -19,6 +19,10 @@ COPY . .
 # Tắt dữ liệu thu thập của Next.js trong quá trình build
 ENV NEXT_TELEMETRY_DISABLED 1
 
+# Địa chỉ backend cho rewrite /api/*, được ghi cố định lúc build
+ARG API_PROXY_URL=http://backend:8080
+ENV API_PROXY_URL=$API_PROXY_URL
+
 RUN npm run build
 
 # --- Giai đoạn 3: Runner (Sản phẩm cuối) ---

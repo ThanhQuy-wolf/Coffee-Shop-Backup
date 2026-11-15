@@ -10,7 +10,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type SubmitEvent, useEffect, useState } from "react";
 
-const DEMO_OTP = "123456"; // the mock always sends this code
+const DEMO_OTP = "123456"; // drinkool.auth.otp-fixed-code of the backend dev profile
 const MIN_PASSWORD = 6;
 
 /**
