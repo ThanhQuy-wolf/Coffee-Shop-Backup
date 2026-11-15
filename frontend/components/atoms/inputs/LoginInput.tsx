@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { Icon } from "../icons";
 import { LoginInputProps } from "./Input.types";
 
 /**
@@ -32,9 +33,7 @@ export default function LoginInput({
           className="absolute top-1/2 right-4 -translate-y-1/2 text-(--color-text-muted) transition-colors hover:text-(--color-primary)"
           aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
         >
-          <i
-            className={`fa-solid ${showPassword ? "fa-eye-slash" : "fa-eye"}`}
-          ></i>
+          <Icon name={showPassword ? "eye-slash" : "eye"} />
         </button>
       );
     }
@@ -50,7 +49,10 @@ export default function LoginInput({
         {label}
       </label>
       <div className="relative">
-        <i className="fa-solid fa-user absolute top-1/2 left-4 hidden -translate-y-1/2 text-(--color-text-muted) lg:block"></i>
+        <Icon
+          name="user"
+          className="absolute top-1/2 left-4 hidden -translate-y-1/2 text-(--color-text-muted) lg:block"
+        />
         <input
           id={name}
           type={showPassword ? "text" : type}
@@ -58,7 +60,7 @@ export default function LoginInput({
           onChange={onChange}
           placeholder={label}
           {...restProps}
-          className={`text-foreground focus:ring-opacity-20 w-full rounded-xl border bg-white px-10 py-3 transition-all duration-150 outline-none placeholder:text-(--color-text-muted) focus:border-(--color-primary) focus:ring-2 focus:ring-(--color-primary) lg:pl-11 ${errors ? "border-red-400" : "border-(--color-border)"} `}
+          className={`text-foreground focus:ring-opacity-20 w-full rounded-xl border bg-white px-10 py-3 transition-all duration-150 outline-none placeholder:text-(--color-text-muted) focus:border-(--color-primary) focus:ring-2 focus:ring-(--color-primary) lg:pl-11 ${errors ? "border-(--color-danger)" : "border-(--color-border)"} `}
         />
         {isPassword()}
       </div>

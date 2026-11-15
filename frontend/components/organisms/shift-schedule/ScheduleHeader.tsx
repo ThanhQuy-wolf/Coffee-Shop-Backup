@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/atoms";
 import { useShift } from "@/lib/contexts/shift-context";
 import {
   MONTH_NAMES_VI,
@@ -74,11 +75,12 @@ export default function ScheduleHeader({ onCreateShift }: ScheduleHeaderProps) {
         <div className="hidden items-center gap-1 md:flex">
           <button
             title="Về trước"
+            aria-label="Về trước"
             type="button"
             onClick={view === "week" ? goToPrevWeek : goToPrevMonth}
             className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-(--color-border-light) bg-transparent text-(--color-text-muted) transition hover:bg-gray-50"
           >
-            <i className="fa-solid fa-chevron-left text-xs"></i>
+            <Icon name="chevron-left" className="text-xs" />
           </button>
           <button
             type="button"
@@ -89,11 +91,12 @@ export default function ScheduleHeader({ onCreateShift }: ScheduleHeaderProps) {
           </button>
           <button
             title="Tiếp theo"
+            aria-label="Tiếp theo"
             type="button"
             onClick={view === "week" ? goToNextWeek : goToNextMonth}
             className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-(--color-border-light) bg-transparent text-(--color-text-muted) transition hover:bg-gray-50"
           >
-            <i className="fa-solid fa-chevron-right text-xs"></i>
+            <Icon name="chevron-right" className="text-xs" />
           </button>
         </div>
 
@@ -103,7 +106,7 @@ export default function ScheduleHeader({ onCreateShift }: ScheduleHeaderProps) {
             onClick={onCreateShift}
             className="hidden cursor-pointer items-center gap-1.5 rounded-xl border-none bg-(--color-primary) px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90 md:flex"
           >
-            <i className="fa-solid fa-plus"></i>
+            <Icon name="plus" />
             Tạo ca
           </button>
         )}
@@ -111,19 +114,21 @@ export default function ScheduleHeader({ onCreateShift }: ScheduleHeaderProps) {
         <div className="flex items-center gap-1 md:hidden">
           <button
             title="Về trước"
+            aria-label="Về trước"
             type="button"
             onClick={view === "week" ? goToPrevWeek : goToPrevMonth}
             className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border-none bg-transparent text-(--color-text-muted)"
           >
-            <i className="fa-solid fa-chevron-left text-xs"></i>
+            <Icon name="chevron-left" className="text-xs" />
           </button>
           <button
             title="Tiếp theo"
+            aria-label="Tiếp theo"
             type="button"
             onClick={view === "week" ? goToNextWeek : goToNextMonth}
             className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border-none bg-transparent text-(--color-text-muted)"
           >
-            <i className="fa-solid fa-chevron-right text-xs"></i>
+            <Icon name="chevron-right" className="text-xs" />
           </button>
         </div>
       </div>

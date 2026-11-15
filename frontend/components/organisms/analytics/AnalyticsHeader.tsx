@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/atoms";
 import type { AnalyticsPeriod } from "@/lib/types";
 import Link from "next/link";
 
@@ -24,20 +25,21 @@ export function AnalyticsHeader({
       <div className="mx-auto flex max-w-screen-2xl items-center gap-4 px-4 py-3">
         <Link
           href="/manager"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-(--color-text-muted) transition-colors hover:bg-(--color-accent-light) hover:text-(--color-primary)"
+          aria-label="Quay lại trang quản lý"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-(--color-text-muted) transition-colors hover:bg-(--color-accent-light) hover:text-(--color-primary)"
         >
-          <i className="fa-solid fa-arrow-left"></i>
+          <Icon name="arrow-left" />
         </Link>
-        <div className="flex items-center gap-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-(--color-accent-light) text-(--color-primary)">
-            <i className="fa-solid fa-chart-line"></i>
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-(--color-accent-light) text-(--color-primary) sm:flex">
+            <Icon name="chart-line" />
           </span>
-          <div>
-            <h1 className="text-foreground text-lg leading-tight font-bold">
-              Thống kê & Phân tích tài chính
+          <div className="min-w-0">
+            <h1 className="text-foreground text-base leading-tight font-bold sm:text-lg">
+              Thống kê tài chính
             </h1>
-            <p className="text-xs text-(--color-text-muted)">
-              Financial Analytics Dashboard
+            <p className="truncate text-xs text-(--color-text-muted)">
+              Doanh thu, lợi nhuận và món bán chạy
             </p>
           </div>
         </div>
@@ -46,6 +48,8 @@ export function AnalyticsHeader({
           {(Object.keys(PERIOD_LABELS) as AnalyticsPeriod[]).map((p) => (
             <button
               key={p}
+              type="button"
+              aria-pressed={period === p}
               onClick={() => onPeriodChange(p)}
               className={`hidden rounded-lg px-3 py-1.5 text-xs font-medium transition-colors sm:block ${
                 period === p
@@ -58,9 +62,10 @@ export function AnalyticsHeader({
           ))}
           <select
             title="Chọn kỳ"
+            aria-label="Chọn kỳ thống kê"
             value={period}
             onChange={(e) => onPeriodChange(e.target.value as AnalyticsPeriod)}
-            className="text-foreground block rounded-lg border border-(--color-border) bg-(--color-bg-card) px-2 py-1.5 text-xs sm:hidden"
+            className="text-foreground block rounded-lg border border-(--color-border) bg-(--color-bg-card) px-2 py-2 text-sm sm:hidden"
           >
             {(Object.entries(PERIOD_LABELS) as [AnalyticsPeriod, string][]).map(
               ([k, v]) => (

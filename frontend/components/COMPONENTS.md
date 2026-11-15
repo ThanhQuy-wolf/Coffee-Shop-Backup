@@ -43,6 +43,7 @@ use molecules and atoms, never another template).
 | Folder               | Exports                                         | Use                                                            |
 | -------------------- | ----------------------------------------------- | -------------------------------------------------------------- |
 | `cards/`             | `ProductCard`, `ShiftCard`, `SHIFT_VIEW_STYLES` | Menu card; shift card coloured by state                        |
+| `empty-state/`       | `EmptyState`                                    | Icon, headline, hint and optional link for an empty list/page  |
 | `modal/`             | `Modal`, `ModalHeader`                          | Dialog shell (Esc, backdrop, scroll lock, ARIA) and its header |
 | `notification-bell/` | `NotificationBell`                              | Unread notifications (A-8, A-9)                                |
 | `search-bar/`        | `SearchBar`                                     | Search field with clear button                                 |

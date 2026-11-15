@@ -12,3 +12,6 @@ export type { LoginInputProps, TextareaProps } from "./inputs";
 
 export { Caption, Heading, Text } from "./typography";
 export type { CaptionProps, HeadingProps, TextProps } from "./typography";
+
+export { Icon } from "./icons";
+export type { IconProps } from "./icons";

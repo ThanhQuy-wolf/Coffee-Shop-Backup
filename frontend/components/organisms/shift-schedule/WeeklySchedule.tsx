@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/atoms";
 import { ShiftCard } from "@/components/molecules/cards";
 import { useShift } from "@/lib/contexts/shift-context";
 import {
@@ -72,22 +73,24 @@ export default function WeeklySchedule({
         <div className="mb-3 flex items-center justify-between">
           <button
             title="Tuần trước"
+            aria-label="Tuần trước"
             type="button"
             onClick={goToPrevWeek}
             className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-none bg-transparent text-(--color-text-muted) transition hover:bg-gray-100"
           >
-            <i className="fa-solid fa-chevron-left text-xs"></i>
+            <Icon name="chevron-left" className="text-xs" />
           </button>
           <h3 className="text-base font-bold text-(--color-primary-dark)">
             {MONTH_NAMES_VI[currentDate.getMonth()]} {currentDate.getFullYear()}
           </h3>
           <button
             title="Tuần sau"
+            aria-label="Tuần sau"
             type="button"
             onClick={goToNextWeek}
             className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-none bg-transparent text-(--color-text-muted) transition hover:bg-gray-100"
           >
-            <i className="fa-solid fa-chevron-right text-xs"></i>
+            <Icon name="chevron-right" className="text-xs" />
           </button>
         </div>
 
@@ -147,9 +150,10 @@ export default function WeeklySchedule({
               className="rounded-xl border border-(--color-border-light) bg-white p-3"
             >
               <div className="mb-2 flex items-center gap-2">
-                <i
-                  className={`${dept.icon} text-xs text-(--color-primary)`}
-                ></i>
+                <Icon
+                  name={dept.icon}
+                  className="text-xs text-(--color-primary)"
+                />
                 <span className="text-xs font-semibold text-(--color-text-secondary)">
                   {dept.name}
                 </span>
@@ -168,7 +172,7 @@ export default function WeeklySchedule({
                     onClick={() => onCreateShift(selectedDateStr)}
                     className="flex w-full cursor-pointer items-center justify-center rounded-lg border border-dashed border-gray-300 bg-transparent py-2 text-xs text-gray-400 transition hover:border-(--color-primary) hover:text-(--color-primary)"
                   >
-                    <i className="fa-solid fa-plus mr-1"></i>
+                    <Icon name="plus" className="mr-1" />
                     Thêm ca
                   </button>
                 )}
@@ -214,9 +218,10 @@ export default function WeeklySchedule({
             <tr key={dept.id}>
               <td className="border-r border-b border-(--color-border-light) bg-gray-50/50 px-3 py-3 align-top">
                 <div className="flex items-center gap-2">
-                  <i
-                    className={`${dept.icon} text-xs text-(--color-primary)`}
-                  ></i>
+                  <Icon
+                    name={dept.icon}
+                    className="text-xs text-(--color-primary)"
+                  />
                   <span className="text-xs font-semibold text-(--color-text-secondary)">
                     {dept.name}
                   </span>
@@ -249,7 +254,7 @@ export default function WeeklySchedule({
                           onClick={() => onCreateShift(dateStr)}
                           className="mt-auto flex cursor-pointer items-center justify-center rounded-lg border border-dashed border-gray-300 bg-transparent py-1 text-[10px] text-gray-400 transition hover:border-(--color-primary) hover:text-(--color-primary)"
                         >
-                          <i className="fa-solid fa-plus mr-1"></i>
+                          <Icon name="plus" className="mr-1" />
                           Thêm ca
                         </button>
                       )}

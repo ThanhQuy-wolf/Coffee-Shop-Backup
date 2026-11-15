@@ -4,7 +4,7 @@ The smallest components. They hold no app state and call no service. Import them
 from the layer barrel:
 
 ```tsx
-import { Alert, Button, Spinner } from "@/components/atoms";
+import { Alert, Button, Icon, Spinner } from "@/components/atoms";
 ```
 
 Each atom and each prop has JSDoc, so the editor shows the details on hover.
@@ -12,7 +12,7 @@ Each atom and each prop has JSDoc, so the editor shows the details on hover.
 ## Button (`buttons/`)
 
 ```tsx
-<Button variant="primary" size="md" icon="fa-check" onClick={save}>Lưu</Button>
+<Button variant="primary" size="md" icon="check" onClick={save}>Lưu</Button>
 <Button style="login" variant="primaryNoBorder" type="submit">Đăng nhập</Button>
 ```
 
@@ -20,9 +20,26 @@ Each atom and each prop has JSDoc, so the editor shows the details on hover.
 - `variant`: `primary`, `secondary`, `danger`, `ghost`, `primaryNoBorder`,
   `bgWhite`.
 - `size`: `sm`, `md`, `lg`.
-- `icon`: FontAwesome name without `fa-solid`; `iconPosition`: `left` or
-  `right`.
+- `icon`: an `Icon` name such as `check`; `iconPosition`: `left` or `right`.
 - Other `<button>` attributes pass through.
+
+## Icon (`icons/`)
+
+```tsx
+<Icon name="cart-shopping" />                         // decorative, hidden from screen readers
+<Icon name="clock" label="Giờ mở cửa" />              // meaningful on its own
+<Icon name="star" filled className="text-yellow-400" />
+<Icon name={category.icon} className="text-sm" />     // "fa-solid fa-mug-hot" also works
+```
+
+- SVG icons from `lucide-react`, bundled with the app. Nothing is loaded from a
+  CDN, so icons still show when the network blocks one.
+- The icon is `1em` square: size it with `text-*`, colour it with `text-(--…)`.
+- Names keep the old FontAwesome spelling (`mug-hot`, `circle-check`, ...),
+  because category icons are stored that way. The full list is the `ICONS` map
+  in `Icon.tsx`; add a line there to use a new icon. An unknown name renders a
+  plain circle.
+- An icon-only button must carry `aria-label`.
 
 ## Alert and Spinner (`feedback/`)
 

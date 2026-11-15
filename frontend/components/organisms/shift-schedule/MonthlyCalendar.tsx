@@ -129,7 +129,7 @@ export default function MonthlyCalendar({
                   {summary.absent > 0 && (
                     <div className="flex items-center gap-1.5">
                       <span className="h-2 w-2 rounded-full bg-red-400"></span>
-                      <span className="text-[10px] text-red-600">
+                      <span className="text-[10px] text-(--color-danger)">
                         {summary.absent} vắng
                       </span>
                     </div>

@@ -69,7 +69,7 @@ export default function ProductModal({
       >
         <div>
           <label htmlFor="product-name" className={labelCls}>
-            Tên món <span className="text-red-500">*</span>
+            Tên món <span className="text-(--color-danger)">*</span>
           </label>
           <input
             id="product-name"
@@ -84,7 +84,7 @@ export default function ProductModal({
 
         <div>
           <label htmlFor="product-category" className={labelCls}>
-            Danh mục <span className="text-red-500">*</span>
+            Danh mục <span className="text-(--color-danger)">*</span>
           </label>
           <select
             id="product-category"
@@ -106,7 +106,7 @@ export default function ProductModal({
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label htmlFor="product-price" className={labelCls}>
-              Giá bán (đ) <span className="text-red-500">*</span>
+              Giá bán (đ) <span className="text-(--color-danger)">*</span>
             </label>
             <input
               id="product-price"

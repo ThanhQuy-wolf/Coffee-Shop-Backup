@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert } from "@/components/atoms";
+import { Alert, Spinner } from "@/components/atoms";
 import {
   AnalyticsHeader,
   ProductAnalysisSection,
@@ -25,6 +25,9 @@ export default function AnalyticsPage() {
 
       <main className="mx-auto max-w-screen-2xl space-y-6 p-4 pb-10">
         <Alert message={a.error} />
+        {!a.summary && !a.error && (
+          <Spinner label="Đang tải số liệu..." className="py-16" />
+        )}
         {a.summary && <SummarySection period={period} summary={a.summary} />}
 
         {/* The SVG charts need at least one point to compute their scales */}

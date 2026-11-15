@@ -1,3 +1,5 @@
+import { Icon } from "../icons";
+
 export interface SpinnerProps {
   /** Text next to the icon, e.g. "Đang tải menu...". Icon only when omitted. */
   label?: string;
@@ -24,10 +26,10 @@ export default function Spinner({
       role="status"
       className={`flex items-center justify-center gap-2 text-sm text-(--color-text-muted) ${className}`}
     >
-      <i
-        className={`fa-solid fa-spinner fa-spin text-(--color-primary) ${size === "lg" ? "text-3xl" : "text-base"}`}
-        aria-hidden="true"
-      ></i>
+      <Icon
+        name="spinner"
+        className={`animate-spin text-(--color-primary) motion-reduce:animate-none ${size === "lg" ? "text-3xl" : "text-base"}`}
+      />
       {label && <span>{label}</span>}
     </div>
   );

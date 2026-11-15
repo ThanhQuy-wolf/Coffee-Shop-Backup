@@ -1,6 +1,7 @@
 "use client";
 
-import { Alert } from "@/components/atoms";
+import { Alert, Icon } from "@/components/atoms";
+import { EmptyState } from "@/components/molecules/empty-state";
 import { useManager } from "@/lib/contexts/manager-context";
 import type { OptionGroup } from "@/lib/types";
 import { formatVND } from "@/lib/utils/currency";
@@ -53,8 +54,8 @@ export default function OptionGroupsTab() {
           onClick={() => setModalGroup("new")}
           className="flex shrink-0 cursor-pointer items-center gap-2 rounded-xl border-none bg-(--color-primary) px-4 py-2 text-sm font-semibold text-white transition hover:bg-(--color-primary-dark) active:scale-95"
         >
-          <i className="fa-solid fa-plus"></i>
-          <span className="hidden sm:inline">Thêm nhóm</span>
+          <Icon name="plus" />
+          <span>Thêm nhóm</span>
         </button>
       </div>
 
@@ -82,15 +83,15 @@ export default function OptionGroupsTab() {
                   aria-label={`Sửa nhóm ${g.name}`}
                   className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-(--color-border-light) bg-transparent text-(--color-text-muted) transition hover:border-(--color-primary-light) hover:text-(--color-primary)"
                 >
-                  <i className="fa-solid fa-pen text-xs"></i>
+                  <Icon name="pen" className="text-xs" />
                 </button>
                 <button
                   onClick={() => setDeleteTarget(g)}
                   title="Xóa"
                   aria-label={`Xoá nhóm ${g.name}`}
-                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-transparent bg-transparent text-(--color-text-muted) transition hover:border-red-200 hover:bg-red-50 hover:text-red-500"
+                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-transparent bg-transparent text-(--color-text-muted) transition hover:border-(--color-danger)/30 hover:bg-(--color-danger-bg) hover:text-(--color-danger)"
                 >
-                  <i className="fa-solid fa-trash text-xs"></i>
+                  <Icon name="trash" className="text-xs" />
                 </button>
               </div>
             </header>
@@ -137,10 +138,13 @@ export default function OptionGroupsTab() {
         ))}
 
         {optionGroups.length === 0 && (
-          <div className="col-span-full flex flex-col items-center gap-3 py-16 text-(--color-text-muted)">
-            <i className="fa-solid fa-sliders text-4xl opacity-30"></i>
-            <p className="text-sm">Chưa có nhóm tuỳ chọn nào</p>
-          </div>
+          <EmptyState
+            size="sm"
+            icon="sliders"
+            title="Chưa có nhóm tuỳ chọn nào"
+            description="Tạo nhóm như Size, Mức đường hay Topping rồi gắn vào món."
+            className="col-span-full"
+          />
         )}
       </div>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { ProductCard } from "@/components/molecules/cards";
+import { EmptyState } from "@/components/molecules/empty-state";
 import { MobileCategoryTabs } from "@/components/organisms/navigation";
 import { useMenu } from "@/lib/contexts/menu-context";
 import { ALL_CATEGORY_ID } from "@/lib/services/catalog";
@@ -50,14 +51,17 @@ export default function ProductGrid({
       <MobileCategoryTabs />
 
       {isEmpty ? (
-        <div className="flex flex-col items-center justify-center gap-4 py-24 text-(--color-text-muted)">
-          <i className="fa-solid fa-mug-hot text-5xl opacity-30"></i>
-          <p className="text-base font-medium">
-            {searchQuery
+        <EmptyState
+          icon={searchQuery ? "magnifying-glass" : "mug-hot"}
+          title={
+            searchQuery
               ? `Không tìm thấy món nào cho "${searchQuery}"`
-              : "Chưa có món trong danh mục này"}
-          </p>
-        </div>
+              : "Chưa có món trong danh mục này"
+          }
+          description={
+            searchQuery ? "Thử gõ ít chữ hơn hoặc tên khác." : undefined
+          }
+        />
       ) : (
         <div className={`grid gap-4 ${gridCols}`}>
           {visibleCombos.map((combo) => (

@@ -1,12 +1,16 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Be_Vietnam_Pro, Geist_Mono } from "next/font/google";
 
 import "./globals.css";
 import { Providers } from "./providers";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+// Be Vietnam Pro is drawn for Vietnamese, so stacked diacritics such as
+// "ặ" or "ỗ" keep their spacing, which Arial and Geist do not.
+const beVietnam = Be_Vietnam_Pro({
+  variable: "--font-be-vietnam",
+  subsets: ["latin", "vietnamese"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
@@ -16,7 +20,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Drinkool — Đặt đồ uống tại quán",
-  description: "Chọn quán, đặt món và thanh toán ngay trên điện thoại.",
+  description: "Đặt món và thanh toán ngay tại bàn trên điện thoại.",
   icons: {
     icon: "/favicon/favicon.ico",
     shortcut: "/favicon/favicon.ico",
@@ -25,8 +29,7 @@ export const metadata: Metadata = {
 };
 
 /**
- * Root HTML layout: fonts, the FontAwesome stylesheet and the app-wide
- * providers.
+ * Root HTML layout: fonts and the app-wide providers.
  * @param props.children The route group layout.
  */
 export default function RootLayout({
@@ -36,17 +39,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi">
-      <head>
-        {/* FontAwesome 6 — icons used throughout the app */}
-        <link
-          rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
-          crossOrigin="anonymous"
-          referrerPolicy="no-referrer"
-        />
-      </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col antialiased`}
+        className={`${beVietnam.variable} ${geistMono.variable} flex min-h-screen flex-col antialiased`}
       >
         <Providers>{children}</Providers>
       </body>

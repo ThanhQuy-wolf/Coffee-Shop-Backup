@@ -13,6 +13,7 @@
   --color-primary-dark:    #4A3728; /* dark espresso */
   --color-accent:          #C8973A; /* golden caramel */
   --color-accent-light:    #F0D9A8; /* pale caramel */
+  --color-accent-strong:   #8C6218; /* caramel for text on light backgrounds (5:1) */
 
   /* --- Background Colors --- */
   --color-bg-main:         #FDF6EC; /* warm beige */
@@ -24,9 +25,20 @@
   /* --- Text Colors --- */
   --color-text-primary:    #2C1A0E; /* very dark brown */
   --color-text-secondary:  #6F4E37; /* coffee brown */
-  --color-text-muted:      #A08060; /* warm grey-brown */
+  --color-text-muted:      #80604A; /* warm grey-brown, 5.3:1 on bg-main (WCAG AA) */
   --color-text-on-dark:    #FDF6EC; /* beige on dark bg */
   --color-text-on-primary: #FFFFFF; /* white on primary */
+
+  /* --- Status Colors (order states, alerts, badges) ---
+     Each *-text colour reaches 4.5:1 on its *-bg and on white. */
+  --color-success:         #047857;
+  --color-success-bg:      #ECFDF5;
+  --color-danger:          #B91C1C;
+  --color-danger-bg:       #FEF2F2;
+  --color-warning:         #B45309;
+  --color-warning-bg:      #FFFBEB;
+  --color-info:            #1D4ED8;
+  --color-info-bg:         #EFF6FF;
 
   /* --- Border & Divider --- */
   --color-border:          #E2C9A8; /* warm tan */
@@ -88,7 +100,8 @@
 @theme inline {
   --color-background: var(--color-bg-main);
   --color-foreground: var(--color-text-primary);
-  --font-sans: var(--font-geist-sans);
+  --color-card: var(--color-bg-card);
+  --font-sans: var(--font-be-vietnam), Arial, Helvetica, sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 
@@ -98,7 +111,7 @@
 body {
   background-color: var(--color-bg-main);
   color: var(--color-text-primary);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
   scroll-behavior: smooth;
   text-rendering: optimizeSpeed;
 }
@@ -113,3 +126,23 @@ body {
   border-radius: var(--radius-full);
 }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-primary); }
+
+/* ============================================================
+   ACCESSIBILITY
+   ============================================================ */
+/* A visible focus ring for keyboard users only; mouse clicks stay clean. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

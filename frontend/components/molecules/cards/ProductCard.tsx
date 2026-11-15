@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Caption, Text } from "@/components/atoms";
+import { Button, Caption, Icon, Text } from "@/components/atoms";
 import { formatVND } from "@/lib/utils/currency";
 import Image from "next/image";
 
@@ -30,49 +30,53 @@ export default function ProductCard({
   const formattedPrice = typeof price === "number" ? formatVND(price) : price;
 
   return (
-    <div className="flex w-full cursor-default flex-col overflow-hidden rounded-2xl border border-(--color-border-light) bg-(--color-bg-card) shadow-[0_2px_8px_var(--color-shadow-sm)] transition-all duration-250 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_var(--color-shadow-md)]">
-      <div className="relative h-36 w-full shrink-0 overflow-hidden bg-(--color-border-light)">
+    // Under 480px the card lies flat (image left, text right) so a phone
+    // shows four or five drinks per screen instead of one.
+    <div className="flex w-full cursor-default flex-row overflow-hidden rounded-2xl border border-(--color-border-light) bg-(--color-bg-card) shadow-[0_2px_8px_var(--color-shadow-sm)] transition-all duration-250 min-[480px]:flex-col hover:min-[480px]:-translate-y-0.5 hover:min-[480px]:shadow-[0_6px_20px_var(--color-shadow-md)]">
+      <div className="relative w-28 shrink-0 self-stretch overflow-hidden bg-(--color-border-light) min-[480px]:h-36 min-[480px]:w-full">
         {/* Fallback icon (shown when image fails or is missing) */}
         <div className="absolute inset-0 z-0 flex items-center justify-center text-4xl text-(--color-border)">
-          <i className="fa-solid fa-mug-hot"></i>
+          <Icon name="mug-hot" />
         </div>
         <Image
           src={image}
           alt={imageAlt}
           fill
           className="z-1 object-cover"
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          sizes="(max-width: 479px) 112px, (max-width: 1024px) 50vw, 25vw"
           onError={(e) => {
             (e.currentTarget as HTMLImageElement).style.display = "none";
           }}
         />
       </div>
 
-      <div className="flex flex-1 flex-col gap-1 px-3 pt-2.5 pb-1.5">
-        <h3 className="text-foreground line-clamp-1 text-sm leading-tight font-bold">
-          {badge && (
-            <span className="mr-1.5 rounded-md bg-(--color-accent-light) px-1.5 py-0.5 text-[10px] font-semibold text-(--color-primary-dark)">
-              {badge}
-            </span>
-          )}
-          {productName}
-        </h3>
-        <Caption className="line-clamp-2">{description}</Caption>
-      </div>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex flex-1 flex-col gap-1 px-3 pt-2.5 pb-1.5">
+          <h3 className="text-foreground line-clamp-1 text-sm leading-tight font-bold">
+            {badge && (
+              <span className="mr-1.5 rounded-md bg-(--color-accent-light) px-1.5 py-0.5 text-[10px] font-semibold text-(--color-primary-dark)">
+                {badge}
+              </span>
+            )}
+            {productName}
+          </h3>
+          <Caption className="line-clamp-2">{description}</Caption>
+        </div>
 
-      <div className="flex shrink-0 items-center justify-between border-t border-(--color-border-light) px-3 py-2.5">
-        <Text variant="body2" className="font-bold">
-          {formattedPrice}
-        </Text>
-        <Button
-          onClick={onBuy}
-          variant="primary"
-          size="sm"
-          icon="fa-cart-plus"
-          aria-label={`Mua ${productName}`}
-        >
-          Mua
-        </Button>
+        <div className="flex shrink-0 items-center justify-between px-3 pt-1 pb-2.5 min-[480px]:border-t min-[480px]:border-(--color-border-light) min-[480px]:pt-2.5">
+          <Text variant="body2" className="font-bold">
+            {formattedPrice}
+          </Text>
+          <Button
+            onClick={onBuy}
+            variant="primary"
+            size="sm"
+            icon="cart-plus"
+            aria-label={`Mua ${productName}`}
+          >
+            Mua
+          </Button>
+        </div>
       </div>
     </div>
   );

@@ -348,7 +348,7 @@ CREATE TABLE refresh_token (
 CREATE TABLE category (
     id         bigserial PRIMARY KEY,
     name       varchar(80) NOT NULL,
-    icon       varchar(64) NOT NULL,
+    icon       varchar(64) NOT NULL, -- tên icon, VD 'mug-hot' (chấp nhận cả 'fa-solid fa-mug-hot')
     sort_order int         NOT NULL DEFAULT 0,
     deleted_at timestamptz,
     created_at timestamptz NOT NULL DEFAULT now()

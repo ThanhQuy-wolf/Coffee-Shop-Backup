@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert } from "@/components/atoms";
+import { Alert, Icon } from "@/components/atoms";
 import {
   MobileShiftView,
   MonthlyCalendar,
@@ -86,11 +86,12 @@ function Schedule() {
           {isManager && (
             <button
               title="Tạo ca"
+              aria-label="Tạo ca"
               type="button"
               onClick={() => openCreate()}
               className="fixed right-4 bottom-4 z-30 flex h-14 w-14 cursor-pointer items-center justify-center rounded-full border-none bg-(--color-primary) text-white shadow-lg transition hover:opacity-90 md:hidden"
             >
-              <i className="fa-solid fa-plus text-lg"></i>
+              <Icon name="plus" className="text-lg" />
             </button>
           )}
         </main>

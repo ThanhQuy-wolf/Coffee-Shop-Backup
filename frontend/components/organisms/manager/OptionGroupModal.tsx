@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert } from "@/components/atoms";
+import { Alert, Icon } from "@/components/atoms";
 import { Modal, ModalHeader } from "@/components/molecules/modal";
 import type { OptionGroupInput, OptionSelectionType } from "@/lib/types";
 import { useState } from "react";
@@ -107,7 +107,7 @@ export default function OptionGroupModal({
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <label htmlFor="group-name" className={labelCls}>
-              Tên nhóm <span className="text-red-500">*</span>
+              Tên nhóm <span className="text-(--color-danger)">*</span>
             </label>
             <input
               id="group-name"
@@ -192,7 +192,8 @@ export default function OptionGroupModal({
               }
               className="cursor-pointer rounded-lg border border-(--color-border) bg-white px-2.5 py-1 text-xs font-medium text-(--color-primary) hover:bg-(--color-border-light)"
             >
-              <i className="fa-solid fa-plus mr-1"></i>Thêm giá trị
+              <Icon name="plus" className="mr-1" />
+              Thêm giá trị
             </button>
           </div>
           <div className="space-y-2">
@@ -263,9 +264,9 @@ export default function OptionGroupModal({
                   disabled={form.values.length <= 1}
                   title="Xoá giá trị"
                   aria-label={`Xoá giá trị ${i + 1}`}
-                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border-none bg-transparent text-(--color-text-muted) hover:text-red-500 disabled:opacity-30"
+                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border-none bg-transparent text-(--color-text-muted) hover:text-(--color-danger) disabled:opacity-30"
                 >
-                  <i className="fa-solid fa-trash text-xs"></i>
+                  <Icon name="trash" className="text-xs" />
                 </button>
               </div>
             ))}

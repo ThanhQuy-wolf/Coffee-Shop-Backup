@@ -1,6 +1,7 @@
 "use client";
 
 import { Alert, Spinner } from "@/components/atoms";
+import { EmptyState } from "@/components/molecules/empty-state";
 import { RoleGuard } from "@/components/templates/role-guard";
 import { orderService } from "@/lib/services";
 import type { Order } from "@/lib/types";
@@ -27,12 +28,12 @@ function OrderHistory() {
       <Alert message={error} />
       {!orders && !error && <Spinner className="py-12" />}
       {orders?.length === 0 && (
-        <p className="text-(--color-text-muted)">
-          Bạn chưa có đơn nào.{" "}
-          <Link href="/" className="text-(--color-primary) hover:underline">
-            Xem menu
-          </Link>
-        </p>
+        <EmptyState
+          icon="receipt"
+          title="Bạn chưa có đơn nào"
+          description="Đơn bạn đặt sẽ hiện ở đây kèm trạng thái pha chế."
+          action={{ href: "/", label: "Xem menu" }}
+        />
       )}
       <ul className="space-y-3">
         {orders?.map((o) => {
@@ -51,7 +52,7 @@ function OrderHistory() {
                 </div>
                 <div className="flex items-center gap-3">
                   {o.status === "COMPLETED" && !o.review && (
-                    <span className="text-xs font-semibold text-(--color-accent)">
+                    <span className="text-xs font-semibold text-(--color-accent-strong)">
                       Chưa đánh giá
                     </span>
                   )}

@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/atoms";
 import { ShiftCard } from "@/components/molecules/cards";
 import { useShift } from "@/lib/contexts/shift-context";
 import {
@@ -73,22 +74,24 @@ export default function MobileShiftView({
         <div className="mb-3 flex items-center justify-between">
           <button
             title="Trở lại tháng trước"
+            aria-label="Trở lại tháng trước"
             type="button"
             onClick={goToPrevMonth}
             className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-none bg-transparent text-(--color-text-muted) transition hover:bg-gray-100"
           >
-            <i className="fa-solid fa-chevron-left text-xs"></i>
+            <Icon name="chevron-left" className="text-xs" />
           </button>
           <h3 className="text-foreground text-sm font-bold">
             {MONTH_NAMES_VI[currentDate.getMonth()]} {currentDate.getFullYear()}
           </h3>
           <button
             title="Trở lại tháng sau"
+            aria-label="Trở lại tháng sau"
             type="button"
             onClick={goToNextMonth}
             className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-none bg-transparent text-(--color-text-muted) transition hover:bg-gray-100"
           >
-            <i className="fa-solid fa-chevron-right text-xs"></i>
+            <Icon name="chevron-right" className="text-xs" />
           </button>
         </div>
 
@@ -179,7 +182,10 @@ export default function MobileShiftView({
 
         {selectedShifts.length === 0 ? (
           <div className="rounded-xl border border-dashed border-(--color-border-light) py-8 text-center">
-            <i className="fa-regular fa-calendar-xmark mb-2 text-2xl text-gray-300"></i>
+            <Icon
+              name="calendar-xmark"
+              className="mb-2 text-2xl text-gray-300"
+            />
             <p className="text-sm text-(--color-text-muted)">
               Không có ca làm trong ngày này
             </p>
@@ -194,9 +200,10 @@ export default function MobileShiftView({
               return (
                 <div key={dept.id}>
                   <div className="mb-2 flex items-center gap-2">
-                    <i
-                      className={`${dept.icon} text-xs text-(--color-primary)`}
-                    ></i>
+                    <Icon
+                      name={dept.icon}
+                      className="text-xs text-(--color-primary)"
+                    />
                     <span className="text-xs font-semibold text-(--color-text-secondary)">
                       {dept.name}
                     </span>

@@ -1,6 +1,7 @@
 "use client";
 
 import { Alert } from "@/components/atoms";
+import { EmptyState } from "@/components/molecules/empty-state";
 import { reviewService } from "@/lib/services";
 import type { ReviewList } from "@/lib/types";
 import { errorMessage } from "@/lib/utils/errors";
@@ -79,7 +80,7 @@ export default function ReviewsTab() {
 
       <div className="space-y-3">
         {data.items.length === 0 && (
-          <p className="text-(--color-text-muted)">Chưa có đánh giá nào.</p>
+          <EmptyState size="sm" icon="star" title="Chưa có đánh giá nào" />
         )}
         {data.items.map((r) => (
           <article

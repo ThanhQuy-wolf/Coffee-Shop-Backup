@@ -18,7 +18,7 @@ const MIN_PASSWORD = 6;
  * @param hasError Turns the border red.
  */
 const inputClass = (hasError: boolean) =>
-  `text-foreground w-full rounded-xl border bg-white px-4 py-3 outline-none transition-all duration-150 placeholder:text-(--color-text-muted) focus:border-(--color-primary) focus:ring-2 focus:ring-(--color-primary) ${hasError ? "border-red-400" : "border-(--color-border)"}`;
+  `text-foreground w-full rounded-xl border bg-white px-4 py-3 outline-none transition-all duration-150 placeholder:text-(--color-text-muted) focus:border-(--color-primary) focus:ring-2 focus:ring-(--color-primary) ${hasError ? "border-(--color-danger)" : "border-(--color-border)"}`;
 
 /**
  * Customer sign-up (UC-01) in two steps: send an OTP to the phone (A-3),

@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/atoms";
 import { BRAND } from "@/lib/constants";
 import { shopService } from "@/lib/services";
 import type { ShopInfo } from "@/lib/types";
@@ -46,15 +47,24 @@ export default function Footer() {
             {shop && (
               <ul className="flex flex-col gap-2 text-sm opacity-80">
                 <li className="flex items-center gap-2">
-                  <i className="fa-solid fa-location-dot w-4 shrink-0 text-center text-(--color-accent)"></i>
+                  <Icon
+                    name="location-dot"
+                    className="w-4 shrink-0 text-center text-(--color-accent)"
+                  />
                   {shop.address}
                 </li>
                 <li className="flex items-center gap-2">
-                  <i className="fa-solid fa-clock w-4 shrink-0 text-center text-(--color-accent)"></i>
+                  <Icon
+                    name="clock"
+                    className="w-4 shrink-0 text-center text-(--color-accent)"
+                  />
                   {shop.openHours}
                 </li>
                 <li className="flex items-center gap-2">
-                  <i className="fa-solid fa-phone w-4 shrink-0 text-center text-(--color-accent)"></i>
+                  <Icon
+                    name="phone"
+                    className="w-4 shrink-0 text-center text-(--color-accent)"
+                  />
                   <a
                     href={`tel:${shop.phone}`}
                     className="transition-colors duration-150 hover:text-(--color-accent)"
@@ -63,7 +73,10 @@ export default function Footer() {
                   </a>
                 </li>
                 <li className="flex items-center gap-2">
-                  <i className="fa-solid fa-envelope w-4 shrink-0 text-center text-(--color-accent)"></i>
+                  <Icon
+                    name="envelope"
+                    className="w-4 shrink-0 text-center text-(--color-accent)"
+                  />
                   <a
                     href={`mailto:${shop.email}`}
                     className="transition-colors duration-150 hover:text-(--color-accent)"
@@ -90,7 +103,7 @@ export default function Footer() {
                       className="flex items-center gap-3 text-sm opacity-75 transition-all duration-150 hover:text-(--color-accent) hover:opacity-100"
                     >
                       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#1877F2] text-base text-white">
-                        <i className="fa-brands fa-facebook-f"></i>
+                        <Icon name="facebook-f" />
                       </span>
                       Facebook
                     </a>
@@ -105,7 +118,7 @@ export default function Footer() {
                       className="flex items-center gap-3 text-sm opacity-75 transition-all duration-150 hover:text-(--color-accent) hover:opacity-100"
                     >
                       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-black text-base text-white">
-                        <i className="fa-brands fa-tiktok"></i>
+                        <Icon name="tiktok" />
                       </span>
                       TikTok
                     </a>
@@ -120,7 +133,7 @@ export default function Footer() {
                       className="flex items-center gap-3 text-sm opacity-75 transition-all duration-150 hover:text-(--color-accent) hover:opacity-100"
                     >
                       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-(--color-primary) text-base text-white">
-                        <i className="fa-solid fa-globe"></i>
+                        <Icon name="globe" />
                       </span>
                       Website
                     </a>

@@ -111,8 +111,8 @@ frontend/
 | React            | 19.2.3    | Thư viện UI                           |
 | TypeScript       | ^5        | Kiểu dữ liệu tĩnh                     |
 | Tailwind CSS     | ^4.2.2    | Utility-first CSS framework           |
-| Geist Font       | -         | Font chữ (Google Fonts via next/font) |
-| FontAwesome      | 6.7.2     | Icon library (CDN)                    |
+| Be Vietnam Pro   | -         | Font chữ (Google Fonts via next/font) |
+| lucide-react     | 1.64.0    | Icon SVG, đóng gói cùng app           |
 | pnpm             | -         | Package manager                       |
 | ESLint           | ^9        | Linting                               |
 | Prettier         | ^3        | Code formatting                       |
@@ -135,17 +135,24 @@ frontend/
 
 - Design tokens (CSS variables) định nghĩa trong `app/globals.css`
 - Tailwind CSS v4 + custom properties cho consistent color/spacing
+- Màu trạng thái dùng token `--color-success|danger|warning|info` (và `-bg`),
+  không viết cứng `text-red-600`, `bg-emerald-50`...
+- Chữ phụ `--color-text-muted` và `--color-accent-strong` đạt tương phản WCAG AA
+  (≥ 4,5:1); `--color-accent` chỉ dùng cho icon hoặc chữ trên nền tối.
 - Dark mode: biến CSS đã chuẩn bị sẵn nhưng chưa kích hoạt
-- FontAwesome icons từ CDN
+- Icon: atom `Icon` (lucide-react), không tải từ CDN; nút chỉ có icon phải có
+  `aria-label`
+- Mobile: mỗi màn hình thử ở 390px; bảng chuyển thành thẻ (`max-md:`) hoặc cuộn
+  ngang có cột tên dính trái
 
 ### Kiến Trúc Component (Atomic Design)
 
 Dự án tuân theo **Atomic Design**:
 
-- **Atoms** - Nguyên tố cơ bản: Button, Alert, Spinner, LoginInput, Textarea,
-  Heading, Text, Caption
-- **Molecules** - Nhóm atoms: ProductCard, ShiftCard, SearchBar, Modal,
-  NotificationBell
+- **Atoms** - Nguyên tố cơ bản: Button, Icon, Alert, Spinner, LoginInput,
+  Textarea, Heading, Text, Caption
+- **Molecules** - Nhóm atoms: ProductCard, ShiftCard, SearchBar, EmptyState,
+  Modal, NotificationBell
 - **Organisms** - Phần UI phức tạp: CategorySidebar, CartFab, ProductGrid,
   ReviewModal, analytics charts, manager tabs/modals, lịch ca
 - **Templates** - Bố cục trang: MainLayout, StaffLayout, ManagerLayout,

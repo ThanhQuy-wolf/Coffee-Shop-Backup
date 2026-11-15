@@ -1,15 +1,16 @@
 "use client";
 
+import { Icon } from "../icons";
 import type { ButtonProps } from "./Button.types";
 
 /**
  * The app's button. Picks classes from three lookup tables (shape, colour,
- * size) and can show a FontAwesome icon before or after the label. Any other
+ * size) and can show an icon before or after the label. Any other
  * `<button>` attribute, such as `type` or `onClick`, is passed through.
  * @param props.style Shape preset: `base` (default), `payment` or `login`.
  * @param props.variant Colour preset, `primary` by default.
  * @param props.size Padding and font size, `md` by default.
- * @param props.icon FontAwesome icon name without `fa-solid`, e.g. `fa-check`.
+ * @param props.icon Icon name for the `Icon` atom, e.g. `check`.
  * @param props.iconPosition Side of the label the icon goes on.
  * @param props.disabled Greys the button out and blocks clicks.
  */
@@ -37,7 +38,8 @@ export default function Button({
       "bg-(--color-primary) text-white hover:bg-(--color-primary-dark) active:scale-95",
     secondary:
       "border border-(--color-border) hover:bg-(--color-border-light) active:scale-95",
-    danger: "bg-red-500 text-white hover:bg-red-600 active:scale-95",
+    danger:
+      "bg-(--color-danger) text-white hover:bg-(--color-danger)/90 active:scale-95",
     ghost: "bg-transparent hover:bg-(--color-border-light) active:scale-95",
     primaryNoBorder:
       "border-none bg-(--color-primary) text-white hover:bg-(--color-primary-dark) active:scale-98",
@@ -60,11 +62,11 @@ export default function Button({
       {...props}
     >
       {icon && iconPosition === "left" && (
-        <i className={`fa-solid ${icon} ${iconClasses}`}></i>
+        <Icon name={icon} className={iconClasses} />
       )}
       {children}
       {icon && iconPosition === "right" && (
-        <i className={`fa-solid ${icon} ${iconClasses}`}></i>
+        <Icon name={icon} className={iconClasses} />
       )}
     </button>
   );

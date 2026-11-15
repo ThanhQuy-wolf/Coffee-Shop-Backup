@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/atoms";
 import type { ProductSalesStats } from "@/lib/types";
 import { formatNumber, formatVND } from "@/lib/utils/currency";
 
@@ -39,7 +40,7 @@ export function ProductAnalysisSection({
     <section className="rounded-2xl border border-(--color-border-light) bg-(--color-bg-card) p-5 shadow-sm">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-foreground text-base font-semibold">
-          <i className="fa-solid fa-table text-foreground mr-2"></i>
+          <Icon name="table" className="text-foreground mr-2" />
           Phân tích chi tiết sản phẩm
         </h2>
         <CategorySelect
@@ -49,8 +50,9 @@ export function ProductAnalysisSection({
         />
       </div>
       <p className="mb-3 text-xs text-(--color-text-muted)">
-        Click vào tiêu đề cột để sắp xếp. Hiển thị {filteredSales.length} sản
-        phẩm.
+        Nhấn vào tiêu đề cột để sắp xếp
+        <span className="sm:hidden">, vuốt ngang để xem thêm cột</span>. Hiển
+        thị {filteredSales.length} sản phẩm.
       </p>
       <ProductTable data={filteredSales} />
 
@@ -63,7 +65,7 @@ export function ProductAnalysisSection({
         </div>
         <div>
           <span className="text-(--color-text-muted)">Tổng lợi nhuận: </span>
-          <span className="font-semibold text-green-600">
+          <span className="font-semibold text-(--color-success)">
             {formatVND(filteredProfit)}
           </span>
         </div>
@@ -77,7 +79,7 @@ export function ProductAnalysisSection({
           <span className="text-(--color-text-muted)">
             Biên LN trung bình:{" "}
           </span>
-          <span className="font-semibold text-yellow-700">
+          <span className="font-semibold text-(--color-warning)">
             {avgMargin.toFixed(1)}%
           </span>
         </div>

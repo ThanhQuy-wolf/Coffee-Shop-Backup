@@ -16,7 +16,7 @@ export interface ButtonProps extends Omit<
     | "bgWhite";
   /** Padding and font size. */
   size?: "sm" | "md" | "lg";
-  /** FontAwesome icon name; `fa-solid` is added for you, e.g. `fa-cart-plus`. */
+  /** Icon name for the `Icon` atom, e.g. `cart-plus`. */
   icon?: string;
   /** Side of the label the icon goes on, `left` by default. */
   iconPosition?: "left" | "right";

@@ -1,3 +1,4 @@
+import { Icon } from "../icons";
 import { ErrorMessageLoginProps } from "./Error.types";
 
 /**
@@ -16,10 +17,10 @@ export default function ErrorMessageLogin({
     return (
       <div
         className={
-          "mb-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600"
+          "mb-4 flex items-center gap-2 rounded-lg border border-(--color-danger)/30 bg-(--color-danger-bg) p-3 text-sm text-(--color-danger)"
         }
       >
-        <i className={"fa-solid fa-circle-exclamation"}></i>
+        <Icon name="circle-exclamation" />
         <span>{message}</span>
       </div>
     );
@@ -27,8 +28,8 @@ export default function ErrorMessageLogin({
 
   function secondaryType() {
     return (
-      <p className="mt-1.5 flex items-center gap-1 text-xs text-red-500">
-        <i className="fa-solid fa-circle-exclamation"></i>
+      <p className="mt-1.5 flex items-center gap-1 text-xs text-(--color-danger)">
+        <Icon name="circle-exclamation" />
         {message}
       </p>
     );

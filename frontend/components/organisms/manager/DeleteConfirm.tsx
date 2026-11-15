@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert } from "@/components/atoms";
+import { Alert, Icon } from "@/components/atoms";
 import { Modal } from "@/components/molecules/modal";
 import { errorMessage } from "@/lib/utils/errors";
 import { useState } from "react";
@@ -43,8 +43,8 @@ export default function DeleteConfirm({
       className="max-w-sm p-6"
     >
       <div className="mb-4 flex flex-col items-center gap-3 text-center">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-          <i className="fa-solid fa-trash-can text-xl text-red-500"></i>
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-(--color-danger-bg)">
+          <Icon name="trash-can" className="text-xl text-(--color-danger)" />
         </div>
         <h3
           id="delete-confirm-title"
@@ -69,7 +69,7 @@ export default function DeleteConfirm({
           type="button"
           onClick={confirm}
           disabled={busy || !!error}
-          className="flex-1 cursor-pointer rounded-xl border-none bg-red-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-600 active:scale-95 disabled:opacity-50"
+          className="flex-1 cursor-pointer rounded-xl border-none bg-(--color-danger) px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-(--color-danger)/90 active:scale-95 disabled:opacity-50"
         >
           Xóa
         </button>

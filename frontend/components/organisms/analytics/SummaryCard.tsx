@@ -1,3 +1,4 @@
+import { Icon } from "@/components/atoms";
 import type { MetricComparison } from "@/lib/types";
 
 export interface SummaryCardProps {
@@ -32,16 +33,18 @@ export function SummaryCard({
   const up = delta >= 0;
 
   return (
-    <div className="rounded-2xl border border-(--color-border-light) bg-(--color-bg-card) p-5 shadow-sm">
-      <div className="mb-3 flex items-center gap-3">
-        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-(--color-accent-light) text-lg text-(--color-primary)">
-          <i className={icon}></i>
+    <div className="rounded-2xl border border-(--color-border-light) bg-(--color-bg-card) p-4 shadow-sm sm:p-5">
+      <div className="mb-3 flex items-center gap-2 sm:gap-3">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-(--color-accent-light) text-base text-(--color-primary) sm:h-10 sm:w-10 sm:text-lg">
+          <Icon name={icon} />
         </span>
-        <span className="text-sm font-medium text-(--color-text-muted)">
+        <span className="text-xs font-medium text-(--color-text-muted) sm:text-sm">
           {title}
         </span>
       </div>
-      <p className="text-foreground text-2xl font-bold tabular-nums">{value}</p>
+      <p className="text-foreground text-xl font-bold tabular-nums sm:text-2xl">
+        {value}
+      </p>
       {subtitle && (
         <p className="mt-0.5 text-xs text-(--color-text-muted)">{subtitle}</p>
       )}
@@ -53,11 +56,12 @@ export function SummaryCard({
           </p>
         ) : (
           <div
-            className={`mt-3 flex items-center gap-1.5 text-sm font-medium ${up ? "text-green-600" : "text-red-500"}`}
+            className={`mt-3 flex flex-wrap items-center gap-x-1.5 text-xs font-medium sm:text-sm ${up ? "text-(--color-success)" : "text-(--color-danger)"}`}
           >
-            <i
-              className={`fa-solid text-xs ${up ? "fa-arrow-trend-up" : "fa-arrow-trend-down"}`}
-            ></i>
+            <Icon
+              name={up ? "arrow-trend-up" : "arrow-trend-down"}
+              className="text-xs"
+            />
             <span>
               {up ? "+" : ""}
               {comparison.changePercent.toFixed(1)}%

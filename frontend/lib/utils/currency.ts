@@ -22,9 +22,12 @@ export function formatVND(value: number): string {
  * @returns e.g. `1_500_000` → `"1.5 tr"`, `25_000` → `"25 k"`, `800` → `"800đ"`
  */
 export function formatVNDShort(value: number): string {
-  if (value >= 1_000_000_000) return (value / 1_000_000_000).toFixed(1) + " tỷ";
-  if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + " tr";
-  if (value >= 1_000) return (value / 1_000).toFixed(0) + " k";
+  // Vietnamese uses a decimal comma: "313,2 tr", not "313.2 tr".
+  const short = (n: number) =>
+    n.toLocaleString("vi-VN", { maximumFractionDigits: 1 });
+  if (value >= 1_000_000_000) return short(value / 1_000_000_000) + " tỷ";
+  if (value >= 1_000_000) return short(value / 1_000_000) + " tr";
+  if (value >= 1_000) return short(Math.round(value / 1_000)) + " nghìn";
   return formatNumber(value) + "đ";
 }
 

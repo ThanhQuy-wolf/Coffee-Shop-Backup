@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert } from "@/components/atoms";
+import { Alert, Icon } from "@/components/atoms";
 import { SHIFT_VIEW_STYLES } from "@/components/molecules/cards";
 import { Modal, ModalHeader } from "@/components/molecules/modal";
 import { useAuth } from "@/lib/contexts/auth-context";
@@ -21,11 +21,17 @@ const ASSIGNMENT_LABEL: Record<
   REGISTERED: { label: "Đã đăng ký", cls: "bg-blue-100 text-blue-800" },
   LEAVE_REQUESTED: {
     label: "Chờ duyệt nghỉ",
-    cls: "bg-amber-100 text-amber-800",
+    cls: "bg-(--color-warning-bg) text-(--color-warning)",
   },
   LEAVE_APPROVED: { label: "Nghỉ phép", cls: "bg-purple-100 text-purple-700" },
-  ATTENDED: { label: "Có mặt", cls: "bg-green-100 text-green-800" },
-  ABSENT: { label: "Vắng mặt", cls: "bg-red-100 text-red-700" },
+  ATTENDED: {
+    label: "Có mặt",
+    cls: "bg-(--color-success-bg) text-(--color-success)",
+  },
+  ABSENT: {
+    label: "Vắng mặt",
+    cls: "bg-(--color-danger-bg) text-(--color-danger)",
+  },
   CANCELLED: { label: "Đã huỷ", cls: "bg-gray-100 text-gray-600" },
 };
 
@@ -96,7 +102,7 @@ export default function ShiftDetailModal({
         title="Chi tiết ca làm"
         subtitle={dept?.name}
         leading={
-          dept && <i className={`${dept.icon} text-(--color-primary)`}></i>
+          dept && <Icon name={dept.icon} className="text-(--color-primary)" />
         }
         onClose={onClose}
       />
@@ -174,7 +180,7 @@ export default function ShiftDetailModal({
                               <button
                                 type="button"
                                 disabled={busy}
-                                className={`${btn} bg-green-100 text-green-800 hover:bg-green-200`}
+                                className={`${btn} bg-(--color-success-bg) text-(--color-success) hover:bg-green-200`}
                                 onClick={() =>
                                   act(
                                     () => ctx.decideLeave(a.id, true),
@@ -207,7 +213,7 @@ export default function ShiftDetailModal({
                                 <button
                                   type="button"
                                   disabled={busy}
-                                  className={`${btn} bg-green-100 text-green-800 hover:bg-green-200`}
+                                  className={`${btn} bg-(--color-success-bg) text-(--color-success) hover:bg-green-200`}
                                   onClick={() =>
                                     act(
                                       () =>
@@ -221,7 +227,7 @@ export default function ShiftDetailModal({
                                 <button
                                   type="button"
                                   disabled={busy}
-                                  className={`${btn} bg-red-100 text-red-700 hover:bg-red-200`}
+                                  className={`${btn} bg-(--color-danger-bg) text-(--color-danger) hover:bg-(--color-danger)/15`}
                                   onClick={() =>
                                     act(
                                       () => ctx.markAttendance(a.id, "ABSENT"),
@@ -237,7 +243,7 @@ export default function ShiftDetailModal({
                             <button
                               type="button"
                               disabled={busy}
-                              className={`${btn} bg-transparent text-red-500 hover:bg-red-50`}
+                              className={`${btn} bg-transparent text-(--color-danger) hover:bg-(--color-danger-bg)`}
                               onClick={() =>
                                 act(
                                   () => ctx.removeAssignment(a.id),
@@ -245,7 +251,8 @@ export default function ShiftDetailModal({
                                 )
                               }
                             >
-                              <i className="fa-solid fa-user-minus mr-1"></i>Gỡ
+                              <Icon name="user-minus" className="mr-1" />
+                              Gỡ
                             </button>
                           )}
                         </div>
@@ -264,10 +271,10 @@ export default function ShiftDetailModal({
         </div>
 
         {showLeaveForm && mine?.status === "REGISTERED" && (
-          <div className="space-y-2 rounded-xl border border-amber-200 bg-amber-50 p-3">
+          <div className="space-y-2 rounded-xl border border-(--color-warning)/30 bg-(--color-warning-bg) p-3">
             <label
               htmlFor="leave-reason"
-              className="text-xs font-semibold text-amber-900"
+              className="text-xs font-semibold text-(--color-warning)"
             >
               Lý do xin nghỉ
             </label>
@@ -276,7 +283,7 @@ export default function ShiftDetailModal({
               rows={2}
               value={leaveReason}
               onChange={(e) => setLeaveReason(e.target.value)}
-              className="w-full rounded-lg border border-amber-200 bg-white px-3 py-2 text-sm outline-none"
+              className="w-full rounded-lg border border-(--color-warning)/30 bg-white px-3 py-2 text-sm outline-none"
               placeholder="Ví dụ: thi cuối kỳ"
             />
             <button
@@ -297,10 +304,10 @@ export default function ShiftDetailModal({
         )}
 
         {showCancelForm && (
-          <div className="space-y-2 rounded-xl border border-red-200 bg-red-50 p-3">
+          <div className="space-y-2 rounded-xl border border-(--color-danger)/30 bg-(--color-danger-bg) p-3">
             <label
               htmlFor="cancel-reason"
-              className="text-xs font-semibold text-red-800"
+              className="text-xs font-semibold text-(--color-danger)"
             >
               Lý do huỷ ca (gửi tới nhân viên trong ca)
             </label>
@@ -309,7 +316,7 @@ export default function ShiftDetailModal({
               rows={2}
               value={cancelReason}
               onChange={(e) => setCancelReason(e.target.value)}
-              className="w-full rounded-lg border border-red-200 bg-white px-3 py-2 text-sm outline-none"
+              className="w-full rounded-lg border border-(--color-danger)/30 bg-white px-3 py-2 text-sm outline-none"
             />
             <button
               type="button"
@@ -321,7 +328,7 @@ export default function ShiftDetailModal({
                   onClose,
                 )
               }
-              className="w-full cursor-pointer rounded-lg border-none bg-red-600 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
+              className="w-full cursor-pointer rounded-lg border-none bg-(--color-danger) px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
             >
               Xác nhận huỷ ca
             </button>
@@ -332,9 +339,9 @@ export default function ShiftDetailModal({
         {success && (
           <div
             role="status"
-            className="rounded-xl bg-green-50 px-4 py-3 text-sm text-green-700"
+            className="rounded-xl bg-(--color-success-bg) px-4 py-3 text-sm text-(--color-success)"
           >
-            <i className="fa-solid fa-circle-check mr-2"></i>
+            <Icon name="circle-check" className="mr-2" />
             {success}
           </div>
         )}
@@ -350,7 +357,8 @@ export default function ShiftDetailModal({
             }
             className="flex-1 cursor-pointer rounded-xl border-none bg-(--color-primary) px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
           >
-            <i className="fa-solid fa-calendar-plus mr-2"></i>Đăng ký ca
+            <Icon name="calendar-plus" className="mr-2" />
+            Đăng ký ca
           </button>
         )}
         {mine?.status === "REGISTERED" && !started && (
@@ -361,14 +369,15 @@ export default function ShiftDetailModal({
               onClick={() =>
                 act(() => ctx.unregister(shift.id), "Đã huỷ đăng ký ca.")
               }
-              className="flex-1 cursor-pointer rounded-xl border border-red-200 bg-transparent px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+              className="flex-1 cursor-pointer rounded-xl border border-(--color-danger)/30 bg-transparent px-4 py-2.5 text-sm font-semibold text-(--color-danger) transition hover:bg-(--color-danger-bg)"
             >
-              <i className="fa-solid fa-calendar-minus mr-2"></i>Huỷ đăng ký
+              <Icon name="calendar-minus" className="mr-2" />
+              Huỷ đăng ký
             </button>
             <button
               type="button"
               onClick={() => setShowLeaveForm((v) => !v)}
-              className="cursor-pointer rounded-xl border border-amber-200 bg-transparent px-4 py-2.5 text-sm font-semibold text-amber-700 transition hover:bg-amber-50"
+              className="cursor-pointer rounded-xl border border-(--color-warning)/30 bg-transparent px-4 py-2.5 text-sm font-semibold text-(--color-warning) transition hover:bg-(--color-warning-bg)"
             >
               Xin nghỉ
             </button>
@@ -381,14 +390,16 @@ export default function ShiftDetailModal({
               onClick={() => onEdit(shift)}
               className="cursor-pointer rounded-xl border border-(--color-border-light) bg-transparent px-4 py-2.5 text-sm font-semibold text-(--color-text-secondary) transition hover:bg-gray-50"
             >
-              <i className="fa-solid fa-pen mr-2"></i>Sửa ca
+              <Icon name="pen" className="mr-2" />
+              Sửa ca
             </button>
             <button
               type="button"
               onClick={() => setShowCancelForm((v) => !v)}
-              className="cursor-pointer rounded-xl border border-red-200 bg-transparent px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+              className="cursor-pointer rounded-xl border border-(--color-danger)/30 bg-transparent px-4 py-2.5 text-sm font-semibold text-(--color-danger) transition hover:bg-(--color-danger-bg)"
             >
-              <i className="fa-solid fa-ban mr-2"></i>Huỷ ca
+              <Icon name="ban" className="mr-2" />
+              Huỷ ca
             </button>
           </>
         )}

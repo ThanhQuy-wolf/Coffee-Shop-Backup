@@ -20,9 +20,9 @@ export function SummarySection({ period, summary }: SummarySectionProps) {
       <h2 className="mb-3 text-sm font-semibold tracking-wider text-(--color-text-muted) uppercase">
         Tổng quan
       </h2>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <SummaryCard
-          icon="fa-solid fa-sack-dollar"
+          icon="sack-dollar"
           title="Doanh thu"
           value={formatVNDShort(summary.revenue.current)}
           subtitle={`${PERIOD_LABELS[period]} · chỉ tính đơn hoàn tất`}
@@ -30,7 +30,7 @@ export function SummarySection({ period, summary }: SummarySectionProps) {
           formatDelta={formatVNDShort}
         />
         <SummaryCard
-          icon="fa-solid fa-receipt"
+          icon="receipt"
           title="Số đơn hàng"
           value={formatNumber(summary.orders.current)}
           subtitle="Đơn hoàn tất trong kỳ"
@@ -38,7 +38,7 @@ export function SummarySection({ period, summary }: SummarySectionProps) {
           formatDelta={formatNumber}
         />
         <SummaryCard
-          icon="fa-solid fa-circle-dollar-to-slot"
+          icon="circle-dollar-to-slot"
           title="Lợi nhuận gộp"
           value={formatVNDShort(summary.grossProfit.current)}
           subtitle="Doanh thu trừ giá vốn lúc bán"
@@ -46,7 +46,7 @@ export function SummarySection({ period, summary }: SummarySectionProps) {
           formatDelta={formatVNDShort}
         />
         <SummaryCard
-          icon="fa-solid fa-basket-shopping"
+          icon="basket-shopping"
           title="Giá trị đơn TB"
           value={formatVNDShort(summary.averageOrderValue)}
           subtitle="Doanh thu / số đơn"

@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/atoms";
 import { useMenu } from "@/lib/contexts/menu-context";
 
 import { categoryButtonClass, categoryIconClass } from "./categoryStyles";
@@ -22,9 +23,10 @@ export default function MobileCategoryTabs() {
               onClick={() => setActiveCategory(cat.id)}
               className={`flex shrink-0 cursor-pointer items-center gap-1.5 rounded-xl border-none px-3 py-2 text-sm font-medium whitespace-nowrap transition-all duration-150 ${categoryButtonClass(isActive)}`}
             >
-              <i
-                className={`${cat.icon} shrink-0 text-sm ${categoryIconClass(isActive)}`}
-              ></i>
+              <Icon
+                name={cat.icon}
+                className={`text-sm ${categoryIconClass(isActive)}`}
+              />
               <span>{cat.name}</span>
             </button>
           );

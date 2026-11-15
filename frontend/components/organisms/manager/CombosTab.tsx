@@ -1,6 +1,7 @@
 "use client";
 
-import { Alert } from "@/components/atoms";
+import { Alert, Icon } from "@/components/atoms";
+import { EmptyState } from "@/components/molecules/empty-state";
 import { useManager } from "@/lib/contexts/manager-context";
 import type { Combo } from "@/lib/types";
 import { formatVND } from "@/lib/utils/currency";
@@ -46,8 +47,8 @@ export default function CombosTab() {
           onClick={() => setModalCombo("new")}
           className="flex cursor-pointer items-center gap-2 rounded-xl border-none bg-(--color-primary) px-4 py-2 text-sm font-semibold text-white transition hover:bg-(--color-primary-dark) active:scale-95"
         >
-          <i className="fa-solid fa-plus"></i>
-          <span className="hidden sm:inline">Thêm combo</span>
+          <Icon name="plus" />
+          <span>Thêm combo</span>
         </button>
       </div>
 
@@ -55,10 +56,13 @@ export default function CombosTab() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {combos.length === 0 ? (
-          <div className="col-span-full flex flex-col items-center gap-3 py-16 text-(--color-text-muted)">
-            <i className="fa-solid fa-layer-group text-4xl opacity-30"></i>
-            <p className="text-sm">Chưa có combo nào</p>
-          </div>
+          <EmptyState
+            size="sm"
+            icon="layer-group"
+            title="Chưa có combo nào"
+            description="Bấm Thêm combo để gộp vài món thành một phần giá ưu đãi."
+            className="col-span-full"
+          />
         ) : (
           combos.map((combo) => (
             <div
@@ -115,14 +119,14 @@ export default function CombosTab() {
                     title="Chỉnh sửa"
                     className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-(--color-border-light) bg-transparent text-(--color-text-muted) transition hover:border-(--color-primary-light) hover:text-(--color-primary)"
                   >
-                    <i className="fa-solid fa-pen text-xs"></i>
+                    <Icon name="pen" className="text-xs" />
                   </button>
                   <button
                     onClick={() => setDeleteTarget(combo)}
                     title="Xóa"
-                    className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-transparent bg-transparent text-(--color-text-muted) transition hover:border-red-200 hover:bg-red-50 hover:text-red-500"
+                    className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-transparent bg-transparent text-(--color-text-muted) transition hover:border-(--color-danger)/30 hover:bg-(--color-danger-bg) hover:text-(--color-danger)"
                   >
-                    <i className="fa-solid fa-trash text-xs"></i>
+                    <Icon name="trash" className="text-xs" />
                   </button>
                 </div>
               </div>

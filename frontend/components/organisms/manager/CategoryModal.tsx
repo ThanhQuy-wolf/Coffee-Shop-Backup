@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert } from "@/components/atoms";
+import { Alert, Icon } from "@/components/atoms";
 import { Modal, ModalHeader } from "@/components/molecules/modal";
 import type { CategoryInput } from "@/lib/types";
 import { useState } from "react";
@@ -63,7 +63,7 @@ export default function CategoryModal({
       >
         <div>
           <label htmlFor="category-name" className={labelCls}>
-            Tên danh mục <span className="text-red-500">*</span>
+            Tên danh mục <span className="text-(--color-danger)">*</span>
           </label>
           <input
             id="category-name"
@@ -110,7 +110,7 @@ export default function CategoryModal({
                     : "bg-background border-(--color-border-light) text-(--color-text-secondary) hover:border-(--color-primary-light) hover:text-(--color-primary)"
                 }`}
               >
-                <i className={`${icon} text-sm`}></i>
+                <Icon name={icon} className="text-sm" />
               </button>
             ))}
           </div>

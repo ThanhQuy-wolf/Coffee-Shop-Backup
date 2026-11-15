@@ -1,6 +1,7 @@
 "use client";
 
-import { Alert } from "@/components/atoms";
+import { Alert, Icon } from "@/components/atoms";
+import { EmptyState } from "@/components/molecules/empty-state";
 import { type CartLine, useCart } from "@/lib/contexts/cart-context";
 import { useGuestOrders } from "@/lib/hooks/use-guest-orders";
 import { ApiError, orderService } from "@/lib/services";
@@ -53,15 +54,13 @@ export default function CheckoutPage() {
 
   if (!cart) {
     return (
-      <div className="mx-auto max-w-lg px-4 py-24 text-center">
-        <i className="fa-solid fa-cart-shopping mb-4 text-5xl text-(--color-border)"></i>
-        <p className="text-foreground mb-4 font-semibold">
-          Giỏ hàng đang trống.
-        </p>
-        <Link href="/" className="text-(--color-primary) hover:underline">
-          Xem menu để đặt món
-        </Link>
-      </div>
+      <EmptyState
+        icon="cart-shopping"
+        title="Giỏ hàng đang trống"
+        description="Chọn vài món trong menu, giỏ hàng sẽ hiện ở đây để bạn đặt."
+        action={{ href: "/", label: "Xem menu" }}
+        className="mx-auto max-w-lg px-4"
+      />
     );
   }
 
@@ -155,7 +154,7 @@ export default function CheckoutPage() {
                 return (
                   <li
                     key={line.key}
-                    className={`flex flex-wrap items-center gap-3 px-4 py-3 ${bad ? "bg-red-50" : ""}`}
+                    className={`flex flex-wrap items-center gap-3 px-4 py-3 ${bad ? "bg-(--color-danger-bg)" : ""}`}
                   >
                     <div className="min-w-40 flex-1">
                       <p className="text-foreground font-medium">
@@ -178,7 +177,7 @@ export default function CheckoutPage() {
                         {formatVND(line.unitPrice)}
                       </p>
                       {bad && (
-                        <p className="text-xs font-semibold text-red-600">
+                        <p className="text-xs font-semibold text-(--color-danger)">
                           {bad}
                         </p>
                       )}
@@ -229,10 +228,10 @@ export default function CheckoutPage() {
                           return next;
                         });
                       }}
-                      className="cursor-pointer border-none bg-transparent text-(--color-text-muted) hover:text-red-500"
+                      className="cursor-pointer border-none bg-transparent text-(--color-text-muted) hover:text-(--color-danger)"
                       aria-label={`Xoá ${line.name}`}
                     >
-                      <i className="fa-solid fa-trash"></i>
+                      <Icon name="trash" />
                     </button>
                   </li>
                 );
@@ -268,9 +267,7 @@ export default function CheckoutPage() {
                       onChange={() => setMethod(value)}
                       className="sr-only"
                     />
-                    <i
-                      className={`fa-solid ${icon} text-(--color-primary)`}
-                    ></i>
+                    <Icon name={icon} className="text-(--color-primary)" />
                     {label}
                   </label>
                 ))}

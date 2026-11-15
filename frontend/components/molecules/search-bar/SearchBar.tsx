@@ -1,5 +1,7 @@
 "use client";
 
+import { Icon } from "@/components/atoms";
+
 import type { SearchBarProps } from "./Search.types";
 
 /**
@@ -20,23 +22,27 @@ export default function SearchBar({
 }: SearchBarProps) {
   return (
     <div className={`relative w-full ${className}`}>
-      <i className="fa-solid fa-magnifying-glass pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-(--color-text-muted)"></i>
+      <Icon
+        name="magnifying-glass"
+        className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-(--color-text-muted)"
+      />
       <input
-        type="text"
+        type="search"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        aria-label="Tìm kiếm món ăn"
-        className="bg-card text-foreground border-border placeholder:text-muted-foreground focus:border-primary focus:ring-primary focus:ring-opacity-20 w-full rounded-xl border py-2 pr-9 pl-9 text-sm transition-all duration-150 outline-none focus:ring-2"
+        aria-label={placeholder}
+        className="w-full rounded-xl border border-(--color-border) bg-white py-2 pr-9 pl-9 text-sm text-(--color-text-primary) transition-all duration-150 outline-none placeholder:text-(--color-text-muted) focus:border-(--color-primary) focus:ring-2 focus:ring-(--color-primary)/20 [&::-webkit-search-cancel-button]:hidden"
       />
       {value && (
         <button
+          type="button"
           onClick={onClear}
           title="Xóa tìm kiếm"
           aria-label="Xóa tìm kiếm"
           className="absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer border-none bg-transparent p-0 text-(--color-text-muted) transition-colors duration-150 hover:text-(--color-primary)"
         >
-          <i className="fa-solid fa-xmark text-sm"></i>
+          <Icon name="xmark" className="text-sm" />
         </button>
       )}
     </div>

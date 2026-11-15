@@ -1,5 +1,6 @@
 "use client";
 
+import { useElementWidth } from "@/lib/hooks/use-element-width";
 import type { RevenueDataPoint } from "@/lib/types";
 import { formatVNDShort } from "@/lib/utils/currency";
 import { useState } from "react";
@@ -18,7 +19,9 @@ interface LineChartProps {
  */
 export function LineChart({ data, height = 200 }: LineChartProps) {
   const [hovered, setHovered] = useState<number | null>(null);
-  const W = 800;
+  const [boxRef, boxWidth] = useElementWidth<HTMLDivElement>();
+  // Never narrower than 320px; below that the chart scrolls sideways.
+  const W = Math.max(boxWidth, 320);
   const H = height;
   const padL = 56,
     padR = 16,
@@ -52,14 +55,15 @@ export function LineChart({ data, height = 200 }: LineChartProps) {
     y: padT + (i / yTicks) * chartH,
   }));
 
-  const step = Math.ceil(data.length / 10);
+  // About one x label per 70px so they never overlap on a phone.
+  const step = Math.ceil(data.length / Math.max(3, Math.floor(chartW / 70)));
 
   return (
-    <div className="relative w-full overflow-x-auto">
+    <div ref={boxRef} className="relative w-full overflow-x-auto">
       <svg
         viewBox={`0 0 ${W} ${H}`}
         className="w-full"
-        style={{ height: H, minWidth: 320 }}
+        style={{ height: H, width: W }}
         onMouseLeave={() => setHovered(null)}
       >
         <defs>
@@ -85,7 +89,7 @@ export function LineChart({ data, height = 200 }: LineChartProps) {
               y={g.y + 4}
               textAnchor="end"
               fontSize="10"
-              fill="#A08060"
+              fill="#80604A"
             >
               {formatVNDShort(g.val)}
             </text>
@@ -110,7 +114,7 @@ export function LineChart({ data, height = 200 }: LineChartProps) {
               y={H - 8}
               textAnchor="middle"
               fontSize="10"
-              fill="#A08060"
+              fill="#80604A"
             >
               {p.data.label}
             </text>
@@ -127,7 +131,7 @@ export function LineChart({ data, height = 200 }: LineChartProps) {
             stroke="#FDF6EC"
             strokeWidth="2"
             style={{ cursor: "pointer", transition: "r 150ms" }}
-            onMouseEnter={() => setHovered(p.index)}
+            onPointerEnter={() => setHovered(p.index)}
           />
         ))}
 
@@ -180,7 +184,7 @@ export function LineChart({ data, height = 200 }: LineChartProps) {
                   y={tipY + 44}
                   textAnchor="middle"
                   fontSize="10"
-                  fill="#A08060"
+                  fill="#80604A"
                 >
                   {p.data.orders} đơn
                 </text>

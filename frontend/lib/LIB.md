@@ -31,6 +31,7 @@ lib/
 +-- hooks/
 |   +-- use-local-storage.ts # useLocalStorage (hydration-safe), useHydrated
 |   +-- use-guest-orders.ts  # guest tokens of orders placed on this device
+|   +-- use-element-width.ts # useElementWidth: live width for the SVG charts
 +-- utils/
     +-- currency.ts          # formatVND, formatVNDShort (chart axes), formatNumber
     +-- date.ts              # week/month helpers, MONTH_NAMES_VI, WEEKDAY_LABELS_VI

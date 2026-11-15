@@ -75,7 +75,7 @@ export function PieChart({ data }: PieChartProps) {
             stroke="#FDF6EC"
             strokeWidth="2"
             style={{ cursor: "pointer", transition: "opacity 200ms" }}
-            onMouseEnter={() => setHovered(s.index)}
+            onPointerEnter={() => setHovered(s.index)}
             opacity={hovered !== null && hovered !== s.index ? 0.65 : 1}
           />
         ))}
@@ -98,7 +98,7 @@ export function PieChart({ data }: PieChartProps) {
           <div
             key={s.index}
             className="flex cursor-pointer items-center gap-2 text-sm"
-            onMouseEnter={() => setHovered(s.index)}
+            onPointerEnter={() => setHovered(s.index)}
             onMouseLeave={() => setHovered(null)}
           >
             <span

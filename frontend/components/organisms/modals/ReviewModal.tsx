@@ -1,6 +1,13 @@
 "use client";
 
-import { Alert, Button, Heading, Text, Textarea } from "@/components/atoms";
+import {
+  Alert,
+  Button,
+  Heading,
+  Icon,
+  Text,
+  Textarea,
+} from "@/components/atoms";
 import { Modal } from "@/components/molecules/modal";
 import { reviewService } from "@/lib/services";
 import { errorMessage } from "@/lib/utils/errors";
@@ -60,7 +67,7 @@ export default function ReviewModal({
         /* Thank you state */
         <div className="flex flex-col items-center gap-4 py-4 text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-(--color-accent-light) text-3xl">
-            <i className="fa-solid fa-heart text-(--color-accent)"></i>
+            <Icon name="heart" className="text-(--color-accent)" />
           </div>
           <Heading level={2} id="review-modal-title">
             Cảm ơn quý khách
@@ -107,13 +114,13 @@ export default function ReviewModal({
                     aria-pressed={rating === star}
                     className="text-3xl transition-transform hover:scale-110 active:scale-95 sm:text-4xl"
                   >
-                    <i
+                    <Icon
+                      name="star"
+                      filled={isActive}
                       className={
-                        isActive
-                          ? "fa-solid fa-star text-yellow-400"
-                          : "fa-regular fa-star text-(--color-border)"
+                        isActive ? "text-yellow-400" : "text-(--color-border)"
                       }
-                    ></i>
+                    />
                   </button>
                 );
               })}
@@ -148,7 +155,7 @@ export default function ReviewModal({
               onClick={handleClose}
               variant="secondary"
               className="flex-1"
-              icon="fa-arrow-left"
+              icon="arrow-left"
             >
               Quay lại
             </Button>
@@ -157,7 +164,7 @@ export default function ReviewModal({
               onClick={handleSubmit}
               disabled={rating === 0 || sending}
               className="flex-1"
-              icon="fa-check"
+              icon="check"
             >
               Xác nhận
             </Button>

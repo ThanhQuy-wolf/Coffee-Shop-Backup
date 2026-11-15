@@ -74,7 +74,7 @@ function StatusLine({ status }: { status: Status }) {
   return (
     <p
       role="status"
-      className={`rounded-lg px-3 py-2 text-sm ${status.tone === "ok" ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`}
+      className={`rounded-lg px-3 py-2 text-sm ${status.tone === "ok" ? "bg-(--color-success-bg) text-(--color-success)" : "bg-(--color-danger-bg) text-(--color-danger)"}`}
     >
       {status.text}
     </p>

@@ -29,8 +29,8 @@ export const SHIFT_VIEW_STYLES: Record<
     label: "Đã đăng ký",
   },
   leave_requested: {
-    card: "bg-amber-50 border-amber-300 text-amber-800",
-    badge: "bg-amber-200 text-amber-900",
+    card: "bg-(--color-warning-bg) border-(--color-warning)/30 text-(--color-warning)",
+    badge: "bg-amber-200 text-(--color-warning)",
     label: "Chờ duyệt nghỉ",
   },
   approved_leave: {
@@ -39,13 +39,13 @@ export const SHIFT_VIEW_STYLES: Record<
     label: "Nghỉ phép",
   },
   attended: {
-    card: "bg-green-50 border-green-300 text-green-800",
-    badge: "bg-green-200 text-green-900",
+    card: "bg-(--color-success-bg) border-(--color-success)/30 text-(--color-success)",
+    badge: "bg-green-200 text-(--color-success)",
     label: "Có mặt",
   },
   absent: {
-    card: "bg-red-50 border-red-300 text-red-700",
-    badge: "bg-red-200 text-red-800",
+    card: "bg-(--color-danger-bg) border-(--color-danger)/30 text-(--color-danger)",
+    badge: "bg-red-200 text-(--color-danger)",
     label: "Vắng mặt",
   },
 };

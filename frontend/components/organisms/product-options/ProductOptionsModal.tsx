@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/atoms";
 import { Modal, ModalHeader } from "@/components/molecules/modal";
 import type { CartLineOption, NewCartLine } from "@/lib/contexts/cart-context";
 import type { OptionGroup, OrderItemType } from "@/lib/types";
@@ -170,11 +171,19 @@ export default function ProductOptionsModal({
                           onClick={() => toggle(ui, group, v.id)}
                           className={`flex cursor-pointer items-center justify-between gap-2 rounded-xl border px-3 py-2 text-left text-sm transition disabled:cursor-not-allowed disabled:opacity-45 ${
                             on
-                              ? "border-(--color-primary) bg-(--color-primary)/5 font-semibold text-(--color-primary-dark)"
+                              ? "border-(--color-primary) bg-(--color-accent-light) font-semibold text-(--color-primary-dark) ring-1 ring-(--color-primary)"
                               : "border-(--color-border-light) bg-white text-(--color-text-secondary) hover:border-(--color-primary-light)"
                           }`}
                         >
-                          <span className="min-w-0 truncate">{v.name}</span>
+                          <span className="flex min-w-0 items-center gap-1.5">
+                            {on && (
+                              <Icon
+                                name="check"
+                                className="text-xs text-(--color-primary)"
+                              />
+                            )}
+                            <span className="truncate">{v.name}</span>
+                          </span>
                           <span className="shrink-0 text-xs text-(--color-text-muted)">
                             {!v.isAvailable
                               ? "Hết"
@@ -187,7 +196,7 @@ export default function ProductOptionsModal({
                     })}
                   </div>
                   {problem && triedSubmit && (
-                    <p className="mt-1.5 text-xs font-medium text-red-600">
+                    <p className="mt-1.5 text-xs font-medium text-(--color-danger)">
                       {problem.message}
                     </p>
                   )}
@@ -205,9 +214,9 @@ export default function ProductOptionsModal({
             aria-label="Giảm số lượng"
             disabled={quantity <= 1}
             onClick={() => setQuantity((q) => q - 1)}
-            className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-(--color-border) bg-transparent disabled:opacity-40"
+            className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg border border-(--color-border) bg-transparent disabled:opacity-40"
           >
-            -
+            <Icon name="minus" className="text-sm" />
           </button>
           <span className="w-6 text-center font-semibold" aria-live="polite">
             {quantity}
@@ -217,9 +226,9 @@ export default function ProductOptionsModal({
             aria-label="Tăng số lượng"
             disabled={quantity >= MAX_QTY}
             onClick={() => setQuantity((q) => q + 1)}
-            className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-(--color-border) bg-transparent disabled:opacity-40"
+            className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg border border-(--color-border) bg-transparent disabled:opacity-40"
           >
-            +
+            <Icon name="plus" className="text-sm" />
           </button>
         </div>
         <button

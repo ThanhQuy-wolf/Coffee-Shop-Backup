@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert } from "@/components/atoms";
+import { Alert, Icon } from "@/components/atoms";
 import {
   CategoriesTab,
   CombosTab,
@@ -101,7 +101,7 @@ export default function ManagerPage() {
       <aside className="hidden w-64 shrink-0 flex-col border-r border-(--color-border-light) bg-white shadow-sm lg:flex">
         <div className="flex items-center gap-3 border-b border-(--color-border-light) px-5 py-5">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-(--color-primary)">
-            <i className="fa-solid fa-store text-sm text-white"></i>
+            <Icon name="store" className="text-sm text-white" />
           </div>
           <div>
             <p className="text-foreground text-sm font-bold">Quản lý quán</p>
@@ -123,7 +123,7 @@ export default function ManagerPage() {
                   : "hover:bg-background bg-transparent text-(--color-text-secondary) hover:text-(--color-primary-dark)"
               }`}
             >
-              <i className={`${tab.icon} w-4 text-center`}></i>
+              <Icon name={tab.icon} className="w-4" />
               <span className="flex-1 text-left">{tab.label}</span>
               {tab.count !== null && (
                 <span
@@ -148,7 +148,7 @@ export default function ManagerPage() {
                 href={link.href}
                 className="hover:bg-background flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-(--color-text-secondary) no-underline transition-all hover:text-(--color-primary-dark)"
               >
-                <i className={`${link.icon} w-4 text-center`}></i>
+                <Icon name={link.icon} className="w-4" />
                 <span className="flex-1 text-left">{link.label}</span>
               </Link>
             ))}
@@ -158,7 +158,10 @@ export default function ManagerPage() {
         <div className="border-t border-(--color-border-light) p-3">
           <div className="flex items-center gap-3 rounded-xl p-3">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-(--color-accent-light)">
-              <i className="fa-solid fa-user-tie text-sm text-(--color-primary)"></i>
+              <Icon
+                name="user-tie"
+                className="text-sm text-(--color-primary)"
+              />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-foreground truncate text-sm font-semibold">
@@ -172,7 +175,7 @@ export default function ManagerPage() {
               href="/"
               className="hover:bg-background flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-(--color-border-light) bg-transparent py-2 text-xs font-medium text-(--color-text-secondary) no-underline transition"
             >
-              <i className="fa-solid fa-house"></i>
+              <Icon name="house" />
               Trang chủ
             </Link>
             <button
@@ -180,9 +183,9 @@ export default function ManagerPage() {
                 logout();
                 router.push("/");
               }}
-              className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border-none bg-transparent py-2 text-xs font-medium text-red-500 transition hover:bg-red-50"
+              className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border-none bg-transparent py-2 text-xs font-medium text-(--color-danger) transition hover:bg-(--color-danger-bg)"
             >
-              <i className="fa-solid fa-right-from-bracket"></i>
+              <Icon name="right-from-bracket" />
               Đăng xuất
             </button>
           </div>
@@ -190,63 +193,97 @@ export default function ManagerPage() {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-40 flex items-center justify-between border-b border-(--color-border-light) bg-white px-5 py-4 shadow-sm">
-          <div>
-            <h1 className="text-foreground text-lg font-bold">
-              {tabs.find((t) => t.id === activeTab)?.label ?? "Quản lý"}
-            </h1>
-            <p className="text-xs text-(--color-text-muted)">
-              {SUBTITLE[activeTab]}
-            </p>
+        <header className="sticky top-0 z-40 flex flex-col gap-3 border-b border-(--color-border-light) bg-white px-4 py-3 shadow-sm sm:px-5 lg:flex-row lg:items-center lg:justify-between lg:py-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <h1 className="text-foreground text-lg font-bold">
+                {tabs.find((t) => t.id === activeTab)?.label ?? "Quản lý"}
+              </h1>
+              <p className="text-xs text-(--color-text-muted)">
+                {SUBTITLE[activeTab]}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                logout();
+                router.push("/");
+              }}
+              className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-xl border border-(--color-border-light) bg-transparent px-3 py-2 text-xs font-medium text-(--color-danger) lg:hidden"
+            >
+              <Icon name="right-from-bracket" />
+              Đăng xuất
+            </button>
           </div>
 
-          <div className="flex flex-wrap items-center justify-end gap-1 lg:hidden">
+          {/* Below lg the sidebar is gone, so every section and link stays
+              reachable from this swipeable row, each with its text label. */}
+          <nav
+            aria-label="Mục quản lý"
+            className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:-mx-5 sm:px-5 lg:hidden"
+          >
             {tabs.map((tab) => (
               <button
                 key={tab.id}
+                type="button"
+                aria-pressed={activeTab === tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex cursor-pointer items-center gap-1.5 rounded-xl border-none px-3 py-2 text-xs font-medium transition ${
+                className={`flex shrink-0 cursor-pointer items-center gap-1.5 rounded-xl border-none px-3 py-2 text-xs font-medium whitespace-nowrap transition ${
                   activeTab === tab.id
                     ? "bg-(--color-primary) text-white"
                     : "bg-background text-(--color-text-secondary) hover:text-(--color-primary)"
                 }`}
               >
-                <i className={tab.icon}></i>
-                <span className="hidden sm:inline">{tab.label}</span>
+                <Icon name={tab.icon} />
+                {tab.label}
+                {tab.count !== null && (
+                  <span
+                    className={`rounded-full px-1.5 text-[10px] font-semibold ${
+                      activeTab === tab.id
+                        ? "bg-white/20"
+                        : "bg-(--color-border-light)"
+                    }`}
+                  >
+                    {tab.count}
+                  </span>
+                )}
               </button>
             ))}
+            <span
+              aria-hidden="true"
+              className="my-1 w-px shrink-0 bg-(--color-border)"
+            />
             {LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                title={link.label}
-                className="flex items-center gap-1.5 rounded-xl border-none bg-(--color-accent-light) px-3 py-2 text-xs font-medium text-(--color-primary) no-underline transition hover:bg-(--color-accent-light)/70"
+                className="flex shrink-0 items-center gap-1.5 rounded-xl bg-(--color-accent-light) px-3 py-2 text-xs font-medium whitespace-nowrap text-(--color-primary) no-underline transition hover:bg-(--color-accent-light)/70"
               >
-                <i className={link.icon}></i>
-                <span className="sr-only">{link.label}</span>
+                <Icon name={link.icon} />
+                {link.label}
               </Link>
             ))}
-          </div>
+          </nav>
 
           <div className="hidden items-center gap-2 lg:flex">
             <Link
               href="/manager/analytics"
               className="flex items-center gap-1.5 rounded-xl bg-(--color-accent-light) px-3 py-2 text-xs font-medium text-(--color-primary) no-underline transition hover:opacity-80"
             >
-              <i className="fa-solid fa-chart-line"></i>
+              <Icon name="chart-line" />
               Thống kê tài chính
             </Link>
             <Link
               href="/"
               className="hover:bg-background flex items-center gap-1.5 rounded-xl border border-(--color-border-light) bg-transparent px-3 py-2 text-xs font-medium text-(--color-text-secondary) no-underline transition"
             >
-              <i className="fa-solid fa-house"></i>
+              <Icon name="house" />
               Trang chủ
             </Link>
           </div>
         </header>
 
-        <main className="flex-1 p-5 md:p-8">
+        <main className="flex-1 p-4 sm:p-5 md:p-8">
           {activeTab === "products" && <ProductsTab />}
           {activeTab === "combos" && <CombosTab />}
           <Alert message={loadError} className="mb-4" />

@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert } from "@/components/atoms";
+import { Alert, Icon } from "@/components/atoms";
 import { Modal, ModalHeader } from "@/components/molecules/modal";
 import { useShift } from "@/lib/contexts/shift-context";
 import { SCHEDULE_TODAY, formatDateISO, timeToMinutes } from "@/lib/utils/date";
@@ -183,9 +183,7 @@ export default function ShiftCreateModal({
             disabled={saving}
             className="flex-1 cursor-pointer rounded-xl border-none bg-(--color-primary) px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
           >
-            <i
-              className={`fa-solid ${isEdit ? "fa-floppy-disk" : "fa-plus"} mr-2`}
-            ></i>
+            <Icon name={isEdit ? "floppy-disk" : "plus"} className="mr-2" />
             {isEdit ? "Lưu thay đổi" : "Tạo ca làm"}
           </button>
           <button

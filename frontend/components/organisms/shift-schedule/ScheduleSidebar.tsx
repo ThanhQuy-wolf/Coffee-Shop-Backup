@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/atoms";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { useShift } from "@/lib/contexts/shift-context";
 import { formatVND } from "@/lib/utils/currency";
@@ -18,7 +19,7 @@ export default function ScheduleSidebar() {
     <aside className="hidden w-64 shrink-0 flex-col border-r border-(--color-border-light) bg-white shadow-sm lg:flex">
       <div className="flex items-center gap-3 border-b border-(--color-border-light) px-5 py-5">
         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-(--color-primary)">
-          <i className="fa-solid fa-calendar-days text-sm text-white"></i>
+          <Icon name="calendar-days" className="text-sm text-white" />
         </div>
         <div>
           <p className="text-foreground text-sm font-bold">Lịch làm việc</p>
@@ -41,7 +42,7 @@ export default function ScheduleSidebar() {
               : "hover:bg-background bg-transparent text-(--color-text-secondary) hover:text-(--color-primary-dark)"
           }`}
         >
-          <i className="fa-solid fa-table-columns w-4 text-center"></i>
+          <Icon name="table-columns" className="w-4 text-center" />
           <span className="flex-1 text-left">Theo tuần</span>
         </button>
         <button
@@ -53,7 +54,7 @@ export default function ScheduleSidebar() {
               : "hover:bg-background bg-transparent text-(--color-text-secondary) hover:text-(--color-primary-dark)"
           }`}
         >
-          <i className="fa-solid fa-calendar w-4 text-center"></i>
+          <Icon name="calendar" className="w-4 text-center" />
           <span className="flex-1 text-left">Theo tháng</span>
         </button>
 
@@ -66,7 +67,7 @@ export default function ScheduleSidebar() {
             onClick={goToToday}
             className="hover:bg-background flex w-full cursor-pointer items-center gap-3 rounded-xl border-none bg-transparent px-3 py-2.5 text-sm font-medium text-(--color-text-secondary) transition-all hover:text-(--color-primary-dark)"
           >
-            <i className="fa-solid fa-crosshairs w-4 text-center"></i>
+            <Icon name="crosshairs" className="w-4 text-center" />
             <span className="flex-1 text-left">Hôm nay</span>
           </button>
         </div>
@@ -80,7 +81,7 @@ export default function ScheduleSidebar() {
               href="/manager"
               className="hover:bg-background flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-(--color-text-secondary) no-underline transition-all hover:text-(--color-primary-dark)"
             >
-              <i className="fa-solid fa-store w-4 text-center"></i>
+              <Icon name="store" className="w-4 text-center" />
               <span className="flex-1 text-left">Dashboard</span>
             </Link>
           </div>
@@ -107,9 +108,10 @@ export default function ScheduleSidebar() {
       <div className="border-t border-(--color-border-light) p-3">
         <div className="flex items-center gap-3 rounded-xl p-3">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-(--color-accent-light)">
-            <i
-              className={`fa-solid ${isManager ? "fa-user-tie" : "fa-user"} text-sm text-(--color-primary)`}
-            ></i>
+            <Icon
+              name={isManager ? "user-tie" : "user"}
+              className="text-sm text-(--color-primary)"
+            />
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-foreground truncate text-sm font-semibold">
@@ -125,15 +127,15 @@ export default function ScheduleSidebar() {
             href="/staff/orders"
             className="hover:bg-background flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-(--color-border-light) bg-transparent py-2 text-xs font-medium text-(--color-text-secondary) no-underline transition"
           >
-            <i className="fa-solid fa-receipt"></i>
+            <Icon name="receipt" />
             Đơn hàng
           </Link>
           <button
             type="button"
             onClick={logout}
-            className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border-none bg-transparent py-2 text-xs font-medium text-red-500 transition hover:bg-red-50"
+            className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border-none bg-transparent py-2 text-xs font-medium text-(--color-danger) transition hover:bg-(--color-danger-bg)"
           >
-            <i className="fa-solid fa-right-from-bracket"></i>
+            <Icon name="right-from-bracket" />
             Đăng xuất
           </button>
         </div>

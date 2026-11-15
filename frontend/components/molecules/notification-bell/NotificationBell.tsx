@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/atoms";
 import { notificationService } from "@/lib/services";
 import type { AppNotification } from "@/lib/types";
 import { useEffect, useState } from "react";
@@ -40,9 +41,9 @@ export default function NotificationBell() {
         aria-label={`Thông báo (${items.length} chưa đọc)`}
         className="relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-(--color-border) bg-transparent text-(--color-text-secondary) transition hover:bg-(--color-border-light)"
       >
-        <i className="fa-solid fa-bell"></i>
+        <Icon name="bell" />
         {items.length > 0 && (
-          <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+          <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-(--color-danger) px-1 text-[10px] font-bold text-white">
             {items.length}
           </span>
         )}

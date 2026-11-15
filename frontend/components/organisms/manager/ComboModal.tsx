@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert } from "@/components/atoms";
+import { Alert, Icon } from "@/components/atoms";
 import { Modal, ModalHeader } from "@/components/molecules/modal";
 import type { ComboInput } from "@/lib/types";
 import { formatVND } from "@/lib/utils/currency";
@@ -84,7 +84,7 @@ export default function ComboModal({
         <div className="flex-1 space-y-4 overflow-y-auto px-6 py-5">
           <div>
             <label className="mb-1 block text-sm font-medium text-(--color-text-secondary)">
-              Tên combo <span className="text-red-500">*</span>
+              Tên combo <span className="text-(--color-danger)">*</span>
             </label>
             <input
               required
@@ -98,7 +98,7 @@ export default function ComboModal({
 
           <div>
             <label className="mb-1 block text-sm font-medium text-(--color-text-secondary)">
-              Giá combo (đ) <span className="text-red-500">*</span>
+              Giá combo (đ) <span className="text-(--color-danger)">*</span>
             </label>
             <input
               title="Giá combo"
@@ -133,7 +133,7 @@ export default function ComboModal({
             <label className="mb-2 block text-sm font-medium text-(--color-text-secondary)">
               Món trong combo{" "}
               {totalQty < 2 && (
-                <span className="text-xs text-red-500">
+                <span className="text-xs text-(--color-danger)">
                   (ít nhất 2 phần, BR-13)
                 </span>
               )}
@@ -156,23 +156,25 @@ export default function ComboModal({
                     <div className="flex items-center gap-1">
                       <button
                         title="Giảm"
+                        aria-label="Giảm"
                         type="button"
                         onClick={() => updateItemQty(p.id, qty - 1)}
                         disabled={qty === 0}
                         className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-(--color-border) bg-white text-xs text-(--color-text-secondary) transition hover:border-(--color-primary) hover:text-(--color-primary) disabled:cursor-not-allowed disabled:opacity-40"
                       >
-                        <i className="fa-solid fa-minus"></i>
+                        <Icon name="minus" />
                       </button>
                       <span className="text-foreground w-5 text-center text-sm font-semibold">
                         {qty}
                       </span>
                       <button
                         title="Tăng"
+                        aria-label="Tăng"
                         type="button"
                         onClick={() => updateItemQty(p.id, qty + 1)}
                         className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-(--color-border) bg-white text-xs text-(--color-text-secondary) transition hover:border-(--color-primary) hover:text-(--color-primary)"
                       >
-                        <i className="fa-solid fa-plus"></i>
+                        <Icon name="plus" />
                       </button>
                     </div>
                   </div>
@@ -190,6 +192,7 @@ export default function ComboModal({
             </div>
             <button
               title="Chuyển đổi trạng thái"
+              aria-label="Chuyển đổi trạng thái"
               type="button"
               aria-pressed={form.isAvailable}
               onClick={() =>

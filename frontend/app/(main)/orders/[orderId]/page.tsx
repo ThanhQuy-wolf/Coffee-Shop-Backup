@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, Spinner } from "@/components/atoms";
+import { Alert, Icon, Spinner } from "@/components/atoms";
 import { ReviewModal } from "@/components/organisms/modals";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { useCart } from "@/lib/contexts/cart-context";
@@ -80,7 +80,7 @@ export default function OrderPage() {
   if (loadError && !order) {
     return (
       <div className="mx-auto max-w-lg px-4 py-24 text-center">
-        <i className="fa-solid fa-receipt mb-4 text-5xl text-(--color-border)"></i>
+        <Icon name="receipt" className="mb-4 text-5xl text-(--color-border)" />
         <p className="text-foreground mb-4 font-semibold">{loadError}</p>
         <Link href="/" className="text-(--color-primary) hover:underline">
           Về trang chủ
@@ -155,7 +155,7 @@ export default function OrderPage() {
           <span
             className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold ${status.className}`}
           >
-            <i className={`fa-solid ${status.icon}`}></i>
+            <Icon name={status.icon} />
             {status.label}
           </span>
         </div>
@@ -182,7 +182,7 @@ export default function OrderPage() {
       </div>
 
       {pending && (
-        <div className="bg-card space-y-3 rounded-2xl border border-amber-200 p-5">
+        <div className="bg-card space-y-3 rounded-2xl border border-(--color-warning)/30 p-5">
           <div className="flex items-center justify-between">
             <h2 className="font-bold">
               {order.payment.method === "QR"
@@ -190,7 +190,7 @@ export default function OrderPage() {
                 : "Thanh toán tại quầy"}
             </h2>
             <span
-              className="font-mono text-lg font-bold text-amber-700"
+              className="font-mono text-lg font-bold text-(--color-warning)"
               aria-label="Thời gian còn lại"
             >
               {Math.floor(left / 60)}:{(left % 60).toString().padStart(2, "0")}
@@ -221,7 +221,7 @@ export default function OrderPage() {
             type="button"
             onClick={cancel}
             disabled={busy}
-            className="cursor-pointer rounded-xl border border-red-200 bg-transparent px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
+            className="cursor-pointer rounded-xl border border-(--color-danger)/30 bg-transparent px-4 py-2 text-sm font-semibold text-(--color-danger) hover:bg-(--color-danger-bg) disabled:opacity-50"
           >
             Huỷ đơn
           </button>
@@ -229,7 +229,7 @@ export default function OrderPage() {
       )}
 
       {order.status === "CANCELLED" && (
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-800">
+        <div className="rounded-2xl border border-(--color-danger)/30 bg-(--color-danger-bg) p-5 text-sm text-(--color-danger)">
           <p className="font-semibold">
             {expired
               ? "Đơn đã tự huỷ vì quá thời gian thanh toán."
@@ -251,7 +251,7 @@ export default function OrderPage() {
       )}
 
       {order.status === "READY" && (
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-sm font-semibold text-emerald-800">
+        <div className="rounded-2xl border border-(--color-success)/30 bg-(--color-success-bg) p-5 text-sm font-semibold text-(--color-success)">
           Đồ uống đã sẵn sàng, mời bạn nhận tại quầy.
         </div>
       )}

@@ -8,7 +8,7 @@ export interface AlertProps {
 }
 
 const TONES = {
-  error: "bg-red-50 text-red-700",
+  error: "bg-(--color-danger-bg) text-(--color-danger)",
   info: "bg-sky-50 text-sky-800",
 };
 

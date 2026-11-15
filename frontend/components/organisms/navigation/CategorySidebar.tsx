@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/atoms";
 import { useMenu } from "@/lib/contexts/menu-context";
 import type { MenuCategory } from "@/lib/types";
 import type React from "react";
@@ -38,7 +39,7 @@ export default function CategorySidebar({
         <span
           className={`text-xs font-bold tracking-widest whitespace-nowrap text-(--color-text-muted) uppercase ${isOpen ? "block" : "hidden"} xl:block`}
         >
-          <i className="fa-solid fa-utensils mr-2 text-(--color-primary)"></i>
+          <Icon name="utensils" className="mr-2 text-(--color-primary)" />
           Thực Đơn
         </span>
 
@@ -48,11 +49,10 @@ export default function CategorySidebar({
           aria-label={isOpen ? "Thu gọn menu" : "Mở rộng menu"}
           className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border-none bg-transparent text-(--color-text-muted) transition-colors duration-150 hover:bg-(--color-border-light) hover:text-(--color-primary) xl:hidden"
         >
-          <i
-            className={`fa-solid text-sm transition-transform duration-250 ${
-              isOpen ? "fa-chevron-left" : "fa-chevron-right"
-            }`}
-          ></i>
+          <Icon
+            name={isOpen ? "chevron-left" : "chevron-right"}
+            className="text-sm"
+          />
         </button>
       </div>
 
@@ -67,9 +67,10 @@ export default function CategorySidebar({
                   title={!isOpen ? cat.name : undefined}
                   className={`flex w-full cursor-pointer items-center rounded-xl border-none text-sm font-medium transition-all duration-150 xl:justify-start xl:gap-3 xl:px-3 xl:py-2.5 ${isOpen ? "gap-3 px-3 py-2.5" : "justify-center px-0 py-2.5"} ${categoryButtonClass(isActive)}`}
                 >
-                  <i
-                    className={` ${cat.icon} w-5 shrink-0 text-center text-base ${categoryIconClass(isActive)}`}
-                  ></i>
+                  <Icon
+                    name={cat.icon}
+                    className={`w-5 text-base ${categoryIconClass(isActive)}`}
+                  />
 
                   <span
                     className={`overflow-hidden text-ellipsis whitespace-nowrap ${isOpen ? "block" : "hidden"} xl:block`}
@@ -89,15 +90,18 @@ export default function CategorySidebar({
         <div
           className={`items-center gap-2 text-xs text-(--color-text-muted) ${isOpen ? "flex" : "hidden"} xl:flex`}
         >
-          <i className="fa-solid fa-clock shrink-0 text-(--color-accent)"></i>
+          <Icon name="clock" className="shrink-0 text-(--color-accent)" />
           <span>{openHours}</span>
         </div>
 
         <span className="xl:hidden">
-          <i
-            className={`fa-solid fa-clock text-sm text-(--color-text-muted) ${isOpen ? "hidden" : "block"}`}
-            title={openHours}
-          ></i>
+          <span title={openHours} className={isOpen ? "hidden" : "block"}>
+            <Icon
+              name="clock"
+              label={openHours}
+              className="text-sm text-(--color-text-muted)"
+            />
+          </span>
         </span>
       </div>
     </aside>

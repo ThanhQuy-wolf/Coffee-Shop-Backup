@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert } from "@/components/atoms";
+import { Alert, Icon } from "@/components/atoms";
 import { useManager } from "@/lib/contexts/manager-context";
 import type { Product } from "@/lib/types";
 import { formatVND } from "@/lib/utils/currency";
@@ -66,7 +66,10 @@ export default function ProductsTab() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative min-w-2/5 flex-1">
-          <i className="fa-solid fa-magnifying-glass pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-(--color-text-muted)"></i>
+          <Icon
+            name="magnifying-glass"
+            className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-(--color-text-muted)"
+          />
           <input
             type="text"
             value={search}
@@ -77,10 +80,11 @@ export default function ProductsTab() {
           {search && (
             <button
               title="Xóa tìm kiếm"
+              aria-label="Xóa tìm kiếm"
               onClick={() => setSearch("")}
               className="absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer border-none bg-transparent text-(--color-text-muted) hover:text-(--color-primary)"
             >
-              <i className="fa-solid fa-xmark text-sm"></i>
+              <Icon name="xmark" className="text-sm" />
             </button>
           )}
         </div>
@@ -116,11 +120,12 @@ export default function ProductsTab() {
 
         <button
           title="Thêm món"
+          aria-label="Thêm món"
           onClick={() => setModalProduct("new")}
           className="flex cursor-pointer items-center gap-2 rounded-xl border-none bg-(--color-primary) px-4 py-2 text-sm font-semibold text-white transition hover:bg-(--color-primary-dark) active:scale-95"
         >
-          <i className="fa-solid fa-plus"></i>
-          <span className="hidden sm:inline">Thêm món</span>
+          <Icon name="plus" />
+          <span>Thêm món</span>
         </button>
       </div>
 
@@ -131,8 +136,8 @@ export default function ProductsTab() {
       <Alert message={toggleError} />
 
       <div className="overflow-x-auto rounded-2xl border border-(--color-border-light) bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-(--color-border-light) text-sm">
-          <thead className="bg-background">
+        <table className="min-w-full divide-y divide-(--color-border-light) text-sm max-md:block">
+          <thead className="bg-background max-md:hidden">
             <tr>
               <th className="px-4 py-3 text-left font-semibold text-(--color-text-secondary)">
                 Tên món
@@ -154,14 +159,17 @@ export default function ProductsTab() {
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-(--color-border-light)">
+          <tbody className="divide-y divide-(--color-border-light) max-md:block">
             {filtered.length === 0 ? (
-              <tr>
+              <tr className="max-md:block">
                 <td
                   colSpan={6}
-                  className="py-12 text-center text-(--color-text-muted)"
+                  className="py-12 text-center text-(--color-text-muted) max-md:block"
                 >
-                  <i className="fa-solid fa-mug-hot mb-2 block text-3xl opacity-30"></i>
+                  <Icon
+                    name="mug-hot"
+                    className="mb-2 block text-3xl opacity-30"
+                  />
                   Không tìm thấy món nào
                 </td>
               </tr>
@@ -169,9 +177,11 @@ export default function ProductsTab() {
               filtered.map((p) => (
                 <tr
                   key={p.id}
-                  className="hover:bg-background transition-colors"
+                  className="hover:bg-background transition-colors max-md:grid max-md:grid-cols-2 max-md:items-center max-md:gap-x-3 max-md:gap-y-2 max-md:p-4"
                 >
-                  <td className="px-4 py-3">
+                  {/* Below md each row becomes a card: name on top, then
+                      category/price, cost/status and the actions. */}
+                  <td className="px-4 py-3 max-md:col-span-2 max-md:p-0">
                     <div>
                       <p className="text-foreground font-medium">{p.name}</p>
                       {p.description && (
@@ -181,7 +191,7 @@ export default function ProductsTab() {
                       )}
                       {p.optionGroupIds.length > 0 && (
                         <p className="mt-0.5 text-[11px] text-(--color-text-muted)">
-                          <i className="fa-solid fa-sliders mr-1"></i>
+                          <Icon name="sliders" className="mr-1" />
                           {groupsOf(p, optionGroups)
                             .map((g) => g.name)
                             .join(", ")}
@@ -189,50 +199,59 @@ export default function ProductsTab() {
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 max-md:p-0">
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-(--color-accent-light) px-2.5 py-0.5 text-xs font-medium text-(--color-primary-dark)">
-                      <i
-                        className={`${categoryOf(p.categoryId)?.icon ?? "fa-solid fa-tag"} text-[10px]`}
-                      ></i>
+                      <Icon
+                        name={categoryOf(p.categoryId)?.icon ?? "tag"}
+                        className="text-[10px]"
+                      />
                       {categoryOf(p.categoryId)?.name ?? "—"}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-right font-semibold text-(--color-primary)">
+                  <td className="px-4 py-3 text-right font-semibold text-(--color-primary) max-md:p-0">
+                    <span className="mr-1 text-xs font-normal text-(--color-text-muted) md:hidden">
+                      Giá bán
+                    </span>
                     {formatVND(p.price)}
                   </td>
-                  <td className="px-4 py-3 text-right text-(--color-text-secondary)">
+                  <td className="px-4 py-3 text-right text-(--color-text-secondary) max-md:p-0 max-md:text-left">
+                    <span className="mr-1 text-xs text-(--color-text-muted) md:hidden">
+                      Giá vốn
+                    </span>
                     {p.costPrice ? (
                       formatVND(p.costPrice)
                     ) : (
-                      <span className="text-xs text-amber-600">
+                      <span className="text-xs text-(--color-warning)">
                         Chưa khai báo
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-center">
+                  <td className="px-4 py-3 text-center max-md:p-0 max-md:text-right">
                     <button
+                      type="button"
                       onClick={() => toggle(p)}
                       title="Nhấn để đổi trạng thái"
+                      aria-label={`${p.isAvailable ? "Đang bán" : "Tạm ngừng bán"}, nhấn để đổi trạng thái`}
                       className="cursor-pointer border-none bg-transparent"
                     >
                       <StatusBadge available={p.isAvailable} />
                     </button>
                   </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-center gap-1.5">
+                  <td className="px-4 py-3 max-md:col-span-2 max-md:border-t max-md:border-(--color-border-light) max-md:p-0 max-md:pt-2">
+                    <div className="flex items-center justify-center gap-1.5 max-md:justify-end">
                       <button
                         onClick={() => setModalProduct(p)}
                         title="Chỉnh sửa"
-                        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-(--color-border-light) bg-transparent text-(--color-text-muted) transition hover:border-(--color-primary-light) hover:text-(--color-primary)"
+                        className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg border border-(--color-border-light) bg-transparent text-(--color-text-muted) transition hover:border-(--color-primary-light) hover:text-(--color-primary) md:h-8 md:w-8"
                       >
-                        <i className="fa-solid fa-pen text-xs"></i>
+                        <Icon name="pen" className="text-xs" />
                       </button>
                       <button
                         onClick={() => setDeleteTarget(p)}
                         title="Xóa"
-                        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-transparent bg-transparent text-(--color-text-muted) transition hover:border-red-200 hover:bg-red-50 hover:text-red-500"
+                        className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg border border-transparent bg-transparent text-(--color-text-muted) transition hover:border-(--color-danger)/30 hover:bg-(--color-danger-bg) hover:text-(--color-danger) md:h-8 md:w-8"
                       >
-                        <i className="fa-solid fa-trash text-xs"></i>
+                        <Icon name="trash" className="text-xs" />
                       </button>
                     </div>
                   </td>

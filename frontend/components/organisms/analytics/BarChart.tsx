@@ -1,5 +1,6 @@
 "use client";
 
+import { useElementWidth } from "@/lib/hooks/use-element-width";
 import type { RevenueDataPoint } from "@/lib/types";
 import { formatVNDShort } from "@/lib/utils/currency";
 import { useState } from "react";
@@ -23,7 +24,9 @@ export function BarChart({ current, previous, height = 200 }: BarChartProps) {
     set: "cur" | "prev";
     idx: number;
   } | null>(null);
-  const W = 800;
+  const [boxRef, boxWidth] = useElementWidth<HTMLDivElement>();
+  // Never narrower than 320px; below that the chart scrolls sideways.
+  const W = Math.max(boxWidth, 320);
   const H = height;
   const padL = 56,
     padR = 16,
@@ -51,11 +54,11 @@ export function BarChart({ current, previous, height = 200 }: BarChartProps) {
   const step = Math.ceil(n / 8);
 
   return (
-    <div className="relative w-full overflow-x-auto">
+    <div ref={boxRef} className="relative w-full overflow-x-auto">
       <svg
         viewBox={`0 0 ${W} ${H}`}
         className="w-full"
-        style={{ height: H, minWidth: 320 }}
+        style={{ height: H, width: W }}
         onMouseLeave={() => setHovered(null)}
       >
         {gridLines.map((g, i) => (
@@ -74,7 +77,7 @@ export function BarChart({ current, previous, height = 200 }: BarChartProps) {
               y={g.y + 4}
               textAnchor="end"
               fontSize="10"
-              fill="#A08060"
+              fill="#80604A"
             >
               {formatVNDShort(g.val)}
             </text>
@@ -99,7 +102,7 @@ export function BarChart({ current, previous, height = 200 }: BarChartProps) {
                 rx="3"
                 fill={isHovPrev ? "#A0785A" : "#E2C9A8"}
                 style={{ cursor: "pointer", transition: "fill 150ms" }}
-                onMouseEnter={() => setHovered({ set: "prev", idx: i })}
+                onPointerEnter={() => setHovered({ set: "prev", idx: i })}
               />
               <rect
                 x={curX}
@@ -109,7 +112,7 @@ export function BarChart({ current, previous, height = 200 }: BarChartProps) {
                 rx="3"
                 fill={isHovCur ? "#4A3728" : "#6F4E37"}
                 style={{ cursor: "pointer", transition: "fill 150ms" }}
-                onMouseEnter={() => setHovered({ set: "cur", idx: i })}
+                onPointerEnter={() => setHovered({ set: "cur", idx: i })}
               />
               {i % step === 0 && (
                 <text
@@ -117,7 +120,7 @@ export function BarChart({ current, previous, height = 200 }: BarChartProps) {
                   y={H - 8}
                   textAnchor="middle"
                   fontSize="10"
-                  fill="#A08060"
+                  fill="#80604A"
                 >
                   {d.label}
                 </text>
@@ -182,7 +185,7 @@ export function BarChart({ current, previous, height = 200 }: BarChartProps) {
                   y={tipY + 44}
                   textAnchor="middle"
                   fontSize="10"
-                  fill="#A08060"
+                  fill="#80604A"
                 >
                   {d.orders} đơn hàng
                 </text>
@@ -202,7 +205,7 @@ export function BarChart({ current, previous, height = 200 }: BarChartProps) {
           rx="2"
           fill="#E2C9A8"
         />
-        <text x={padL + 78} y={13} fontSize="10" fill="#A08060">
+        <text x={padL + 78} y={13} fontSize="10" fill="#80604A">
           Kỳ trước
         </text>
       </svg>

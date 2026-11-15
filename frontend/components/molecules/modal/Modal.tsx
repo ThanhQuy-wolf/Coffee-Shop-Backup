@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/atoms";
 import { type ReactNode, useEffect, useRef } from "react";
 
 export interface ModalProps {
@@ -111,7 +112,7 @@ export function ModalHeader({
         onClick={onClose}
         className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-none bg-transparent text-(--color-text-muted) transition-colors hover:bg-(--color-border-light) hover:text-(--color-primary)"
       >
-        <i className="fa-solid fa-xmark"></i>
+        <Icon name="xmark" />
       </button>
     </div>
   );

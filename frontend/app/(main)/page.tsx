@@ -1,6 +1,6 @@
 "use client";
 
-import { Spinner } from "@/components/atoms";
+import { Icon, Spinner } from "@/components/atoms";
 import { SearchBar } from "@/components/molecules/search-bar";
 import { CategorySidebar } from "@/components/organisms/navigation";
 import { ProductGrid } from "@/components/organisms/product-grid";
@@ -41,7 +41,10 @@ export default function HomePage() {
   if (error) {
     return (
       <div className="mx-auto max-w-lg px-4 py-24 text-center">
-        <i className="fa-solid fa-store-slash mb-4 text-5xl text-(--color-border)"></i>
+        <Icon
+          name="store-slash"
+          className="mb-4 text-5xl text-(--color-border)"
+        />
         <p className="text-foreground font-semibold">{error}</p>
       </div>
     );
@@ -136,16 +139,19 @@ function ShopMenu({ shop, menu }: { shop: ShopInfo; menu: Menu }) {
           <p className="text-sm text-(--color-text-muted)">{shop.tagline}</p>
           <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-(--color-text-secondary)">
             <li>
-              <i className="fa-solid fa-location-dot mr-1.5 text-(--color-accent)"></i>
+              <Icon
+                name="location-dot"
+                className="mr-1.5 text-(--color-accent)"
+              />
               {shop.address}
             </li>
             <li>
-              <i className="fa-solid fa-clock mr-1.5 text-(--color-accent)"></i>
+              <Icon name="clock" className="mr-1.5 text-(--color-accent)" />
               {shop.openHours}
             </li>
             {shop.wifiName && (
               <li>
-                <i className="fa-solid fa-wifi mr-1.5 text-(--color-accent)"></i>
+                <Icon name="wifi" className="mr-1.5 text-(--color-accent)" />
                 {shop.wifiName} /{" "}
                 <span className="font-mono">{shop.wifiPassword}</span>
               </li>

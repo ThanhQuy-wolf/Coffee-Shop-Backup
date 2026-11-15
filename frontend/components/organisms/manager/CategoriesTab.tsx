@@ -1,5 +1,7 @@
 "use client";
 
+import { Icon } from "@/components/atoms";
+import { EmptyState } from "@/components/molecules/empty-state";
 import { useManager } from "@/lib/contexts/manager-context";
 import type { MenuCategory } from "@/lib/types";
 import { useState } from "react";
@@ -34,8 +36,8 @@ export default function CategoriesTab() {
           onClick={() => setModalCategory("new")}
           className="flex cursor-pointer items-center gap-2 rounded-xl border-none bg-(--color-primary) px-4 py-2 text-sm font-semibold text-white transition hover:bg-(--color-primary-dark) active:scale-95"
         >
-          <i className="fa-solid fa-plus"></i>
-          <span className="hidden sm:inline">Thêm danh mục</span>
+          <Icon name="plus" />
+          <span>Thêm danh mục</span>
         </button>
       </div>
 
@@ -48,7 +50,10 @@ export default function CategoriesTab() {
               className="group relative flex items-center gap-4 rounded-2xl border border-(--color-border-light) bg-white p-4 shadow-sm transition hover:shadow-md"
             >
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-(--color-accent-light)">
-                <i className={`${cat.icon} text-xl text-(--color-primary)`}></i>
+                <Icon
+                  name={cat.icon}
+                  className="text-xl text-(--color-primary)"
+                />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-foreground truncate font-semibold">
@@ -62,14 +67,14 @@ export default function CategoriesTab() {
                   title="Chỉnh sửa"
                   className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg border border-(--color-border-light) bg-transparent text-(--color-text-muted) transition hover:border-(--color-primary-light) hover:text-(--color-primary)"
                 >
-                  <i className="fa-solid fa-pen text-[11px]"></i>
+                  <Icon name="pen" className="text-[11px]" />
                 </button>
                 <button
                   onClick={() => setDeleteTarget(cat)}
                   title="Xóa"
-                  className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg border border-transparent bg-transparent text-(--color-text-muted) transition hover:border-red-200 hover:bg-red-50 hover:text-red-500"
+                  className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg border border-transparent bg-transparent text-(--color-text-muted) transition hover:border-(--color-danger)/30 hover:bg-(--color-danger-bg) hover:text-(--color-danger)"
                 >
-                  <i className="fa-solid fa-trash text-[11px]"></i>
+                  <Icon name="trash" className="text-[11px]" />
                 </button>
               </div>
             </div>
@@ -77,10 +82,12 @@ export default function CategoriesTab() {
         })}
 
         {categories.length === 0 && (
-          <div className="col-span-full flex flex-col items-center gap-3 py-16 text-(--color-text-muted)">
-            <i className="fa-solid fa-tag text-4xl opacity-30"></i>
-            <p className="text-sm">Chưa có danh mục nào</p>
-          </div>
+          <EmptyState
+            size="sm"
+            icon="tag"
+            title="Chưa có danh mục nào"
+            className="col-span-full"
+          />
         )}
       </div>
 

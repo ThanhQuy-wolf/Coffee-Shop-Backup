@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/atoms";
 import { useCatalog } from "@/lib/contexts/catalog-context";
 import type { ProductSalesStats } from "@/lib/types";
 import { formatNumber, formatVND } from "@/lib/utils/currency";
@@ -38,17 +39,29 @@ function SortTh({
   onSort: (col: SortKey) => void;
 }) {
   const icon =
-    sortKey === col
-      ? sortDir === "desc"
-        ? "fa-sort-down text-(--color-primary)"
-        : "fa-sort-up text-(--color-primary)"
-      : "fa-sort text-(--color-text-muted)";
+    sortKey === col ? (sortDir === "desc" ? "sort-down" : "sort-up") : "sort";
   return (
     <th
-      className={`cursor-pointer px-4 py-3 font-semibold text-(--color-text-secondary) hover:text-(--color-primary) ${className}`}
-      onClick={() => onSort(col)}
+      className={`px-4 py-3 font-semibold text-(--color-text-secondary) ${className}`}
+      aria-sort={
+        sortKey === col
+          ? sortDir === "desc"
+            ? "descending"
+            : "ascending"
+          : "none"
+      }
     >
-      {label} <i className={`fa-solid ml-1 text-xs ${icon}`} />
+      <button
+        type="button"
+        onClick={() => onSort(col)}
+        className="cursor-pointer border-none bg-transparent p-0 font-semibold text-inherit hover:text-(--color-primary)"
+      >
+        {label}
+        <Icon
+          name={icon}
+          className={`ml-1 text-xs ${icon === "sort" ? "text-(--color-text-muted)" : "text-(--color-primary)"}`}
+        />
+      </button>
     </th>
   );
 }
@@ -85,13 +98,13 @@ export function ProductTable({ data }: ProductTableProps) {
 
   return (
     <div className="overflow-x-auto rounded-xl border border-(--color-border-light)">
-      <table className="w-full min-w-175 text-sm">
+      <table className="w-full min-w-175 text-sm whitespace-nowrap">
         <thead>
           <tr className="bg-background border-b border-(--color-border-light)">
             <th className="px-4 py-3 text-left font-semibold text-(--color-text-secondary)">
               #
             </th>
-            <th className="px-4 py-3 text-left font-semibold text-(--color-text-secondary)">
+            <th className="bg-background sticky left-0 z-10 px-4 py-3 text-left font-semibold text-(--color-text-secondary)">
               Sản phẩm
             </th>
             <th className="px-4 py-3 text-left font-semibold text-(--color-text-secondary)">
@@ -144,7 +157,7 @@ export function ProductTable({ data }: ProductTableProps) {
               className="border-b border-(--color-border-light) bg-(--color-bg-card) transition-colors hover:bg-(--color-accent-light)/30"
             >
               <td className="px-4 py-3 text-(--color-text-muted)">{i + 1}</td>
-              <td className="text-foreground px-4 py-3 font-medium">
+              <td className="text-foreground sticky left-0 z-10 bg-inherit px-4 py-3 font-medium">
                 {row.name}
               </td>
               <td className="px-4 py-3">
@@ -161,7 +174,7 @@ export function ProductTable({ data }: ProductTableProps) {
               <td className="px-4 py-3 text-right text-(--color-text-muted) tabular-nums">
                 {row.missingCost ? (
                   <span
-                    className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700"
+                    className="rounded-full bg-(--color-warning-bg) px-2 py-0.5 text-xs font-semibold text-(--color-warning)"
                     title="BR-10: chưa khai báo giá vốn"
                   >
                     Chưa có giá vốn
@@ -173,7 +186,7 @@ export function ProductTable({ data }: ProductTableProps) {
               <td className="px-4 py-3 text-right text-(--color-text-secondary) tabular-nums">
                 {formatVND(row.sellingPrice)}
               </td>
-              <td className="px-4 py-3 text-right font-medium text-green-600 tabular-nums">
+              <td className="px-4 py-3 text-right font-medium text-(--color-success) tabular-nums">
                 {row.missingCost ? "—" : formatVND(row.profit)}
               </td>
               <td className="px-4 py-3 text-right">
@@ -183,10 +196,10 @@ export function ProductTable({ data }: ProductTableProps) {
                   <span
                     className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${
                       row.profitMargin >= 70
-                        ? "bg-green-100 text-green-700"
+                        ? "bg-(--color-success-bg) text-(--color-success)"
                         : row.profitMargin >= 60
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-red-100 text-red-600"
+                          ? "bg-(--color-warning-bg) text-(--color-warning)"
+                          : "bg-(--color-danger-bg) text-(--color-danger)"
                     }`}
                   >
                     {row.profitMargin.toFixed(1)}%

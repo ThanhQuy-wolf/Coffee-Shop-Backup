@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/atoms";
 import type { ProductSalesStats } from "@/lib/types";
 import { formatVNDShort } from "@/lib/utils/currency";
 
@@ -26,7 +27,7 @@ export function TopProductsSection({
     <section className="rounded-2xl border border-(--color-border-light) bg-(--color-bg-card) p-5 shadow-sm">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-foreground text-base font-semibold">
-          <i className="fa-solid fa-fire mr-2 text-orange-500"></i>
+          <Icon name="fire" className="mr-2 text-orange-500" />
           Top sản phẩm bán chạy
         </h2>
         <CategorySelect value={categoryFilter} onChange={onCategoryChange} />
