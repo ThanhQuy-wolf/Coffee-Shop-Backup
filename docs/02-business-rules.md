@@ -91,6 +91,6 @@ Cột **Cấu hình** cho biết rule có tham số chủ quán đổi được 
 | P-11 | Thời hạn được sửa chấm công | 3 ngày | Chủ quán |
 | P-12 | Số ngày tối đa được đăng ký ca trước | 14 ngày | Chủ quán |
 
-Tham số do chủ quán chốt được lưu trong bản ghi cấu hình duy nhất `shop_info` (xem [04-erd.md](04-erd.md)). Tham số vận hành lưu trong cấu hình backend.
+Tham số do chủ quán chốt được lưu trong bản ghi cấu hình duy nhất `shop_info` (xem [04-erd.md](04-erd.md)). Tham số vận hành P-01 → P-05 lưu trong cấu hình backend, khoá `drinkool.auth.*` của `backend/src/main/resources/application.yml`.
 
 Các mã BR-03, BR-05, BR-20 đã bỏ khi hệ thống chuyển sang phục vụ một quán. Mã đã bỏ không dùng lại cho rule khác.

@@ -119,6 +119,7 @@ erDiagram
         bigint combo_id PK, FK
         bigint product_id PK, FK
         int quantity
+        int sort_order "thứ tự ly trong combo"
     }
     option_group {
         bigint id PK
@@ -156,6 +157,7 @@ erDiagram
         varchar status
         bigint total
         varchar idempotency_key
+        varchar request_fingerprint "SHA-256 của giỏ, kiểm BR-24"
         int version
         timestamptz created_at
         timestamptz paid_at
@@ -262,13 +264,14 @@ erDiagram
 - **`order_item` chụp lại tên, giá bán, giá vốn và danh mục** (`name_snapshot`, `unit_price`, `unit_cost`, `category_id_snapshot`). Đơn cũ phải giữ đúng như lúc bán, kể cả khi món bị đổi tên, đổi giá hay xoá mềm (BR-14). Báo cáo lợi nhuận dùng `unit_cost` đã chụp (BR-51), và tỷ trọng theo danh mục dùng `category_id_snapshot`. Dòng combo có `category_id_snapshot` để trống và `unit_cost` bằng tổng giá vốn của các món thành phần lúc bán.
 - **Tuỳ chọn là nhóm dùng chung, gắn vào món qua `product_option_group`.** Nhóm "Size" hay "Topping" thường giống nhau cho cả chục món, nên định nghĩa một lần rồi gắn nhiều nơi. Sửa giá trân châu một chỗ là đúng cho mọi món. Nếu sau này cần giá size khác nhau theo món (Size L của cà phê +5.000 đ, của trà +8.000 đ), tách thành hai nhóm riêng thay vì thêm cột ghi đè giá ở bảng nối.
 - **`order_item_option` chụp tên nhóm, tên giá trị và giá chênh** giống cách `order_item` chụp giá món (BR-17). `order_item.unit_price` và `unit_cost` đã gồm phần chênh, nên báo cáo doanh thu và lợi nhuận không phải join bảng này. Hai dòng cùng món khác lựa chọn là hai `order_item` riêng (BR-23).
-- **Lựa chọn trong combo nằm cùng bảng `order_item_option`, phân biệt bằng `component_no`** (ly thứ mấy trong combo, đếm từ 1 theo thứ tự `combo_item` và số lượng). Bảng chụp luôn món và tên món của ly đó (`component_product_id`, `component_name_snapshot`) vì thành phần combo có thể đổi sau khi bán. Dòng món để ba cột này NULL. Ly không có lựa chọn nào thì không có hàng nào, nhân viên pha theo công thức thường.
+- **Lựa chọn trong combo nằm cùng bảng `order_item_option`, phân biệt bằng `component_no`** (ly thứ mấy trong combo, đếm từ 1 theo `combo_item.sort_order` rồi tới số lượng). Bảng chụp luôn món và tên món của ly đó (`component_product_id`, `component_name_snapshot`) vì thành phần combo có thể đổi sau khi bán. Dòng món để ba cột này NULL. Ly không có lựa chọn nào thì không có hàng nào, nhân viên pha theo công thức thường.
 - **`payment` tách khỏi `customer_order`.** Vòng đời thanh toán (hoàn tiền, huỷ trước khi trả) khác vòng đời đơn. Khi tích hợp cổng thanh toán (Q-03), chỉ cần thêm cột hoặc bảng giao dịch cổng mà không phải sửa bảng đơn. MVP là 1–1 (`order_id` unique).
 - **Trạng thái nghỉ phép và vắng mặt nằm ở `shift_assignment`**, không nằm ở `shift`. Mỗi người trong cùng một ca có thể ở trạng thái khác nhau. "Đã đủ người" được tính từ số phân ca đang chiếm chỗ, không lưu.
 - **`app_user` dùng chung cho mọi role.** Khách đăng nhập bằng `phone`, nhân viên bằng `username`. Ràng buộc kiểm tra bảo đảm Staff và Manager luôn có `username`, còn Customer luôn có `phone`.
 - **`shop_info` chỉ có một dòng** (`CHECK (id = 1)`), chứa thông tin quán và các tham số P-06, P-08 → P-12 (P-07 là tham số kỹ thuật, nằm trong cấu hình backend). Hệ thống chỉ phục vụ một quán (A-5), nên không bảng nào có `shop_id`.
 - **Tiền lưu bằng `bigint` (đồng).** VND không có số lẻ, dùng số nguyên thì tránh sai số làm tròn (A-8).
 - **`order_daily_counter`** cấp số thứ tự trong ngày cho mã đơn (BR-25) bằng `INSERT … ON CONFLICT … DO UPDATE SET last_seq = last_seq + 1 RETURNING last_seq`. Cách này an toàn khi nhiều đơn được tạo cùng lúc.
+- **`customer_order.request_fingerprint`** là SHA-256 của nội dung request O-1 (phương thức thanh toán, bàn, ghi chú, các dòng kèm lựa chọn) cộng người đặt. Gửi lại cùng `Idempotency-Key` thì backend so dấu này để biết là gửi lại đúng giỏ cũ hay dùng nhầm khoá cho giỏ khác (BR-24). Không lưu nguyên request vì đơn đã có đủ dòng và lựa chọn. Cột có mặc định rỗng cho đơn không tạo qua O-1 (nhập tay, dữ liệu cũ); chuỗi rỗng không khớp dấu nào nên gửi lại khoá của đơn đó nhận `BR-24`.
 - **`customer_order.guest_token`.** Khách vãng lai không có tài khoản, nên khi tạo đơn hệ thống trả về một token ngẫu nhiên. Token được lưu trên thiết bị để khách xem lại và huỷ đúng đơn của mình.
 - **`version`** trên `customer_order` và `shift` dùng cho optimistic locking (BR-27). Ngoài ra, thao tác đăng ký ca khoá dòng `shift` bằng `SELECT … FOR UPDATE` để đếm chỗ chính xác (BR-43).
 
@@ -388,6 +391,7 @@ CREATE TABLE combo_item (
     combo_id   bigint NOT NULL REFERENCES combo(id) ON DELETE CASCADE,
     product_id bigint NOT NULL REFERENCES product(id),
     quantity   int    NOT NULL CHECK (quantity > 0),
+    sort_order int    NOT NULL DEFAULT 0,  -- thứ tự món khi quản lý nhập, quyết định số `no` của từng ly (A-10)
     PRIMARY KEY (combo_id, product_id)
 );
 
@@ -437,6 +441,7 @@ CREATE TABLE customer_order (
                       ('PENDING_PAYMENT','PAID','PREPARING','READY','COMPLETED','CANCELLED')),
     total           bigint      NOT NULL CHECK (total > 0),
     idempotency_key varchar(64) NOT NULL,
+    request_fingerprint varchar(64) NOT NULL DEFAULT '',  -- BR-24: cùng khoá mà khác giỏ thì từ chối
     version         int         NOT NULL DEFAULT 1,
     created_at      timestamptz NOT NULL DEFAULT now(),
     paid_at         timestamptz,
@@ -579,13 +584,13 @@ Những rule sau phải kiểm ở tầng service, trong cùng transaction với
 | Rule | Cách kiểm |
 |---|---|
 | BR-11 | Trước khi xoá mềm `category`, đếm `product` có `deleted_at IS NULL`. Không xoá cứng danh mục vì món đã xoá mềm vẫn trỏ tới nó |
-| BR-14 | Xoá cứng `product` chỉ khi không có `order_item` nào trỏ tới. Món còn nằm trong combo chưa xoá thì phải gỡ khỏi combo trước (422 `BR-13`) |
+| BR-14 | Xoá cứng `product` chỉ khi không có `order_item`, `order_item_option.component_product_id` hay `combo_item` (kể cả của combo đã xoá mềm) nào trỏ tới, còn lại thì xoá mềm. Món còn nằm trong combo chưa xoá thì phải gỡ khỏi combo trước (422 `BR-13`). Xoá cứng `combo` khi không có `order_item` nào trỏ tới, `combo_item` đi theo nhờ `ON DELETE CASCADE` |
 | BR-25 | Ngày trong mã đơn là ngày theo `Asia/Ho_Chi_Minh`: `(now() AT TIME ZONE 'Asia/Ho_Chi_Minh')::date`, không phải ngày UTC |
 | BR-13 | Combo phải có tổng số lượng thành phần ≥ 2, và mọi món thành phần phải chưa bị xoá |
 | BR-21 | Khi tạo đơn, món, combo và giá trị tuỳ chọn phải `is_available = true` và `deleted_at IS NULL` |
 | BR-16 | Nhóm `SINGLE` có tối đa 1 `option_value` mặc định chưa xoá, nhóm `SINGLE` bắt buộc có đúng 1. Nhóm `MULTIPLE` không có mặc định. Nhóm có ít nhất 1 giá trị chưa xoá. Kiểm khi lưu cả nhóm cùng các giá trị |
 | BR-18 | Với mỗi dòng món: mọi `option_value_id` gửi lên thuộc một `option_group` có trong `product_option_group` của món, đếm theo nhóm phải nằm trong `[min_select, max_select]`. Dòng combo gửi lựa chọn theo từng ly: mỗi `no` trỏ tới một đơn vị món của combo và được kiểm với `product_option_group` của món đó. Hàng `order_item_option` của dòng `PRODUCT` có `component_no` NULL, của dòng `COMBO` có `component_no` NOT NULL (kiểm ở tầng ứng dụng vì CHECK không đọc được `order_item`) |
-| BR-19 | Xoá cứng `option_value`/`option_group` chỉ khi không có `order_item_option` nào trỏ tới. Nhóm còn gắn vào món chưa xoá thì phải gỡ trước. Menu tính món "tạm hết" khi một nhóm bắt buộc có ít hơn `min_select` giá trị đang bán |
+| BR-19 | Xoá cứng `option_value`/`option_group` chỉ khi không có `order_item_option` nào trỏ tới (với nhóm: thêm điều kiện không còn `product_option_group` nào, kể cả của món đã xoá mềm). Nhóm còn gắn vào món chưa xoá thì phải gỡ trước. Menu tính món "tạm hết" khi một nhóm bắt buộc có ít hơn `min_select` giá trị đang bán |
 | BR-43 | `SELECT … FROM shift WHERE id = ? FOR UPDATE`, rồi đếm phân ca đang chiếm chỗ trước khi chèn |
 | BR-45 | Truy vấn phân ca chiếm chỗ của nhân viên trong cùng `shift_date` có `start_time < :end AND end_time > :start` |
 

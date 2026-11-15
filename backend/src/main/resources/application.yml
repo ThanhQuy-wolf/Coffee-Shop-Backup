@@ -1,0 +1,59 @@
+spring:
+  application:
+    name: drinkool-backend
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/drinkool}
+    username: ${DB_USERNAME:drinkool}
+    password: ${DB_PASSWORD:drinkool}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    locations: classpath:db/migration
+
+server:
+  port: ${PORT:8080}
+  error:
+    whitelabel:
+      enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+drinkool:
+  jwt:
+    # Production bắt buộc đặt JWT_SECRET (≥ 32 byte). Giá trị mặc định chỉ để chạy máy dev.
+    secret: ${JWT_SECRET:dev-only-secret-change-me-0123456789abcdef}
+    access-ttl: 15m
+    refresh-ttl: 30d
+  auth:
+    otp-resend-interval: 60s   # P-01
+    otp-max-attempts: 5        # P-02
+    otp-ttl: 5m                # P-03
+    max-failed-logins: 5       # P-04
+    lock-duration: 15m         # P-05
+    otp-fixed-code: ${OTP_FIXED_CODE:}
+  jobs:
+    enabled: true                    # BR-28, BR-48; chạy nhiều máy cũng an toàn vì câu UPDATE có điều kiện
+    payment-timeout-interval: 60s
+    leave-expiry-interval: 60s       # BR-48
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  flyway:
+    locations: classpath:db/migration,classpath:db/dev
+drinkool:
+  auth:
+    # Trùng MOCK_OTP của frontend để đăng ký thử khi chưa có cổng SMS
+    otp-fixed-code: "123456"

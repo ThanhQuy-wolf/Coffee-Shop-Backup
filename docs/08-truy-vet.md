@@ -2,7 +2,7 @@
 
 Bảng này nối từng use case tới yêu cầu, rule, API, màn hình và hàm service ở frontend. UC-03 (Tìm quán) đã bỏ nên không có dòng. Dùng bảng để kiểm tra độ phủ: một FR không có API, hoặc một API không có màn hình gọi tới, đều là dấu hiệu thiếu sót.
 
-Mã API lấy từ [05-api.md](05-api.md#2-bảng-endpoint). Hàm service nằm trong `frontend/lib/services/`.
+Mã API lấy từ [05-api.md](05-api.md#2-bảng-endpoint). Hàm service nằm trong `frontend/lib/services/`. Package backend của từng nhóm API nằm ở [05-api.md §5](05-api.md#5-trạng-thái-triển-khai-backend) và ở mục 4 dưới đây.
 
 ## 1. UC → FR → BR → API → màn hình
 
@@ -56,3 +56,26 @@ Mã API lấy từ [05-api.md](05-api.md#2-bảng-endpoint). Hàm service nằm 
 | `/manager` | `/manager` | Thêm tab Thông tin quán, Đánh giá và Tuỳ chọn |
 | `/manager/analytics` | `/manager/analytics` | Số liệu tính theo BR-50 → BR-53 |
 | `/staff/schedule` | `/staff/schedule` | Trạng thái nghỉ, vắng nằm ở từng phân ca. Thêm duyệt nghỉ, chấm công, gỡ người |
+
+## 4. API → backend
+
+Class nằm trong `backend/src/main/java/vn/drinkool/`. Test tích hợp nằm cùng package trong `backend/src/test/java`.
+
+| API | Controller | Service | Test |
+|---|---|---|---|
+| A-1 → A-7 | `auth/AuthController` | `auth/AuthService`, `auth/TokenService` | `auth/AuthApiTest` |
+| A-8, A-9 | `notification/NotificationController` | (đọc thẳng repository) | — |
+| S-2 → S-5 | `shop/ShopController` | `shop/ShopService` | `shop/ShopApiTest` |
+| S-6 | `catalog/MenuController` | `catalog/MenuService` | `catalog/MenuApiTest` |
+| C-1 → C-4 | `catalog/CategoryController` | `catalog/CategoryService` | `catalog/CategoryApiTest` |
+| C-5 → C-9 | `catalog/ProductController` | `catalog/ProductService` | `catalog/ProductApiTest` |
+| C-10 → C-14 | `catalog/ComboController` | `catalog/ComboService` | `catalog/ComboApiTest` |
+| C-15 → C-19 | `catalog/OptionGroupController` | `catalog/OptionGroupService` | `catalog/OptionGroupApiTest` |
+| O-1 | `order/OrderController` | `order/OrderPlacementService`, `order/OrderCodeGenerator` | `order/PlaceOrderApiTest` |
+| O-2 → O-9 | `order/OrderController` | `order/OrderQueryService`, `order/OrderWorkflowService`, `order/OrderAccess` (ai xem, huỷ được đơn), `order/OrderViews` (dựng kiểu `Order`, che số điện thoại) | `order/OrderWorkflowApiTest` |
+| Job BR-28 | `order/PaymentTimeoutJob` | — | `order/PaymentTimeoutJobTest` |
+| R-1, R-2 | `review/ReviewController` | `review/ReviewService` | `review/ReviewApiTest` |
+| W-1 → W-6 | `shift/ShiftController` | `shift/ShiftService` | `shift/ShiftApiTest` |
+| W-7 → W-12 | `shift/ShiftController` | `shift/AssignmentService` | `shift/AssignmentApiTest` |
+| Job BR-48 | `shift/LeaveExpiryJob` | — | `shift/AssignmentApiTest` |
+| RP-1 → RP-4 | `report/ReportController` | `report/ReportService`, `report/ReportPeriod` (kỳ, kỳ trước, mốc của biểu đồ) | `report/ReportApiTest` |
