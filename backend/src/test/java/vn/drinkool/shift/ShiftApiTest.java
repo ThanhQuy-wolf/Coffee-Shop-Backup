@@ -128,7 +128,7 @@ class ShiftApiTest extends ShiftTestSupport {
 
         call(POST, path + "/cancel", manager, "{\"reason\":\"x\",\"version\":2}")
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.code").value("ORDER_STATE"));
+                .andExpect(jsonPath("$.code").value("SHIFT_STATE"));
         JsonNode started = pastShiftWith(2, 0, "REGISTERED");
         call(POST, "/api/v1/shifts/" + started.get("id").asLong() + "/cancel", manager,
                 "{\"reason\":\"x\",\"version\":1}")

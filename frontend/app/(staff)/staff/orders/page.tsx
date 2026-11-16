@@ -45,6 +45,8 @@ export default function StaffOrdersPage() {
     tone: "error" | "info";
     text: string;
   } | null>(null);
+  // Kept apart from `message` so the next successful poll can clear it
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<number | null>(null);
   const [cancelling, setCancelling] = useState<Order | null>(null);
   const [stockOpen, setStockOpen] = useState(false);
@@ -57,8 +59,9 @@ export default function StaffOrdersPage() {
           q: query,
         }),
       );
+      setLoadError(null);
     } catch (err) {
-      setMessage({ tone: "error", text: errorMessage(err) });
+      setLoadError(errorMessage(err));
     }
   }, [showDone, query]);
 
@@ -141,6 +144,7 @@ export default function StaffOrdersPage() {
           </div>
         </div>
 
+        <Alert message={loadError} className="mb-4" />
         <Alert message={message?.text} tone={message?.tone} className="mb-4" />
 
         <div

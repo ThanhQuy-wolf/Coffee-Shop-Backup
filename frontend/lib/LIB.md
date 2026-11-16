@@ -58,8 +58,10 @@ Every service calls the Spring Boot backend in `../backend` through `/api/*`.
 
 - `AuthProvider` stores the session in localStorage and hands the tokens to
   `client.ts`. A call that gets 401 refreshes once with A-5 and is retried;
-  calls made at the same time share that refresh, because reusing a refresh
-  token revokes every session. A failed refresh logs the user out.
+  calls made at the same time share that refresh, and tabs take turns through
+  a Web Lock, because reusing a refresh token revokes every session. A failed
+  refresh logs the user out and retries the call as a guest, so public data
+  (menu, shop info) still loads.
 - O-2 sends `If-None-Match`, so polling an unchanged order gets a 304 and the
   cached order.
 - `orderService.now()` and `shiftService.now()` are the browser clock.

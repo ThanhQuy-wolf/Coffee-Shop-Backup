@@ -87,7 +87,7 @@ export const shiftService = {
    * @param input - the new values plus the version the manager last saw
    * @returns the updated shift
    * @throws {ApiError} 409 `BR-27` when the shift changed in the meantime
-   * @throws {ApiError} 409 `ORDER_STATE` when the shift was cancelled
+   * @throws {ApiError} 409 `SHIFT_STATE` when the shift was cancelled
    * @throws {ApiError} 422 `BR-41` when `maxStaff` is below the current headcount
    * @throws {ApiError} 422 `BR-42` when the new times clash for someone in the shift
    */
@@ -108,6 +108,7 @@ export const shiftService = {
    * @param body.version - the version the manager last saw
    * @returns the cancelled shift
    * @throws {ApiError} 409 `BR-27` when the shift changed in the meantime
+   * @throws {ApiError} 409 `SHIFT_STATE` when the shift was already cancelled
    * @throws {ApiError} 422 `BR-42` when the shift has already started
    */
   cancelShift(

@@ -77,6 +77,21 @@ function parseSession(v: unknown): AuthSession | null {
 }
 
 /**
+ * Reads the session saved in localStorage right now, bypassing React state,
+ * so a tab sees a session another tab has just renewed.
+ *
+ * @returns the saved session, or `null` when none or unreadable
+ */
+function readStoredSession(): AuthSession | null {
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    return raw ? parseSession(JSON.parse(raw)) : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Holds the login session for the whole app and keeps the access token of
  * the API client in sync with it. Mounted once in app/providers.tsx.
  *
@@ -96,6 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   setRefreshToken(session?.refreshToken ?? null);
   setSessionHooks({
     refreshToken: () => session?.refreshToken ?? null,
+    storedSession: readStoredSession,
     onRefreshed: (next) => setSession(next),
     onExpired: () => setSession(null),
   });

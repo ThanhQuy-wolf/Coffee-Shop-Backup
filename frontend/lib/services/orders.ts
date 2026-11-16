@@ -7,7 +7,7 @@ import type {
   Review,
   ReviewList,
 } from "../types";
-import { apiFetch, apiRequest, query } from "./client";
+import { apiFetch, apiRequest, getAccessToken, query } from "./client";
 
 const GUEST_TOKEN = "X-Guest-Token";
 
@@ -68,7 +68,8 @@ export const orderService = {
    * @throws {ApiError} 404 `NOT_FOUND` when missing or not visible to the caller
    */
   async get(orderId: number, guestToken?: string): Promise<Order> {
-    const key = `${orderId}:${guestToken ?? ""}`;
+    // The body depends on who asks (phone masked for others), the ETag does not
+    const key = `${orderId}:${guestToken ?? ""}:${getAccessToken() ?? ""}`;
     const cached = orderCache.get(key);
     const res = await apiFetch("GET", `/v1/orders/${orderId}`, undefined, {
       ...guestHeaders(guestToken),

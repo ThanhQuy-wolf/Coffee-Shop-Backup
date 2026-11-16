@@ -214,7 +214,33 @@ Viết RP-1 → RP-4 và nối toàn bộ `frontend/lib/services` vào backend, 
 | R-60 | 05 | Đăng xuất xoá access token trước khi lệnh A-6 kịp gửi, nên A-6 trả 401 và refresh token không bị thu hồi | `authService.logout` lấy cả hai token ngay khi được gọi |
 | R-61 | 01 | Thẻ thống kê ghi "chỉ tính đơn hoàn tất", trái với BR-50 | Đổi chữ thành "tính theo lúc thu tiền" và "Đơn đã thanh toán, chưa bị huỷ" |
 
-## 11. Điểm còn mở
+## 11. Rà soát lần 10: kiểm tra fullstack (2026-11-15)
+
+Chạy backend thật (profile `dev`) với frontend `next start`, gọi lần lượt mọi API của 05 bằng từng vai trò và so field trả về với `frontend/lib/types.ts`, chạy luồng khách vãng lai, khách đăng nhập, nhân viên, quản lý trên máy tính và điện thoại (375 px), rồi build cả hai image Docker. Không thêm FR, BR, UC, migration.
+
+| Hạng mục | Kết quả |
+|---|---|
+| Hợp đồng API | Field trả về khớp `types.ts` ở mọi nhóm A, S, C, O, R, W, RP. Lỗi đều là `application/problem+json`, kể cả 401, 403, 415, JSON hỏng, sai kiểu tham số. Các lệnh 204 (A-6, A-9, DELETE nhóm C) và 304 của O-2 được client xử lý đúng |
+| Phân quyền | Khách không đọc, huỷ, đánh giá được đơn người khác (404 hoặc `BR-30`). Nhân viên bị chặn 403 ở báo cáo, cài đặt quán, sửa món, tạo ca |
+| Docker | `backend/Dockerfile` build và chạy được, healthcheck `wget` trong image JRE trả `UP`. `frontend/dockerfile` hỏng ở bước `pnpm install` (xem R-65), đã sửa |
+| Test | Backend 77/77. Frontend eslint 0 lỗi, `next build` OK, chạy lại các luồng E2E đều qua |
+
+**Lỗi tìm thấy và đã sửa**
+
+| # | Tài liệu | Vấn đề | Cách xử lý |
+|---|---|---|---|
+| R-62 | 05 | Sửa hoặc huỷ ca đã huỷ trả mã `ORDER_STATE` của đơn hàng (R-50) | Đổi thành 409 `SHIFT_STATE`, thêm vào bảng mã lỗi |
+| R-63 | 05 | Phiên hết hạn hẳn (refresh token bị thu hồi hoặc quá hạn) thì trang chủ chỉ báo "Phiên đăng nhập đã hết hạn" và không hiện menu, vì backend trả 401 cho token hỏng kể cả ở API công khai | A-5 thất bại thì client xoá phiên và gửi lại request đó dưới dạng khách |
+| R-64 | 05 | Hai tab cùng hết hạn access token sẽ cùng gửi A-5 với một refresh token. Backend coi lần thứ hai là dùng lại token nên thu hồi mọi phiên, người dùng bị đăng xuất ở cả hai tab | Các tab xin chung một khoá (Web Locks API) trước khi refresh. Tab vào sau thấy phiên đã được tab kia làm mới thì dùng luôn, không gọi A-5 nữa |
+| R-65 | — | `frontend/dockerfile` chỉ chép `package.json` và `pnpm-lock.yaml` ở bước cài thư viện, và pnpm 11 trở lên báo lỗi `ERR_PNPM_IGNORED_BUILDS` khi chỉ có `ignoredBuiltDependencies`, nên `docker build` của frontend luôn hỏng | Chép thêm `pnpm-workspace.yaml`, khai báo thêm `allowBuilds` (pnpm 10, 11, 12 đều cài được) |
+| R-66 | — | Cache ETag của O-2 trên trình duyệt chỉ khoá theo mã đơn và guest token. Đổi tài khoản trong cùng tab có thể nhận lại bản đơn của người trước (số điện thoại che hoặc không che) khi backend trả 304 | Khoá cache có thêm access token hiện tại |
+| R-67 | — | Trang `/orders/abc` gọi `/v1/orders/NaN` và báo "Request không đúng định dạng" | Mã đơn không phải số dương thì báo "Không tìm thấy đơn" mà không gọi API |
+| R-68 | — | Ô số lượng ở giỏ hàng: xoá trắng để gõ số mới làm dòng món biến mất | Bỏ qua giá trị rỗng hoặc nhỏ hơn 1, muốn xoá dòng thì dùng nút xoá |
+| R-69 | — | Hàng đợi nhân viên: một lần tải lỗi (mất mạng) để lại thông báo lỗi mãi, kể cả khi các lần tải sau đã thành công | Tách lỗi tải danh sách khỏi thông báo thao tác, lần tải thành công tự xoá lỗi |
+
+Còn lại, chưa sửa vì cần quyết định hoặc chỉ là hành vi chấp nhận được: route không tồn tại trả 401 thay vì 404 khi chưa đăng nhập (Spring Security chặn trước), bước `apk add libc6-compat` trong `frontend/dockerfile` không thử được trong môi trường kiểm tra vì mạng chặn kho Alpine, CI Gitea chưa chạy thật.
+
+## 12. Điểm còn mở
 
 Những điểm sau không phải lỗi của đặc tả mà là quyết định nghiệp vụ. Thiết kế hiện dùng phương án mặc định, xem [01-dac-ta.md](01-dac-ta.md#10-câu-hỏi-mở):
 

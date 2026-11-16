@@ -98,7 +98,7 @@ public class ShiftService {
         Shift shift = shifts.findById(id).orElseThrow(ShiftErrors::shiftNotFound);
         checkVersion(shift, in.version());
         if (shift.getStatus() == Shift.Status.CANCELLED) {
-            throw new ApiException(HttpStatus.CONFLICT, "ORDER_STATE", "Ca đã bị huỷ", null);
+            throw new ApiException(HttpStatus.CONFLICT, "SHIFT_STATE", "Ca đã bị huỷ", null);
         }
         List<ShiftAssignment> holders = assignments.findByShiftIdAndStatusIn(id, AssignmentStatus.OCCUPYING);
         Slot slot = validate(in);
@@ -126,7 +126,7 @@ public class ShiftService {
         Shift shift = shifts.findById(id).orElseThrow(ShiftErrors::shiftNotFound);
         checkVersion(shift, req.version());
         if (shift.getStatus() == Shift.Status.CANCELLED) {
-            throw new ApiException(HttpStatus.CONFLICT, "ORDER_STATE", "Ca đã bị huỷ", null);
+            throw new ApiException(HttpStatus.CONFLICT, "SHIFT_STATE", "Ca đã bị huỷ", null);
         }
         var now = clock.instant();
         if (shift.hasStarted(now)) {

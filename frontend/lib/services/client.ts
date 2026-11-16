@@ -29,6 +29,11 @@ export class ApiError extends Error {
 export interface SessionHooks {
   /** Refresh token of the current session, or null when nobody is logged in. */
   refreshToken: () => string | null;
+  /**
+   * The session as saved right now, which another tab may have renewed in
+   * the meantime; null when it was cleared.
+   */
+  storedSession: () => AuthSession | null;
   /** Called with the new session after A-5 succeeded. */
   onRefreshed: (session: AuthSession) => void;
   /** Called when A-5 failed, so the UI can log the user out. */
@@ -94,41 +99,63 @@ interface Problem {
 const NO_REFRESH = /^\/(customer\/login|v1\/auth\/)/;
 
 /**
+ * Runs `fn` while holding a lock shared by every tab of this site, so two
+ * tabs never refresh at the same time. Falls back to running it directly when
+ * the browser has no Web Locks API.
+ *
+ * @param fn - the refresh to run
+ * @returns what `fn` returns
+ */
+async function withRefreshLock<T>(fn: () => Promise<T>): Promise<T> {
+  if (typeof navigator !== "undefined" && navigator.locks)
+    return await navigator.locks.request("drinkool-auth-refresh", fn);
+  return fn();
+}
+
+/**
  * Exchanges the refresh token for a new session (A-5). Calls made at the same
- * time share one refresh, because the backend revokes every session when a
- * refresh token is used twice.
+ * time share one refresh, and tabs take turns through a lock, because the
+ * backend revokes every session when a refresh token is used twice.
  *
  * @returns true when a new access token is stored
  */
 function refreshSession(): Promise<boolean> {
   const token = hooks?.refreshToken();
   if (!token) return Promise.resolve(false);
-  refreshing ??= (async () => {
-    try {
-      const res = await fetch("/api/v1/auth/refresh", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refreshToken: token }),
-      });
-      if (!res.ok) {
-        accessToken = null;
-        hooks?.onExpired();
-        return false;
-      }
-      const session = (await res.json()) as AuthSession;
-      accessToken = session.accessToken;
-      hooks?.onRefreshed(session);
-      return true;
-    } finally {
-      refreshing = null;
+  refreshing ??= withRefreshLock(async () => {
+    // Another tab may have renewed or ended the session while this one waited
+    const stored = hooks?.storedSession() ?? null;
+    if (stored?.refreshToken !== token) {
+      accessToken = stored?.accessToken ?? null;
+      if (stored) hooks?.onRefreshed(stored);
+      else hooks?.onExpired();
+      return !!stored;
     }
-  })();
+    const res = await fetch("/api/v1/auth/refresh", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshToken: token }),
+    });
+    if (!res.ok) {
+      accessToken = null;
+      hooks?.onExpired();
+      return false;
+    }
+    const session = (await res.json()) as AuthSession;
+    accessToken = session.accessToken;
+    hooks?.onRefreshed(session);
+    return true;
+  }).finally(() => {
+    refreshing = null;
+  });
   return refreshing;
 }
 
 /**
  * Sends a request and returns the raw response. A 401 on a signed-in call is
- * retried once after refreshing the session (docs/05-api.md §3).
+ * retried once after refreshing the session (docs/05-api.md §3). When the
+ * session cannot be renewed the call is retried as a guest, so public data
+ * such as the menu still loads after the session expired.
  *
  * @param method - HTTP method, e.g. `"GET"`, `"PUT"`
  * @param path - path after `/api`, e.g. `"/v1/orders"`
@@ -156,13 +183,11 @@ export async function apiFetch(
       body: body === undefined ? undefined : JSON.stringify(body),
     });
   let res = await send();
-  if (
-    res.status === 401 &&
-    accessToken &&
-    !NO_REFRESH.test(path) &&
-    (await refreshSession())
-  )
+  if (res.status === 401 && accessToken && !NO_REFRESH.test(path)) {
+    await refreshSession();
+    // A new token, or none at all when the session ended: try once more
     res = await send();
+  }
   if (!res.ok && res.status !== 304) {
     const problem = (await res.json().catch(() => ({}))) as Problem;
     throw new ApiError(

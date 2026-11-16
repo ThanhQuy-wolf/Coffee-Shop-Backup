@@ -196,12 +196,12 @@ export default function CheckoutPage() {
                         min={1}
                         max={MAX_QTY}
                         value={line.quantity}
-                        onChange={(e) =>
-                          setQuantity(
-                            line.key,
-                            Math.min(MAX_QTY, Number(e.target.value)),
-                          )
-                        }
+                        onChange={(e) => {
+                          // An empty box while typing would set 0 and drop the line
+                          const n = e.target.valueAsNumber;
+                          if (Number.isFinite(n) && n >= 1)
+                            setQuantity(line.key, Math.min(MAX_QTY, n));
+                        }}
                         className="h-8 w-14 rounded-lg border border-(--color-border) bg-transparent text-center"
                         aria-label={`Số lượng ${line.name}`}
                       />

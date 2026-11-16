@@ -50,6 +50,11 @@ export default function OrderPage() {
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
+    // A mistyped link: the backend would answer 400, which reads worse than "not found"
+    if (!Number.isSafeInteger(id) || id <= 0) {
+      setLoadError("Không tìm thấy đơn, hoặc đơn được đặt trên thiết bị khác.");
+      return;
+    }
     try {
       const o = await orderService.get(id, guestToken);
       setOrder(o);

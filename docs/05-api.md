@@ -284,7 +284,7 @@ Authorization: Bearer eyJ...      (không bắt buộc)
 - W-1 trả mảng `{ id, code, name, icon }`. W-2 trả mảng `{ id, fullName, role, departmentId }` của mọi tài khoản Staff và Manager.
 - W-3 bắt buộc `from` và `to`, thiếu hoặc sai định dạng trả 400 `VALIDATION`. Sắp theo ngày rồi giờ bắt đầu.
 - W-4, W-5: giờ kết thúc không sau giờ bắt đầu trả 422 `BR-40`. `maxStaff` ngoài 1–20, `wage` ≤ 0, hoặc `maxStaff` thấp hơn số người đang chiếm chỗ trả 422 `BR-41`. Bộ phận không tồn tại trả 422 `VALIDATION`. Đổi giờ làm một người trong ca bị trùng ca khác của họ trả 422 `BR-42`.
-- W-5, W-6 kiểm `version` trước tiên (409 `BR-27` kèm `currentVersion`). Sửa hoặc huỷ ca đã huỷ trả 409 `ORDER_STATE`, giống frontend. Huỷ ca đã bắt đầu trả 422 `BR-42`.
+- W-5, W-6 kiểm `version` trước tiên (409 `BR-27` kèm `currentVersion`). Sửa hoặc huỷ ca đã huỷ trả 409 `SHIFT_STATE` (R-62). Huỷ ca đã bắt đầu trả 422 `BR-42`.
 - W-7 kiểm theo thứ tự `BR-46` (422), `BR-44` (409), `BR-43` (409), `BR-45` (422). Manager đăng ký được ca của mọi bộ phận. Backend khoá dòng ca và dòng nhân viên (`FOR UPDATE`) trong lúc kiểm, nên hai người tranh chỗ cuối, hay một người đăng ký hai ca trùng giờ cùng lúc, đều chỉ một lệnh thành công.
 - W-8 chỉ huỷ được phân ca `REGISTERED` của chính mình (không có thì 404), còn ít hơn P-10 giờ thì 422 `BR-47`.
 - W-9 phân ca của người khác trả 403 `FORBIDDEN`. Thiếu lý do, phân ca không `REGISTERED` hoặc ca đã bắt đầu trả 422 `BR-48`. W-10 khi không còn yêu cầu chờ duyệt cũng trả 422 `BR-48`.
@@ -338,7 +338,7 @@ Frontend chọn thông báo theo `rule` (hoặc `code` khi không gắn với BR
 | HTTP | `rule` / `code` | Khi nào |
 |---|---|---|
 | 400 | `VALIDATION` | Sai kiểu dữ liệu, thiếu trường bắt buộc. `errors[]` liệt kê từng trường |
-| 401 | `UNAUTHENTICATED` | Thiếu hoặc hết hạn token. Frontend thử A-5 một lần rồi mới đưa về `/login` |
+| 401 | `UNAUTHENTICATED` | Thiếu hoặc hết hạn token. Frontend thử A-5 một lần (các tab dùng chung một khoá để không gửi trùng refresh token). A-5 thất bại thì xoá phiên và gửi lại đúng request đó dưới dạng khách, nên API công khai như menu vẫn tải được (R-63, R-64) |
 | 401 | `BR-04` | Sai mật khẩu. Body có `remainingAttempts` |
 | 423 | `BR-04` | Tài khoản đang bị khoá. Body có `lockedUntil` |
 | 403 | `FORBIDDEN` | Sai role |
@@ -346,6 +346,7 @@ Frontend chọn thông báo theo `rule` (hoặc `code` khi không gắn với BR
 | 409 | `BR-22` | Giá đã đổi. `errors[]` có `currentPrice` từng mục |
 | 409 | `BR-27` | Lệch `version`. Body có `currentVersion` |
 | 409 | `ORDER_STATE` | Chuyển trạng thái đơn không hợp lệ (ví dụ `start` khi đơn chưa `PAID`) |
+| 409 | `SHIFT_STATE` | Sửa hoặc huỷ ca đã bị huỷ (W-5, W-6) |
 | 409 | `BR-43` | Ca đã đủ người |
 | 409 | `BR-44` | Đã có phân ca hiệu lực trong ca này |
 | 409 | `BR-26` | Xác nhận thanh toán cho đơn không còn `PENDING_PAYMENT` (đã huỷ hoặc đã có người xác nhận) |
